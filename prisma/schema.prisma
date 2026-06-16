@@ -1,0 +1,85 @@
+// Droptine pricing model — database schema
+// Postgres on Railway. Run `npm run db:push` (or migrate) after editing.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  ADMIN
+}
+
+enum QuoteStatus {
+  PROPOSAL        // auto-priced; PDF + code page generated
+  CUSTOM_PENDING  // "additional functionality" / complex — needs manual follow-up
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  passwordHash String
+  role         Role     @default(STAFF)
+  createdAt    DateTime @default(now())
+
+  quotes     Quote[]      @relation("CreatedBy")
+  quoteEdits QuoteEdit[]
+}
+
+model Quote {
+  id            String      @id @default(cuid())
+  // short, human-shareable access code for the private proposal page
+  code          String      @unique
+  status        QuoteStatus @default(PROPOSAL)
+
+  // who generated it (proposal email always goes to this user)
+  createdById   String
+  createdBy     User        @relation("CreatedBy", fields: [createdById], references: [id])
+
+  // client-facing details that appear on the proposal
+  proposalName  String      // e.g. "Texas Hidden Springs Ranch"
+  clientName    String?     // contact person
+  clientEmail   String?
+  clientPhone   String?
+
+  // structured questionnaire answers (see src/lib/questionnaire.ts)
+  answers       Json
+
+  // pricing — computed deterministically by the engine; never by the LLM
+  computedTotal Int         // one-time build price, USD whole dollars
+  overrideTotal Int?        // admin manual override; when set, this is the price shown
+  monthly       Int         @default(169)
+  notes         String?     @db.Text
+
+  // generated proposal prose (LLM-drafted scope summary; price stays deterministic)
+  scopeSummary  String?     @db.Text
+
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  edits         QuoteEdit[]
+
+  @@index([createdById])
+  @@index([status])
+}
+
+// Audit trail: original auto price vs. manual edits, and who changed what.
+model QuoteEdit {
+  id           String   @id @default(cuid())
+  quoteId      String
+  quote        Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  editedById   String
+  editedBy     User     @relation(fields: [editedById], references: [id])
+  field        String   // e.g. "overrideTotal", "notes", "proposalName"
+  oldValue     String?  @db.Text
+  newValue     String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([quoteId])
+}

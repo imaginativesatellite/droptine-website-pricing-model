@@ -35,12 +35,15 @@ export const PRICING_RULES = {
   monthlyMlsIdxSurcharge: 400, // midpoint of the observed $300–$500/mo
 
   // Page-count add-ons (base covers 5–9 pages; do NOT count individual
-  // animal/pedigree pages here).
+  // animal/pedigree pages here). Not charged on e-commerce sites — those are
+  // priced by the store cost instead. "30+" routes to a custom quote.
   pageTiers: {
     "5-9": 0,
-    "10-15": 1000,
-    "16-20": 2000,
-    "21+": 3000,
+    "10-14": 1000,
+    "15-19": 2000,
+    "20-24": 3000,
+    "25-29": 4000,
+    // "30+" -> custom quote
   } as Record<string, number>,
 
   // E-commerce: $1,000 covers the first 25 items, then +$250 per additional 25.
@@ -134,6 +137,8 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
 
   if (answers.additionalFunctionality && answers.additionalFunctionality.trim())
     reasons.push("Custom functionality was requested.");
+  if (!answers.ecommerce && !answers.basicSite && answers.pageTier === "30+")
+    reasons.push("30+ pages needs a custom quote.");
   if (answers.mlsIdx)
     reasons.push("MLS/IDX syncing requires a custom build and monthly surcharge.");
   if (answers.ecommerce && answers.ecommerceItems === "150+")
@@ -160,9 +165,12 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
     lineItems.push({ label: "Basic Webflow site (3–4 pages)", amount: R.basicSiteTotal });
   } else {
     lineItems.push({ label: "Standard Webflow website (5–9 pages)", amount: R.base });
-    const tier = answers.pageTier ?? "5-9";
-    const pageAdd = R.pageTiers[tier] ?? 0;
-    if (pageAdd > 0) lineItems.push({ label: `Additional pages (${tier})`, amount: pageAdd });
+    // E-commerce sites are priced by store cost, not page count.
+    if (!answers.ecommerce) {
+      const tier = answers.pageTier ?? "5-9";
+      const pageAdd = R.pageTiers[tier] ?? 0;
+      if (pageAdd > 0) lineItems.push({ label: `Additional pages (${tier})`, amount: pageAdd });
+    }
   }
 
   // E-commerce

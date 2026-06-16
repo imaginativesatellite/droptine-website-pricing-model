@@ -16,7 +16,8 @@ type Base = {
   label: string;
   help?: string;
   group: "client" | "scope";
-  showIf?: ShowIf;
+  // A single condition, or an array of conditions that must ALL be true (AND).
+  showIf?: ShowIf | ShowIf[];
 };
 
 export type Question =
@@ -56,29 +57,8 @@ export const QUESTIONNAIRE: Question[] = [
       { value: "other", label: "Other" },
     ],
   },
-  {
-    id: "basicSite",
-    type: "boolean",
-    label: "Is this a small, basic 3–4 page site?",
-    help: "Simple brochure site with no extra functionality. Sets the $4,000 floor.",
-    group: "scope",
-  },
-  {
-    id: "pageTier",
-    type: "single",
-    label: "Roughly how many pages?",
-    help: "Do NOT count individual animal or pedigree pages here — those are priced separately below.",
-    group: "scope",
-    showIf: { field: "basicSite", equals: false },
-    options: [
-      { value: "5-9", label: "5–9 pages (standard)" },
-      { value: "10-15", label: "10–15 pages" },
-      { value: "16-20", label: "16–20 pages" },
-      { value: "21+", label: "21+ pages" },
-    ],
-  },
-
-  // --- E-commerce ---
+  // --- E-commerce (asked before page count: e-commerce sites are priced by
+  //     store cost, not by number of pages) ---
   { id: "ecommerce", type: "boolean", label: "Does the site need an online store / e-commerce?", group: "scope" },
   {
     id: "ecommerceItems",
@@ -103,6 +83,35 @@ export const QUESTIONNAIRE: Question[] = [
     help: "Adds $1,000.",
     group: "scope",
     showIf: { field: "ecommerce", equals: true },
+  },
+
+  // --- Pages (skipped for e-commerce sites) ---
+  {
+    id: "basicSite",
+    type: "boolean",
+    label: "Is this a small, basic 3–4 page site?",
+    help: "Simple brochure site with no extra functionality. Sets the $4,000 floor.",
+    group: "scope",
+    showIf: { field: "ecommerce", equals: false },
+  },
+  {
+    id: "pageTier",
+    type: "single",
+    label: "Roughly how many pages?",
+    help: "Do NOT count individual animal or pedigree pages here — those are priced separately below.",
+    group: "scope",
+    showIf: [
+      { field: "ecommerce", equals: false },
+      { field: "basicSite", equals: false },
+    ],
+    options: [
+      { value: "5-9", label: "5–9 pages (standard)" },
+      { value: "10-14", label: "10–14 pages" },
+      { value: "15-19", label: "15–19 pages" },
+      { value: "20-24", label: "20–24 pages" },
+      { value: "25-29", label: "25–29 pages" },
+      { value: "30+", label: "30+ pages (custom quote)" },
+    ],
   },
 
   // --- Animals ---

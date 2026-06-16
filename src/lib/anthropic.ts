@@ -1,18 +1,46 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { featureLabel, type PricingAnswers } from "./pricing";
+import { computeQuote, type PricingAnswers } from "./pricing";
+
+/** Plain-English list of what's included, derived from the answers. */
+export function describeScope(answers: PricingAnswers): string[] {
+  const items: string[] = [];
+  if (answers.basicSite) items.push("a basic 3–4 page brochure site");
+  else items.push(`a ${answers.pageTier ?? "5-9"}-page website`);
+  if (answers.ecommerce)
+    items.push(
+      `an online store${answers.ecommerceShopify ? " on Shopify" : ""}` +
+        (answers.ecommerceItems ? ` (${answers.ecommerceItems} items)` : ""),
+    );
+  if (answers.animalPages)
+    items.push(
+      answers.animalIndividualPages
+        ? `individual animal pages (${answers.animalCount ?? ""})`
+        : "an animal listing page",
+    );
+  if (answers.pedigreePages)
+    items.push(
+      answers.pedigreeIndividualPages
+        ? `individual pedigree/bloodline pages (${answers.pedigreeCount ?? ""})`
+        : "a pedigree/bloodline page",
+    );
+  if (answers.realEstate)
+    items.push("a real-estate package (property listings, agent logins, interactive property map)");
+  if (answers.blog) items.push("a blog");
+  if (answers.news) items.push("a news section");
+  if (answers.events) items.push("an events page");
+  return items;
+}
 
 /**
  * Drafts the human-readable scope summary for a proposal.
  *
  * The Anthropic model writes prose ONLY. It is never given authority over the
- * price — the total is computed deterministically in src/lib/pricing.ts and
- * passed in here purely as context so the wording is consistent.
+ * price — the total is computed deterministically in src/lib/pricing.ts.
  */
 export async function generateScopeSummary(input: {
   proposalName: string;
   industry?: string;
   answers: PricingAnswers;
-  total: number;
 }): Promise<string> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
@@ -22,8 +50,7 @@ export async function generateScopeSummary(input: {
 
   const client = new Anthropic({ apiKey });
   const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
-
-  const features = (input.answers.features ?? []).map(featureLabel).join(", ") || "standard features";
+  const scope = describeScope(input.answers).join("; ") || "a standard website";
 
   const msg = await client.messages.create({
     model,
@@ -39,7 +66,7 @@ export async function generateScopeSummary(input: {
         content:
           `Project: ${input.proposalName}\n` +
           `Industry: ${input.industry ?? "n/a"}\n` +
-          `Included functionality: ${features}\n\n` +
+          `Scope includes: ${scope}\n\n` +
           "Write the scope summary describing what we'll build.",
       },
     ],
@@ -55,14 +82,15 @@ export async function generateScopeSummary(input: {
 }
 
 function defaultSummary(input: { proposalName: string; answers: PricingAnswers }): string {
-  const features = (input.answers.features ?? []).map(featureLabel);
-  const featureLine = features.length
-    ? ` Included functionality: ${features.join(", ")}.`
-    : "";
+  const scope = describeScope(input.answers);
+  const scopeLine = scope.length ? ` This includes ${scope.join(", ")}.` : "";
   return (
     `Luna Creative will design and develop a custom Webflow website for ${input.proposalName}, ` +
     `tailored to your goals with a clean, mobile-first design and the standard feature set ` +
     `(mobile optimization, interactive location map, basic SEO, fillable contact form, and photo/video gallery).` +
-    featureLine
+    scopeLine
   );
 }
+
+// Re-export so callers can compute alongside prose if needed.
+export { computeQuote };

@@ -33,7 +33,7 @@ follow-ups). Both are data-driven so an admin can tune them later from the admin
 ```bash
 npm install
 cp .env.example .env   # fill in values
-npm run db:push        # create tables
+npm run db:migrate     # apply migrations (creates tables)
 npm run db:seed        # create the first admin
 npm run dev
 ```

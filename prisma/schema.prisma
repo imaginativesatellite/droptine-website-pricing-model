@@ -1,0 +1,121 @@
+// Droptine pricing model — database schema
+// Postgres on Railway. `prisma db push` runs automatically on deploy.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STAFF
+  ADMIN
+}
+
+enum QuoteStatus {
+  PROPOSAL        // auto-priced; PDF + code page generated; emailed to staff
+  CUSTOM_PENDING  // "additional functionality" / complex — awaiting admin approval
+  APPROVED        // admin set a price and approved a custom quote
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  name         String
+  phone        String?
+  passwordHash String
+  role         Role     @default(STAFF)
+  createdAt    DateTime @default(now())
+
+  clients        Client[]    @relation("ClientOwner")
+  quotes         Quote[]     @relation("CreatedBy")
+  approvedQuotes Quote[]     @relation("ApprovedBy")
+  quoteEdits     QuoteEdit[]
+}
+
+// A client/business that quotes are grouped under (the dashboard is organized
+// by client). Owned by the Droptine staff member who created it.
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  ownerId   String
+  owner     User     @relation("ClientOwner", fields: [ownerId], references: [id])
+  quotes    Quote[]
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
+}
+
+model Quote {
+  id     String      @id @default(cuid())
+  // short, human-shareable access code for the private proposal page
+  code   String      @unique
+  status QuoteStatus @default(PROPOSAL)
+
+  // who generated it (proposal email always goes to this user)
+  createdById String
+  createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  proposalName String
+
+  // structured questionnaire answers (see src/lib/questionnaire.ts)
+  answers Json
+
+  // pricing — computed deterministically by the engine; never by the LLM
+  computedTotal Int      // one-time build price, USD whole dollars
+  overrideTotal Int?     // admin manual override; when set, replaces computedTotal
+  discount      Int      @default(0) // admin discount, shown as a line item
+  monthly       Int      @default(169)
+  notes         String?  @db.Text
+  scopeSummary  String?  @db.Text // LLM-drafted prose (price stays deterministic)
+
+  // price snapshot at creation time, so historical quotes don't shift if the
+  // pricing engine changes later: [{ label, amount }]
+  lineItems     Json?
+
+  // what we actually charged the client (for quoted-vs-actual analysis)
+  actualCharged Int?
+
+  // proposal email delivery tracking
+  emailStatus   String?  // SENT | FAILED | SKIPPED
+  emailError    String?  @db.Text
+
+  // why a quote needs a custom follow-up (CUSTOM_PENDING)
+  customReasons String[]
+
+  // custom-quote approval
+  approvedById String?
+  approvedBy   User?     @relation("ApprovedBy", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
+
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  edits     QuoteEdit[]
+
+  @@index([createdById])
+  @@index([clientId])
+  @@index([status])
+}
+
+// Audit trail: original auto price vs. manual edits, and who changed what.
+model QuoteEdit {
+  id         String   @id @default(cuid())
+  quoteId    String
+  quote      Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  editedById String
+  editedBy   User     @relation(fields: [editedById], references: [id])
+  field      String // e.g. "overrideTotal", "discount", "notes", "status"
+  oldValue   String?  @db.Text
+  newValue   String?  @db.Text
+  createdAt  DateTime @default(now())
+
+  @@index([quoteId])
+}

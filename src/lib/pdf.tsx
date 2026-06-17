@@ -30,11 +30,9 @@ const LINE = "#e3e0db";
 const s = StyleSheet.create({
   page: { padding: 44, paddingBottom: 64, fontSize: 10, color: "#2b2b2b", fontFamily: "Helvetica", lineHeight: 1.5 },
   brandRow: { flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 },
-  brand: { fontSize: 18, fontFamily: "Helvetica-Bold", color: CHARCOAL, letterSpacing: 1 },
-  brandAccent: { color: GOLD },
+  brand: { fontSize: 18, fontFamily: "Helvetica-Bold", color: GOLD, letterSpacing: 1 },
   addr: { fontSize: 8, color: MUTED, textAlign: "right" },
   title: { fontSize: 22, fontFamily: "Helvetica-Bold", color: CHARCOAL, marginTop: 8 },
-  titleAccent: { color: GOLD },
   section: { marginTop: 18 },
   label: { fontSize: 8, color: MUTED, textTransform: "uppercase", letterSpacing: 1, marginBottom: 4 },
   clientName: { fontSize: 18, fontFamily: "Helvetica-Bold", color: CHARCOAL },
@@ -82,9 +80,7 @@ const usd = (n: number) => `$${n.toLocaleString("en-US")}.00`;
 function Header() {
   return (
     <View style={s.brandRow}>
-      <Text style={s.brand}>
-        LUNA <Text style={s.brandAccent}>CREATIVE</Text>
-      </Text>
+      <Text style={s.brand}>LUNA CREATIVE</Text>
       <Text style={s.addr}>
         {LUNA_ADDRESS}
         {"\n"}{LUNA_PHONE}
@@ -110,9 +106,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
       {/* Page 1 — Proposal */}
       <Page size="LETTER" style={s.page}>
         <Header />
-        <Text style={s.title}>
-          WEBSITE <Text style={s.titleAccent}>PROPOSAL</Text>
-        </Text>
+        <Text style={s.title}>WEBSITE PROPOSAL</Text>
 
         <View style={s.section}>
           <Text style={s.label}>Prepared for</Text>
@@ -166,9 +160,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
       {/* Page 2 — Monthly Hosting, Security & Maintenance */}
       <Page size="LETTER" style={s.page}>
         <Header />
-        <Text style={s.title}>
-          MONTHLY HOSTING, SECURITY <Text style={s.titleAccent}>&amp; MAINTENANCE</Text>
-        </Text>
+        <Text style={s.title}>MONTHLY HOSTING, SECURITY &amp; MAINTENANCE</Text>
 
         <View style={s.section}>
           {MONTHLY_ITEMS.map((m, i) => (
@@ -183,8 +175,8 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
           </View>
           <Text style={[s.small, { marginTop: 6 }]}>No tax.</Text>
 
-          {d.ecommerce && <Text style={s.italic}>{ECOMMERCE_MONTHLY_DISCLAIMER}</Text>}
-          {d.mlsIdx && <Text style={s.italic}>{IDX_MONTHLY_DISCLAIMER}</Text>}
+          {d.ecommerce && <Text style={[s.small, { marginTop: 4 }]}>{ECOMMERCE_MONTHLY_DISCLAIMER}</Text>}
+          {d.mlsIdx && <Text style={[s.small, { marginTop: 4 }]}>{IDX_MONTHLY_DISCLAIMER}</Text>}
           <Text style={[s.small, { marginTop: 8 }]}>{PROPOSAL_VALIDITY}</Text>
         </View>
 
@@ -194,9 +186,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
       {/* Terms & Conditions — flows across as many pages as needed */}
       <Page size="LETTER" style={s.page} wrap>
         <Header />
-        <Text style={s.title}>
-          TERMS &amp; <Text style={s.titleAccent}>CONDITIONS</Text>
-        </Text>
+        <Text style={s.title}>TERMS &amp; CONDITIONS</Text>
 
         <Text style={[s.label, { marginTop: 16 }]}>General Project Development Information</Text>
         {TERMS_INTRO_BULLETS.map((b, i) => (

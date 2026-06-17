@@ -29,15 +29,15 @@ export default async function ProposalPage({ params }: { params: Promise<{ code:
     <div className="container" style={{ maxWidth: 720 }}>
       <div className="card">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-          <div style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--charcoal)" }}>
-            LUNA <span style={{ color: "var(--gold)" }}>CREATIVE</span>
+          <div style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--gold)" }}>
+            LUNA CREATIVE
           </div>
           <a href={`/api/proposal/${d.code}/pdf`} className="btn-gold" style={{ padding: "14px 28px", fontSize: "1rem" }}>
             Download PDF
           </a>
         </div>
 
-        <h1 style={{ marginTop: 18 }}>Website <span style={{ color: "var(--gold)" }}>Proposal</span></h1>
+        <h1 style={{ marginTop: 18 }}>Website Proposal</h1>
 
         <div className="q">
           <div style={labelStyle}>Prepared for</div>
@@ -79,8 +79,8 @@ export default async function ProposalPage({ params }: { params: Promise<{ code:
           <div style={{ display: "flex", justifyContent: "space-between" }}>
             <span>50% on completion</span><span>{money(d.total - half)}</span>
           </div>
-          <p style={{ fontStyle: "italic", fontSize: "0.78rem", color: "var(--muted)", marginTop: 12 }}>{PROPOSAL_DISCLAIMER}</p>
-          <p className="help" style={{ marginTop: 6 }}>{PROPOSAL_VALIDITY}</p>
+          <p className="note">{PROPOSAL_DISCLAIMER}</p>
+          <p className="note">{PROPOSAL_VALIDITY}</p>
         </div>
 
         <div className="q">
@@ -91,9 +91,9 @@ export default async function ProposalPage({ params }: { params: Promise<{ code:
             ))}
           </ul>
           <div className="total"><span>Per month</span><span className="big">{money(d.monthly)}</span></div>
-          <p className="help" style={{ marginTop: 6 }}>No tax.</p>
-          {d.ecommerce && <p style={{ fontStyle: "italic", fontSize: "0.78rem", color: "var(--muted)", marginTop: 8 }}>{ECOMMERCE_MONTHLY_DISCLAIMER}</p>}
-          {d.mlsIdx && <p style={{ fontStyle: "italic", fontSize: "0.78rem", color: "var(--muted)", marginTop: 8 }}>{IDX_MONTHLY_DISCLAIMER}</p>}
+          <p className="note">No tax.</p>
+          {d.ecommerce && <p className="note">{ECOMMERCE_MONTHLY_DISCLAIMER}</p>}
+          {d.mlsIdx && <p className="note">{IDX_MONTHLY_DISCLAIMER}</p>}
         </div>
 
         <p className="help" style={{ marginTop: 14 }}>Proposal code {d.code}</p>

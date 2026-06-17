@@ -1,9 +1,9 @@
 /**
- * Seeds / refreshes the first admin from SEED_ADMIN_* env vars.
+ * Seeds the first admin from SEED_ADMIN_* env vars — create-only.
  *
- * Upserts on each deploy so the password in Railway is always authoritative
- * (there's no in-app password change yet). Once account management exists, this
- * should be guarded to run only when no users exist.
+ * If the admin already exists it is left untouched, so passwords changed in-app
+ * (or staff accounts) survive redeploys. To force a password reset, delete the
+ * user first or change it from the in-app account screen.
  *   npm run db:seed
  */
 import { PrismaClient, Role } from "@prisma/client";
@@ -21,13 +21,17 @@ async function main() {
     return;
   }
 
+  const existing = await prisma.user.findUnique({ where: { email } });
+  if (existing) {
+    console.log(`Admin ${email} already exists — leaving as-is.`);
+    return;
+  }
+
   const passwordHash = await bcrypt.hash(password, 12);
-  const user = await prisma.user.upsert({
-    where: { email },
-    update: { name, passwordHash, role: Role.ADMIN },
-    create: { email, name, passwordHash, role: Role.ADMIN },
+  const user = await prisma.user.create({
+    data: { email, name, passwordHash, role: Role.ADMIN },
   });
-  console.log(`Seeded/updated admin: ${user.email} (password set from SEED_ADMIN_PASSWORD)`);
+  console.log(`Seeded admin: ${user.email}`);
 }
 
 main()

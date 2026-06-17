@@ -1,10 +1,18 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { finalPrice } from "@/lib/quote";
+import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 
 function csvCell(v: string | number | null | undefined): string {
   const s = v == null ? "" : String(v);
   return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+/** A readable summary of what was selected + each item's price. */
+function breakdown(answers: PricingAnswers): string {
+  const r = computeQuote(answers);
+  if (r.requiresCustomQuote) return `CUSTOM: ${r.reasons.join("; ")}`;
+  return r.lineItems.map((li) => `${li.label} $${li.amount}`).join(" | ");
 }
 
 export async function GET() {
@@ -20,7 +28,7 @@ export async function GET() {
 
   const header = [
     "Created", "Client", "Owner", "Status", "Code",
-    "Computed", "Override", "Discount", "Final", "ActualCharged", "Monthly",
+    "Computed", "Override", "Discount", "Final", "ActualCharged", "Monthly", "Breakdown",
   ];
   const rows = quotes.map((q) => [
     new Date(q.createdAt).toISOString().slice(0, 10),
@@ -34,6 +42,7 @@ export async function GET() {
     q.status === "CUSTOM_PENDING" ? "" : finalPrice(q),
     q.actualCharged ?? "",
     q.monthly,
+    breakdown(q.answers as unknown as PricingAnswers),
   ]);
 
   const csv = [header, ...rows].map((r) => r.map(csvCell).join(",")).join("\n");

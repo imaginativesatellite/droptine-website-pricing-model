@@ -16,16 +16,18 @@ requests route to a custom quote instead.
 - **@react-pdf/renderer** for the PDF
 
 ## Pricing
-The engine lives in `src/lib/pricing.ts` and is derived from ~40 past Luna quotes.
-Base **$5,000** (5–9 page standard build), rounded **up** to the nearest **$250**,
-clamped to **$4,000–$15,000**. Add-ons: page tiers (10–14 +$1k, 15–19 +$2k, 20–24
-+$3k, 25–29 +$4k — **not charged on e-commerce sites**, which are priced by store
-cost); e-commerce ($1k first 25 items, +$250 per 25, +$1k if Shopify); animal &
-pedigree pages ($250 listing fee each, +$250 per 10 animals for individual pages);
-real-estate bundle (+$2.5k); blog/news/events (+$500 each). MLS/IDX, 150+ store
-items, 60+ animals/pedigrees, 30+ pages, and any free-text custom request route to a
-**custom quote**. The questionnaire is in `src/lib/questionnaire.ts` (with conditional
-follow-ups). Both are data-driven so an admin can tune them later from the admin UI.
+The engine lives in `src/lib/pricing.ts` and is derived from past Luna quotes,
+tuned against the historical sample. Page count sets the base directly (rounded
+**up** to the nearest **$250**, clamped to **$4,000–$15,000**): 1–4 = $4,000,
+5–9 = $5,000, 10–14 = $7,000, 15–19 = $8,000, 20–24 = $9,000, 25–29 = $10,000,
+30+ = custom. **E-commerce** sites are priced by store cost (not pages): $1k first
+25 items, +$250 per 25, +$1k if Shopify. **Animal & pedigree pages:** $250 listing
+fee each, +$500 per 10 for individual pages. **Real-estate bundle** +$2.5k.
+**Social feed** +$100. **MLS** +$930 build & +$50/mo. **Blog/News/Events** +$500
+each. **Droptine-provided content** −$500 ($3,500 floor). Monthly $169, +$50 for
+e-commerce/real-estate/MLS/complex. 150+ store items, 60+ animals/pedigrees, 30+
+pages, and any free-text custom request route to a **custom quote**. The
+questionnaire is in `src/lib/questionnaire.ts` (with conditional follow-ups).
 
 ---
 

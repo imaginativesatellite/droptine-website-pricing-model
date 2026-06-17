@@ -32,10 +32,10 @@ export const PRICING_RULES = {
   pageBase: {
     "1-4": 4000,
     "5-9": 5000,
-    "10-14": 6000,
-    "15-19": 7000,
-    "20-24": 8000,
-    "25-29": 9000,
+    "10-14": 7000,
+    "15-19": 8000,
+    "20-24": 9000,
+    "25-29": 10000,
   } as Record<string, number>,
 
   // E-commerce: $1,000 covers the first 25 items, then +$250 per additional 25.
@@ -54,12 +54,12 @@ export const PRICING_RULES = {
   // individual page, +$250 per group of 10.
   listingPageFee: 250,
   individualPageTiers: {
-    "1-10": 250,
-    "11-20": 500,
-    "21-30": 750,
-    "31-40": 1000,
-    "41-50": 1250,
-    "51-60": 1500,
+    "1-10": 500,
+    "11-20": 1000,
+    "21-30": 1500,
+    "31-40": 2000,
+    "41-50": 2500,
+    "51-60": 3000,
     // "60+" -> custom quote
   } as Record<string, number>,
 

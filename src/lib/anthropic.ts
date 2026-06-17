@@ -42,9 +42,11 @@ export async function generateScopeSummary(input: {
   industry?: string;
   answers: PricingAnswers;
 }): Promise<string> {
+  // AI is opt-in: it only runs when ENABLE_AI=true AND a key is present.
+  // Otherwise we use the deterministic template (no API call, no cost).
+  const aiEnabled = process.env.ENABLE_AI === "true";
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    // Graceful fallback so the app works before the key is configured.
+  if (!aiEnabled || !apiKey) {
     return defaultSummary(input);
   }
 

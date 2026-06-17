@@ -1,10 +1,8 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
-import { createQuote } from "./actions";
-
-const DRAFT_KEY = "droptine-quote-draft";
+import { editAnswers } from "./actions";
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
 
@@ -18,27 +16,18 @@ function visible(q: Question, answers: Answers): boolean {
   });
 }
 
-export default function NewQuoteForm({ clientNames }: { clientNames: string[] }) {
-  const [answers, setAnswers] = useState<Answers>({});
+export default function EditAnswersForm({
+  quoteId,
+  initialAnswers,
+  clientNames,
+}: {
+  quoteId: string;
+  initialAnswers: Answers;
+  clientNames: string[];
+}) {
+  const [answers, setAnswers] = useState<Answers>(initialAnswers);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
-  const loaded = useRef(false);
-
-  // Restore an in-progress draft from this device (survives a dropped connection).
-  useEffect(() => {
-    try {
-      const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) setAnswers(JSON.parse(raw));
-    } catch {}
-    loaded.current = true;
-  }, []);
-
-  useEffect(() => {
-    if (!loaded.current) return;
-    try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify(answers));
-    } catch {}
-  }, [answers]);
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
   const questions = QUESTIONNAIRE.filter((q) => visible(q, answers));
@@ -46,13 +35,8 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
 
   const submit = () => {
     setError(null);
-    try { localStorage.removeItem(DRAFT_KEY); } catch {}
-    startTransition(async () => {
-      const res = await createQuote(answers);
-      if (res?.error) {
-        setError(res.error);
-        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(answers)); } catch {}
-      }
+    startTransition(() => {
+      void editAnswers(quoteId, answers);
     });
   };
 
@@ -71,17 +55,12 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
         ))}
       </div>
 
-      {error && (
-        <p style={{ color: "#b3261e", fontSize: "0.9rem", marginTop: 12 }}>
-          {error} Your answers are saved on this device — just press the button again.
-        </p>
-      )}
+      {error && <p style={{ color: "#b3261e", fontSize: "0.9rem", marginTop: 12 }}>{error}</p>}
 
       <div style={{ marginTop: 14 }}>
         <button type="button" className="btn-primary" disabled={pending || !proposalName} onClick={submit}>
-          {pending ? "Saving…" : "Generate Proposal"}
+          {pending ? "Saving…" : "Save answers"}
         </button>
-        {!proposalName && <p className="help" style={{ marginTop: 8 }}>Enter a client name to continue.</p>}
       </div>
     </div>
   );
@@ -111,12 +90,9 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
             const checked = arr.includes(o.value);
             return (
               <label key={o.value} style={{ display: "block", fontSize: "0.9rem", padding: "3px 0" }}>
-                <input
-                  type="checkbox"
-                  checked={checked}
+                <input type="checkbox" checked={checked}
                   onChange={() => set(q.id, checked ? arr.filter((v) => v !== o.value) : [...arr, o.value])}
-                  style={{ width: "auto", marginRight: 8 }}
-                />
+                  style={{ width: "auto", marginRight: 8 }} />
                 {o.label}
               </label>
             );
@@ -124,19 +100,12 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
         </div>
       );
     case "longtext":
-      return (
-        <textarea id={q.id} placeholder={q.placeholder} value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value)} />
-      );
+      return <textarea id={q.id} placeholder={q.placeholder} value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value)} />;
     default:
       return (
-        <input
-          id={q.id}
-          type={q.type}
-          placeholder={q.placeholder}
+        <input id={q.id} type={q.type} placeholder={q.placeholder}
           list={q.id === "proposalName" ? "client-names" : undefined}
-          value={(answers[q.id] as string) ?? ""}
-          onChange={(e) => set(q.id, e.target.value)}
-        />
+          value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value)} />
       );
   }
 }

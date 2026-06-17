@@ -26,7 +26,10 @@ export default async function AdminPage() {
           <h1>Admin</h1>
           <p className="lede" style={{ margin: 0 }}>Review custom requests and recent quotes.</p>
         </div>
-        <a className="btn-secondary" href="/api/export/quotes">Export CSV (quoted vs. actual)</a>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          <Link className="btn-secondary" href="/pricing-preview">Pricing preview</Link>
+          <a className="btn-secondary" href="/api/export/quotes">Export CSV (quoted vs. actual)</a>
+        </div>
       </div>
       <div style={{ height: 18 }} />
 

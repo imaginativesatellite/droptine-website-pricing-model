@@ -13,6 +13,13 @@ const statusPill = (status: string) => {
   return <span className="pill proposal">Proposal</span>;
 };
 
+function describeActivity(e: { field: string; oldValue: string | null; newValue: string | null }): string {
+  if (e.field === "email") return e.newValue ?? "Email sent";
+  if (e.field === "answers") return `Edited answers — ${e.newValue ?? ""}`;
+  if (e.field === "status") return `Status: ${e.oldValue ?? "—"} → ${e.newValue ?? "—"}`;
+  return `${e.field}: ${e.oldValue ?? "—"} → ${e.newValue ?? "—"}`;
+}
+
 export default async function QuoteDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
@@ -95,6 +102,10 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         <div className="card" style={{ marginTop: 18, borderColor: "var(--gold)" }}>
           <h3 style={{ marginBottom: 12 }}>Admin</h3>
 
+          <div style={{ marginBottom: 16 }}>
+            <Link href={`/quote/${quote!.id}/edit`} className="btn-secondary">Edit answers</Link>
+          </div>
+
           {isPending && (
             <form action={approveQuote.bind(null, quote!.id)} style={{ marginBottom: 20 }}>
               <label className="qlabel" htmlFor="approve-price">Approve at price ($)</label>
@@ -132,17 +143,17 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             <button type="submit" className="btn-primary">Save changes</button>
           </form>
 
-          {quote!.edits.length > 0 && (
-            <div style={{ marginTop: 20 }}>
-              <div className="label" style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Edit history</div>
-              {quote!.edits.map((e) => (
-                <div key={e.id} className="help" style={{ padding: "4px 0", borderBottom: "1px solid var(--line)" }}>
-                  {new Date(e.createdAt).toLocaleString()} · {e.editedBy.email} changed <strong>{e.field}</strong>{" "}
-                  {e.oldValue ? `from "${e.oldValue}" ` : ""}to &quot;{e.newValue ?? "—"}&quot;
-                </div>
-              ))}
+          <div style={{ marginTop: 20 }}>
+            <div className="label" style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Activity log</div>
+            <div className="help" style={{ padding: "4px 0", borderBottom: "1px solid var(--line)" }}>
+              {new Date(quote!.createdAt).toLocaleString()} · Requested by {quote!.createdBy.email}
             </div>
-          )}
+            {[...quote!.edits].reverse().map((e) => (
+              <div key={e.id} className="help" style={{ padding: "4px 0", borderBottom: "1px solid var(--line)" }}>
+                {new Date(e.createdAt).toLocaleString()} · {e.editedBy.email} · {describeActivity(e)}
+              </div>
+            ))}
+          </div>
 
           <div style={{ marginTop: 20, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
             <DeleteQuoteButton quoteId={quote!.id} />

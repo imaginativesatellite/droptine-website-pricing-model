@@ -38,7 +38,9 @@ export const PRICING_RULES = {
     "25-29": 10000,
   } as Record<string, number>,
 
-  // E-commerce: $1,000 covers the first 25 items, then +$250 per additional 25.
+  // E-commerce: $1,000 flat for being a store, plus an item-count fee on top.
+  // Item fee: $1,000 for the first 25 items, then +$250 per additional 25.
+  ecommerceBaseFee: 1000,
   ecommerceItemTiers: {
     "1-25": 1000,
     "26-50": 1250,
@@ -160,9 +162,10 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
 
   // E-commerce store
   if (answers.ecommerce) {
+    lineItems.push({ label: "E-commerce store", amount: R.ecommerceBaseFee });
     const itemsTier = answers.ecommerceItems ?? "1-25";
     const ecomAmount = R.ecommerceItemTiers[itemsTier] ?? R.ecommerceItemTiers["1-25"];
-    lineItems.push({ label: `E-commerce store (${itemsTier} items)`, amount: ecomAmount });
+    lineItems.push({ label: `Store catalog (${itemsTier} items)`, amount: ecomAmount });
     if (answers.ecommerceShopify)
       lineItems.push({ label: "Built on Shopify", amount: R.ecommerceShopifySurcharge });
   }

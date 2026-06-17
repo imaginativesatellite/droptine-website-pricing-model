@@ -14,8 +14,10 @@ export default async function NewQuotePage() {
 
   return (
     <div className="container">
-      <h1>New Quote</h1>
-      <p className="lede">Answer the questions, then generate the proposal.</p>
+      <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
+        <h1>New Quote</h1>
+        <p className="lede">Answer the questions, then generate the proposal.</p>
+      </div>
       <NewQuoteForm clientNames={clients.map((c) => c.name)} />
     </div>
   );

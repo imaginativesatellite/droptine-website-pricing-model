@@ -2,12 +2,34 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
+import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
 import { appUrl, proposalUrl, finalPrice } from "@/lib/quote";
+
+type RawAnswers = Record<string, string | boolean | string[] | undefined>;
+
+function fmt(v: unknown): string {
+  if (v === undefined || v === null || v === "") return "—";
+  if (v === true) return "Yes";
+  if (v === false) return "No";
+  return String(v);
+}
+
+function summarizeAnswerChanges(before: Record<string, unknown>, after: RawAnswers): string {
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  const changes: string[] = [];
+  for (const k of keys) {
+    if (JSON.stringify(before[k] ?? null) !== JSON.stringify(after[k] ?? null)) {
+      changes.push(`${k}: ${fmt(before[k])} → ${fmt(after[k])}`);
+    }
+  }
+  return changes.join("; ");
+}
 
 async function logEdit(
   quoteId: string,
@@ -95,6 +117,36 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
   revalidatePath(`/quote/${quoteId}`);
 }
 
+/** Admin: edit the questionnaire answers, recompute the price, and log the change. */
+export async function editAnswers(quoteId: string, answers: RawAnswers): Promise<void> {
+  const admin = await requireAdmin();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
+  if (!quote) throw new Error("Quote not found.");
+
+  const pricing = answers as PricingAnswers;
+  const result = computeQuote(pricing);
+  const proposalName = String(answers.proposalName ?? quote.proposalName).trim() || quote.proposalName;
+
+  const summary = summarizeAnswerChanges(quote.answers as Record<string, unknown>, answers);
+  await prisma.quoteEdit.create({
+    data: { quoteId, editedById: admin.id, field: "answers", oldValue: null, newValue: summary || "answers updated" },
+  });
+
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: {
+      proposalName,
+      answers: JSON.parse(JSON.stringify(pricing)) as Prisma.InputJsonValue,
+      computedTotal: result.total,
+      monthly: result.monthly,
+      lineItems: result.lineItems as unknown as Prisma.InputJsonValue,
+      customReasons: result.reasons,
+    },
+  });
+
+  redirect(`/quote/${quoteId}`);
+}
+
 /** Admin: permanently delete a quote (its edit history cascades). */
 export async function deleteQuote(quoteId: string): Promise<void> {
   await requireAdmin();
@@ -104,7 +156,7 @@ export async function deleteQuote(quoteId: string): Promise<void> {
 
 /** Admin: re-send the proposal email (with PDF) to the staff member who created it. */
 export async function resendProposalEmail(quoteId: string): Promise<void> {
-  await requireAdmin();
+  const admin = await requireAdmin();
   const quote = await prisma.quote.findUnique({
     where: { id: quoteId },
     include: { createdBy: true, client: true },
@@ -123,6 +175,7 @@ export async function resendProposalEmail(quoteId: string): Promise<void> {
       pdf,
     });
     await prisma.quote.update({ where: { id: quoteId }, data: { emailStatus: "SENT", emailError: null } });
+    await logEdit(quoteId, admin.id, "email", null, "Proposal email re-sent");
   } catch (e) {
     await prisma.quote.update({
       where: { id: quoteId },

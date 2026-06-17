@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
 import { renderProposalPdf } from "@/lib/pdf";
@@ -92,6 +93,13 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
   }
 
   revalidatePath(`/quote/${quoteId}`);
+}
+
+/** Admin: permanently delete a quote (its edit history cascades). */
+export async function deleteQuote(quoteId: string): Promise<void> {
+  await requireAdmin();
+  await prisma.quote.delete({ where: { id: quoteId } });
+  redirect("/dashboard");
 }
 
 /** Admin: re-send the proposal email (with PDF) to the staff member who created it. */

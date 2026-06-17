@@ -5,6 +5,7 @@ import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice } from "@/lib/quote";
 import { updateQuote, approveQuote, resendProposalEmail } from "./actions";
+import DeleteQuoteButton from "./DeleteQuoteButton";
 
 const statusPill = (status: string) => {
   if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending approval</span>;
@@ -142,6 +143,10 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
               ))}
             </div>
           )}
+
+          <div style={{ marginTop: 20, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
+            <DeleteQuoteButton quoteId={quote!.id} />
+          </div>
         </div>
       )}
     </div>

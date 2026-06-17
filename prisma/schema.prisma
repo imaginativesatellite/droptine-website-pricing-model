@@ -1,5 +1,5 @@
 // Droptine pricing model — database schema
-// Postgres on Railway. Run `npm run db:push` (or migrate) after editing.
+// Postgres on Railway. `prisma db push` runs automatically on deploy.
 
 generator client {
   provider = "prisma-client-js"
@@ -16,8 +16,9 @@ enum Role {
 }
 
 enum QuoteStatus {
-  PROPOSAL        // auto-priced; PDF + code page generated
-  CUSTOM_PENDING  // "additional functionality" / complex — needs manual follow-up
+  PROPOSAL        // auto-priced; PDF + code page generated; emailed to staff
+  CUSTOM_PENDING  // "additional functionality" / complex — awaiting admin approval
+  APPROVED        // admin set a price and approved a custom quote
 }
 
 model User {
@@ -28,58 +29,81 @@ model User {
   role         Role     @default(STAFF)
   createdAt    DateTime @default(now())
 
-  quotes     Quote[]      @relation("CreatedBy")
-  quoteEdits QuoteEdit[]
+  clients        Client[]    @relation("ClientOwner")
+  quotes         Quote[]     @relation("CreatedBy")
+  approvedQuotes Quote[]     @relation("ApprovedBy")
+  quoteEdits     QuoteEdit[]
+}
+
+// A client/business that quotes are grouped under (the dashboard is organized
+// by client). Owned by the Droptine staff member who created it.
+model Client {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  ownerId   String
+  owner     User     @relation("ClientOwner", fields: [ownerId], references: [id])
+  quotes    Quote[]
+  createdAt DateTime @default(now())
+
+  @@index([ownerId])
 }
 
 model Quote {
-  id            String      @id @default(cuid())
+  id     String      @id @default(cuid())
   // short, human-shareable access code for the private proposal page
-  code          String      @unique
-  status        QuoteStatus @default(PROPOSAL)
+  code   String      @unique
+  status QuoteStatus @default(PROPOSAL)
 
   // who generated it (proposal email always goes to this user)
-  createdById   String
-  createdBy     User        @relation("CreatedBy", fields: [createdById], references: [id])
+  createdById String
+  createdBy   User   @relation("CreatedBy", fields: [createdById], references: [id])
 
-  // client-facing details that appear on the proposal
-  proposalName  String      // e.g. "Texas Hidden Springs Ranch"
-  clientName    String?     // contact person
-  clientEmail   String?
-  clientPhone   String?
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id])
+
+  proposalName String
 
   // structured questionnaire answers (see src/lib/questionnaire.ts)
-  answers       Json
+  answers Json
 
   // pricing — computed deterministically by the engine; never by the LLM
-  computedTotal Int         // one-time build price, USD whole dollars
-  overrideTotal Int?        // admin manual override; when set, this is the price shown
-  monthly       Int         @default(169)
-  notes         String?     @db.Text
+  computedTotal Int      // one-time build price, USD whole dollars
+  overrideTotal Int?     // admin manual override; when set, replaces computedTotal
+  discount      Int      @default(0) // admin discount, shown as a line item
+  monthly       Int      @default(169)
+  notes         String?  @db.Text
+  scopeSummary  String?  @db.Text // LLM-drafted prose (price stays deterministic)
 
-  // generated proposal prose (LLM-drafted scope summary; price stays deterministic)
-  scopeSummary  String?     @db.Text
+  // why a quote needs a custom follow-up (CUSTOM_PENDING)
+  customReasons String[]
 
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  // custom-quote approval
+  approvedById String?
+  approvedBy   User?     @relation("ApprovedBy", fields: [approvedById], references: [id])
+  approvedAt   DateTime?
 
-  edits         QuoteEdit[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  edits     QuoteEdit[]
 
   @@index([createdById])
+  @@index([clientId])
   @@index([status])
 }
 
 // Audit trail: original auto price vs. manual edits, and who changed what.
 model QuoteEdit {
-  id           String   @id @default(cuid())
-  quoteId      String
-  quote        Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
-  editedById   String
-  editedBy     User     @relation(fields: [editedById], references: [id])
-  field        String   // e.g. "overrideTotal", "notes", "proposalName"
-  oldValue     String?  @db.Text
-  newValue     String?  @db.Text
-  createdAt    DateTime @default(now())
+  id         String   @id @default(cuid())
+  quoteId    String
+  quote      Quote    @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  editedById String
+  editedBy   User     @relation(fields: [editedById], references: [id])
+  field      String // e.g. "overrideTotal", "discount", "notes", "status"
+  oldValue   String?  @db.Text
+  newValue   String?  @db.Text
+  createdAt  DateTime @default(now())
 
   @@index([quoteId])
 }

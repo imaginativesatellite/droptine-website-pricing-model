@@ -215,3 +215,111 @@ textarea {
   text-transform: uppercase;
   margin-bottom: 16px;
 }
+
+/* Buttons */
+.btn-primary,
+.btn-secondary {
+  display: inline-block;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 22px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-primary {
+  background: var(--charcoal);
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #000;
+}
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.btn-secondary {
+  background: #fff;
+  color: var(--charcoal);
+  border: 1px solid var(--line);
+}
+.btn-gold {
+  background: var(--gold);
+  color: #fff;
+}
+.btn-gold:hover {
+  background: var(--gold-dark);
+}
+
+/* Top nav for the signed-in app */
+.appnav {
+  background: var(--charcoal);
+  color: #fff;
+  padding: 0 24px;
+}
+.appnav .wrap {
+  max-width: 1080px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  height: 56px;
+}
+.appnav a {
+  color: #d8d4cd;
+  text-decoration: none;
+  font-size: 0.92rem;
+}
+.appnav a:hover {
+  color: #fff;
+}
+.appnav .spacer {
+  flex: 1;
+}
+.appnav .who {
+  color: #9a948b;
+  font-size: 0.82rem;
+}
+
+/* Status pills */
+.pill {
+  display: inline-block;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  padding: 2px 9px;
+  border-radius: 999px;
+}
+.pill.proposal { background: #e8f1ea; color: #2e7d32; }
+.pill.pending  { background: #fff7ec; color: var(--gold-dark); }
+.pill.approved { background: #e8eef7; color: #1c4e9c; }
+
+/* Client groups on the dashboard */
+.client-group { margin-bottom: 26px; }
+.client-group h3 {
+  font-size: 1.05rem;
+  color: var(--charcoal);
+  margin-bottom: 6px;
+}
+.quote-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  margin-bottom: 8px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.quote-row:hover { border-color: var(--gold); }
+.quote-row .grow { flex: 1; }
+.quote-row .price { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+table.simple { width: 100%; border-collapse: collapse; }
+table.simple td, table.simple th { padding: 8px 0; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
+table.simple td.amt, table.simple th.amt { text-align: right; font-variant-numeric: tabular-nums; }

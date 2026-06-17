@@ -60,6 +60,7 @@ export async function notifyAdmins(args: {
   total?: number;
   code: string;
   reasons?: string[];
+  manageUrl: string; // link into the app (approve for custom; view for proposals)
 }) {
   const to = adminEmails();
   if (to.length === 0) return;
@@ -71,9 +72,39 @@ export async function notifyAdmins(args: {
   const body = args.isCustom
     ? `<p><strong>${args.staffEmail}</strong> requested a custom quote for <strong>${args.proposalName}</strong>.</p>` +
       `<p>Reasons: ${(args.reasons ?? []).join("; ") || "complex functionality"}.</p>` +
-      `<p>Needs manual follow-up. Reference code: <strong>${args.code}</strong></p>`
+      `<p><a href="${args.manageUrl}">Review &amp; approve in the app →</a></p>` +
+      `<p>Reference code: <strong>${args.code}</strong></p>`
     : `<p><strong>${args.staffEmail}</strong> generated a proposal for <strong>${args.proposalName}</strong>.</p>` +
-      `<p>Total: <strong>$${(args.total ?? 0).toLocaleString()}</strong>. Reference code: <strong>${args.code}</strong></p>`;
+      `<p>Total: <strong>$${(args.total ?? 0).toLocaleString()}</strong>. ` +
+      `<a href="${args.manageUrl}">View in the app →</a></p>` +
+      `<p>Reference code: <strong>${args.code}</strong></p>`;
 
   await send({ to, subject, html: body });
+}
+
+/**
+ * After an admin approves a custom quote — emailed to the requester (Droptine
+ * staff), Droptine-branded, with the PDF attached and a link to their quotes.
+ */
+export async function sendApprovedQuoteToRequester(args: {
+  requesterEmail: string;
+  proposalName: string;
+  total: number;
+  code: string;
+  proposalUrl: string;
+  dashboardUrl: string;
+  pdf?: Buffer;
+}) {
+  await send({
+    to: args.requesterEmail,
+    subject: `Your Droptine quote is ready: ${args.proposalName}`,
+    html:
+      `<p>Good news — your custom quote for <strong>${args.proposalName}</strong> has been approved.</p>` +
+      `<p>One-time build: <strong>$${args.total.toLocaleString()}</strong> &middot; $169/mo hosting &amp; maintenance.</p>` +
+      `<p>The proposal is attached. You can also view it any time here: ` +
+      `<a href="${args.proposalUrl}">${args.proposalUrl}</a> (access code <strong>${args.code}</strong>).</p>` +
+      `<p>See all the quotes you've received: <a href="${args.dashboardUrl}">${args.dashboardUrl}</a></p>` +
+      `<p>— Droptine</p>`,
+    attachments: args.pdf ? [{ filename: `${args.proposalName}-quote.pdf`, content: args.pdf }] : undefined,
+  });
 }

@@ -82,7 +82,7 @@ export const QUESTIONNAIRE: Question[] = [
     id: "pageTier",
     type: "single",
     label: "How many pages?",
-    help: "Do NOT count individual animal or pedigree pages here — those are priced separately below.",
+    help: "Only count main pages — not their individual dynamic sub-pages (e.g. animals, pedigree, news, blog, events), and not legal pages (e.g. privacy policy, terms & conditions).",
     group: "scope",
     showIf: { field: "ecommerce", equals: false },
     options: [
@@ -122,8 +122,10 @@ export const QUESTIONNAIRE: Question[] = [
 
   { id: "contentProvided", type: "boolean", label: "Will the page structure and content be organized and provided by Droptine?", group: "scope" },
 
+  { id: "socialFeed", type: "boolean", label: "Social media feed integration?", group: "scope" },
+
   // --- Complex / custom ---
-  { id: "mlsIdx", type: "boolean", label: "Does it need live MLS/IDX real-estate syncing?", help: "(custom quote)", group: "scope" },
+  { id: "mlsIdx", type: "boolean", label: "Does it need live MLS/IDX real-estate syncing?", help: "Adds $930 to the build. 3rd-party IDX fees are billed directly to the client.", group: "scope" },
   {
     id: "additionalFunctionality",
     type: "longtext",

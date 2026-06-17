@@ -18,7 +18,7 @@ function visible(q: Question, answers: Answers): boolean {
   });
 }
 
-export default function NewQuoteForm() {
+export default function NewQuoteForm({ clientNames }: { clientNames: string[] }) {
   const [answers, setAnswers] = useState<Answers>({});
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -58,6 +58,9 @@ export default function NewQuoteForm() {
 
   return (
     <div style={{ maxWidth: 640 }}>
+      <datalist id="client-names">
+        {clientNames.map((n) => <option key={n} value={n} />)}
+      </datalist>
       <div className="card">
         {questions.map((q) => (
           <div className="q" key={q.id}>
@@ -126,7 +129,14 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
       );
     default:
       return (
-        <input id={q.id} type={q.type} placeholder={q.placeholder} value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value)} />
+        <input
+          id={q.id}
+          type={q.type}
+          placeholder={q.placeholder}
+          list={q.id === "proposalName" ? "client-names" : undefined}
+          value={(answers[q.id] as string) ?? ""}
+          onChange={(e) => set(q.id, e.target.value)}
+        />
       );
   }
 }

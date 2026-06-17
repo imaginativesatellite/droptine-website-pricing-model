@@ -33,7 +33,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
   return (
     <div className="container" style={{ maxWidth: 820 }}>
-      <Link href="/dashboard" className="help">← Dashboard</Link>
+      <Link href="/dashboard" className="help">‹ Dashboard</Link>
       <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
         <h1 style={{ flex: 1 }}>{quote!.proposalName}</h1>
         {statusPill(quote!.status)}
@@ -53,19 +53,22 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         </div>
       ) : (
         <div className="card">
-          <table className="simple">
-            <tbody>
-              {d.lineItems.map((li, i) => (
-                <tr key={i}><td>{li.label}</td><td className="amt">{money(li.amount)}</td></tr>
-              ))}
-              {quote!.discount > 0 && (
-                <>
-                  <tr><td>Subtotal</td><td className="amt">{money(subtotal(quote!))}</td></tr>
-                  <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
-                </>
-              )}
-            </tbody>
-          </table>
+          {/* Itemized breakdown is admin-only; staff see the total only. */}
+          {isAdmin && (
+            <table className="simple">
+              <tbody>
+                {d.lineItems.map((li, i) => (
+                  <tr key={i}><td>{li.label}</td><td className="amt">{money(li.amount)}</td></tr>
+                ))}
+                {quote!.discount > 0 && (
+                  <>
+                    <tr><td>Subtotal</td><td className="amt">{money(subtotal(quote!))}</td></tr>
+                    <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
+                  </>
+                )}
+              </tbody>
+            </table>
+          )}
           <div className="total"><span>Total</span><span className="big">{money(finalPrice(quote!))}</span></div>
           <div className="monthly">+ {money(quote!.monthly)}/mo</div>
           <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>

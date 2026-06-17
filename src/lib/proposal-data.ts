@@ -13,6 +13,7 @@ import type { ProposalPdfData } from "./pdf";
 export function buildProposalData(
   quote: Quote & { client?: Client | null; createdBy?: User | null },
 ): ProposalPdfData {
+  const answers = quote.answers as unknown as PricingAnswers;
   const hasOverride = quote.overrideTotal != null;
   const snapshot = Array.isArray(quote.lineItems)
     ? (quote.lineItems as unknown as { label: string; amount: number }[])
@@ -42,5 +43,7 @@ export function buildProposalData(
     discount: quote.discount,
     total: finalPrice(quote),
     monthly: quote.monthly,
+    ecommerce: answers.ecommerce === true,
+    mlsIdx: answers.mlsIdx === true,
   };
 }

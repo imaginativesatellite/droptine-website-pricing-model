@@ -24,7 +24,8 @@ export const PRICING_RULES = {
 
   // Flat managed hosting / security / maintenance.
   monthlyBase: 169,
-  monthlyMlsIdxSurcharge: 400, // midpoint of the observed $300–$500/mo
+  // Added to the monthly for e-commerce / real-estate / MLS / complex sites.
+  monthlySurcharge: 50,
 
   // Page count → absolute base build price (non-e-commerce sites).
   // Do NOT count individual animal/pedigree pages here. "30+" → custom.
@@ -71,6 +72,10 @@ export const PRICING_RULES = {
 
   // Reduction when Droptine organizes & provides the page structure and content.
   contentProvidedReduction: 500,
+  // Social media feed integration add-on.
+  socialFeedFee: 100,
+  // MLS/IDX integration: one-time build add (3rd-party IDX fees billed to client).
+  mlsBuildAdd: 930,
 } as const;
 
 export type PricingAnswers = {
@@ -95,8 +100,9 @@ export type PricingAnswers = {
   events?: boolean;
 
   contentProvided?: boolean; // Droptine provides page structure & content (−$500)
+  socialFeed?: boolean; // social media feed integration (+$100)
 
-  mlsIdx?: boolean; // MLS/IDX real-estate syncing (complex → custom)
+  mlsIdx?: boolean; // MLS/IDX real-estate syncing (+$930 build, +$50/mo)
   additionalFunctionality?: string; // free-text custom request (complex → custom)
 };
 
@@ -123,8 +129,6 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
     reasons.push("Custom functionality was requested.");
   if (!answers.ecommerce && answers.pageTier === "30+")
     reasons.push("30+ pages needs a custom quote.");
-  if (answers.mlsIdx)
-    reasons.push("MLS/IDX syncing requires a custom build and monthly surcharge.");
   if (answers.ecommerce && answers.ecommerceItems === "150+")
     reasons.push("Store catalog of 150+ items needs a custom quote.");
   if (answers.animalPages && answers.animalIndividualPages && answers.animalCount === "60+")
@@ -137,7 +141,8 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
       requiresCustomQuote: true,
       reasons,
       total: 0,
-      monthly: answers.mlsIdx ? R.monthlyBase + R.monthlyMlsIdxSurcharge : R.monthlyBase,
+      // Complex/custom sites carry the monthly surcharge.
+      monthly: R.monthlyBase + R.monthlySurcharge,
       lineItems: [],
     };
   }
@@ -187,6 +192,11 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   if (answers.news) lineItems.push({ label: "News", amount: R.contentPage });
   if (answers.events) lineItems.push({ label: "Events", amount: R.contentPage });
 
+  if (answers.socialFeed)
+    lineItems.push({ label: "Social media feed integration", amount: R.socialFeedFee });
+  if (answers.mlsIdx)
+    lineItems.push({ label: "MLS/IDX integration", amount: R.mlsBuildAdd });
+
   if (answers.contentProvided)
     lineItems.push({ label: "Structure & content provided by Droptine", amount: -R.contentProvidedReduction });
 
@@ -194,5 +204,6 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   const sub = lineItems.reduce((sum, li) => sum + li.amount, 0);
   const total = clamp(roundUp(sub, R.roundUpTo), min, R.max);
 
-  return { requiresCustomQuote: false, reasons, total, monthly: R.monthlyBase, lineItems };
+  const surcharge = answers.ecommerce || answers.realEstate || answers.mlsIdx ? R.monthlySurcharge : 0;
+  return { requiresCustomQuote: false, reasons, total, monthly: R.monthlyBase + surcharge, lineItems };
 }

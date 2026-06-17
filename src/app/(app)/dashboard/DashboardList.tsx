@@ -10,6 +10,7 @@ export type QuoteItem = {
   status: string;
   createdAt: string;
   price: number | null;
+  requestedBy: string;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -65,7 +66,7 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
           <Link href={`/quote/${q.id}`} className="quote-row" key={q.id}>
             <div className="grow">
               <div style={{ fontWeight: 600 }}>{q.name}</div>
-              <div className="help">{new Date(q.createdAt).toLocaleDateString()} · code {q.code}</div>
+              <div className="help">{new Date(q.createdAt).toLocaleDateString()} · {q.requestedBy} · code {q.code}</div>
             </div>
             {pill(q.status)}
             <div className="price">{q.price == null ? "—" : money(q.price)}</div>

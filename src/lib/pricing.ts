@@ -15,6 +15,8 @@ export const PRICING_RULES = {
 
   // Hard guardrails — every computed price is clamped into this band.
   min: 4000,
+  // Lower floor when Droptine supplies the page structure & content.
+  minContentProvided: 3500,
   max: 15000,
 
   // All prices are rounded UP to the nearest $250.
@@ -66,6 +68,9 @@ export const PRICING_RULES = {
 
   // Standalone content sections, each.
   contentPage: 500, // blog / news / events (asked separately)
+
+  // Reduction when Droptine organizes & provides the page structure and content.
+  contentProvidedReduction: 500,
 } as const;
 
 export type PricingAnswers = {
@@ -88,6 +93,8 @@ export type PricingAnswers = {
   blog?: boolean;
   news?: boolean;
   events?: boolean;
+
+  contentProvided?: boolean; // Droptine provides page structure & content (−$500)
 
   mlsIdx?: boolean; // MLS/IDX real-estate syncing (complex → custom)
   additionalFunctionality?: string; // free-text custom request (complex → custom)
@@ -180,8 +187,12 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   if (answers.news) lineItems.push({ label: "News", amount: R.contentPage });
   if (answers.events) lineItems.push({ label: "Events", amount: R.contentPage });
 
+  if (answers.contentProvided)
+    lineItems.push({ label: "Structure & content provided by Droptine", amount: -R.contentProvidedReduction });
+
+  const min = answers.contentProvided ? R.minContentProvided : R.min;
   const sub = lineItems.reduce((sum, li) => sum + li.amount, 0);
-  const total = clamp(roundUp(sub, R.roundUpTo), R.min, R.max);
+  const total = clamp(roundUp(sub, R.roundUpTo), min, R.max);
 
   return { requiresCustomQuote: false, reasons, total, monthly: R.monthlyBase, lineItems };
 }

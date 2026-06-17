@@ -5,11 +5,10 @@ import { finalPrice } from "@/lib/quote";
 import DashboardList, { type QuoteItem } from "./DashboardList";
 
 export default async function Dashboard() {
-  const user = await requireUser();
-  const isAdmin = user.role === "ADMIN";
+  await requireUser();
 
+  // Everyone (staff + admin) sees all quotes.
   const quotes = await prisma.quote.findMany({
-    where: isAdmin ? {} : { createdById: user.id },
     orderBy: { createdAt: "desc" },
     select: {
       id: true,
@@ -37,9 +36,7 @@ export default async function Dashboard() {
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
         <div style={{ flex: 1 }}>
           <h1>Dashboard</h1>
-          <p className="lede" style={{ margin: 0 }}>
-            {isAdmin ? "All quotes." : "Your quotes."} {items.length} total.
-          </p>
+          <p className="lede" style={{ margin: 0 }}>All quotes. {items.length} total.</p>
         </div>
         <Link href="/new" className="btn-primary">+ New Quote</Link>
       </div>

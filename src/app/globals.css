@@ -327,3 +327,32 @@ textarea {
 table.simple { width: 100%; border-collapse: collapse; }
 table.simple td, table.simple th { padding: 8px 0; text-align: left; border-bottom: 1px solid var(--line); font-size: 0.92rem; }
 table.simple td.amt, table.simple th.amt { text-align: right; font-variant-numeric: tabular-nums; }
+
+.form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* ---- Responsive ---- */
+@media (max-width: 860px) {
+  .container { padding: 22px 16px 64px; }
+}
+
+@media (max-width: 640px) {
+  h1 { font-size: 1.45rem; }
+  .container { padding: 18px 14px 56px; }
+
+  /* Nav wraps instead of overflowing; hide the long email on phones. */
+  .appnav .wrap { height: auto; flex-wrap: wrap; gap: 14px; padding: 12px 0; }
+  .appnav .who { display: none; }
+
+  /* Stack 2-column forms */
+  .form-2col { grid-template-columns: 1fr; }
+
+  /* Quote rows wrap so price/status don't get crushed */
+  .quote-row { flex-wrap: wrap; }
+  .quote-row .grow { flex-basis: 100%; }
+
+  /* Inputs at 16px avoid iOS zoom-on-focus */
+  input[type="text"], input[type="email"], input[type="tel"], input[type="password"],
+  input[type="url"], input[type="search"], input[type="number"], select, textarea {
+    font-size: 16px;
+  }
+}

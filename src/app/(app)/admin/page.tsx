@@ -21,8 +21,14 @@ export default async function AdminPage() {
 
   return (
     <div className="container">
-      <h1>Admin</h1>
-      <p className="lede">Review custom requests and recent quotes.</p>
+      <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+        <div style={{ flex: 1 }}>
+          <h1>Admin</h1>
+          <p className="lede" style={{ margin: 0 }}>Review custom requests and recent quotes.</p>
+        </div>
+        <a className="btn-secondary" href="/api/export/quotes">Export CSV (quoted vs. actual)</a>
+      </div>
+      <div style={{ height: 18 }} />
 
       <h3 style={{ marginBottom: 10 }}>
         Awaiting approval {pending.length > 0 && <span className="pill pending">{pending.length}</span>}

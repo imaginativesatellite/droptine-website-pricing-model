@@ -14,7 +14,7 @@ export default function AddUserForm() {
   return (
     <form ref={formRef} action={action} className="card" style={{ marginBottom: 24 }}>
       <h3 style={{ marginBottom: 12 }}>Add user</h3>
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+      <div className="form-2col">
         <div>
           <label className="qlabel" htmlFor="name">Name</label>
           <input id="name" name="name" type="text" required />

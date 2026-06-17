@@ -120,6 +120,8 @@ export const QUESTIONNAIRE: Question[] = [
   { id: "news", type: "boolean", label: "News?", group: "scope" },
   { id: "events", type: "boolean", label: "Events?", group: "scope" },
 
+  { id: "contentProvided", type: "boolean", label: "Will the page structure and content be organized and provided by Droptine?", group: "scope" },
+
   // --- Complex / custom ---
   { id: "mlsIdx", type: "boolean", label: "Does it need live MLS/IDX real-estate syncing?", help: "(custom quote)", group: "scope" },
   {

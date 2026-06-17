@@ -4,7 +4,8 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  session: { strategy: "jwt" },
+  // Stay signed in for 90 days without re-entering the password.
+  session: { strategy: "jwt", maxAge: 60 * 60 * 24 * 90 },
   pages: { signIn: "/login" },
   trustHost: true,
   providers: [

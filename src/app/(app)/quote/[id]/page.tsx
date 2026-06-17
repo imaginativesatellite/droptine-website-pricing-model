@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice } from "@/lib/quote";
-import { updateQuote, approveQuote } from "./actions";
+import { updateQuote, approveQuote, resendProposalEmail } from "./actions";
 
 const statusPill = (status: string) => {
   if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending approval</span>;
@@ -26,7 +26,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
     },
   });
   if (!quote) notFound();
-  if (!isAdmin && quote!.createdById !== user.id) notFound();
+  // Staff and admins can view any quote; only admins get the edit/approve controls.
 
   const isPending = quote!.status === "CUSTOM_PENDING";
   const d = buildProposalData(quote!);
@@ -68,10 +68,21 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
           </table>
           <div className="total"><span>Total</span><span className="big">{money(finalPrice(quote!))}</span></div>
           <div className="monthly">+ {money(quote!.monthly)}/mo</div>
-          <div style={{ display: "flex", gap: 10, marginTop: 16 }}>
+          <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
             <Link className="btn-secondary" href={`/proposal/${quote!.code}`}>View proposal page</Link>
             <a className="btn-secondary" href={`/api/proposal/${quote!.code}/pdf`}>Download PDF</a>
+            {isAdmin && (
+              <form action={resendProposalEmail.bind(null, quote!.id)}>
+                <button type="submit" className="btn-secondary">Resend email</button>
+              </form>
+            )}
           </div>
+          {isAdmin && quote!.emailStatus && (
+            <p className="help" style={{ marginTop: 10, color: quote!.emailStatus === "FAILED" ? "#b3261e" : "var(--muted)" }}>
+              Proposal email: <strong>{quote!.emailStatus}</strong>
+              {quote!.emailError ? ` — ${quote!.emailError}` : ""}
+            </p>
+          )}
         </div>
       )}
 
@@ -104,6 +115,11 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             <div className="q">
               <label className="qlabel" htmlFor="discount">Discount ($)</label>
               <input id="discount" name="discount" type="text" inputMode="numeric" defaultValue={quote!.discount || ""} />
+            </div>
+            <div className="q">
+              <label className="qlabel" htmlFor="actualCharged">Actual charged ($)</label>
+              <div className="help">What the client was actually billed — for quoted-vs-actual reporting.</div>
+              <input id="actualCharged" name="actualCharged" type="text" inputMode="numeric" defaultValue={quote!.actualCharged ?? ""} />
             </div>
             <div className="q">
               <label className="qlabel" htmlFor="notes">Notes</label>

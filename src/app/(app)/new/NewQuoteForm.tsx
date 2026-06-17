@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
 import { createQuote } from "./actions";
+
+const DRAFT_KEY = "droptine-quote-draft";
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
 
@@ -18,13 +20,41 @@ function visible(q: Question, answers: Answers): boolean {
 
 export default function NewQuoteForm() {
   const [answers, setAnswers] = useState<Answers>({});
+  const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
+  const loaded = useRef(false);
+
+  // Restore an in-progress draft from this device (survives a dropped connection).
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) setAnswers(JSON.parse(raw));
+    } catch {}
+    loaded.current = true;
+  }, []);
+
+  useEffect(() => {
+    if (!loaded.current) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify(answers));
+    } catch {}
+  }, [answers]);
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
   const questions = QUESTIONNAIRE.filter((q) => visible(q, answers));
   const proposalName = String(answers.proposalName ?? "").trim();
 
-  const submit = () => startTransition(() => createQuote(answers));
+  const submit = () => {
+    setError(null);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+    startTransition(async () => {
+      const res = await createQuote(answers);
+      if (res?.error) {
+        setError(res.error);
+        try { localStorage.setItem(DRAFT_KEY, JSON.stringify(answers)); } catch {}
+      }
+    });
+  };
 
   return (
     <div style={{ maxWidth: 640 }}>
@@ -38,7 +68,13 @@ export default function NewQuoteForm() {
         ))}
       </div>
 
-      <div style={{ marginTop: 18 }}>
+      {error && (
+        <p style={{ color: "#b3261e", fontSize: "0.9rem", marginTop: 12 }}>
+          {error} Your answers are saved on this device — just press the button again.
+        </p>
+      )}
+
+      <div style={{ marginTop: 14 }}>
         <button type="button" className="btn-primary" disabled={pending || !proposalName} onClick={submit}>
           {pending ? "Saving…" : "Generate Proposal"}
         </button>

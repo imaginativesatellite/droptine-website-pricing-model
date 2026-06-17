@@ -77,6 +77,17 @@ model Quote {
   notes         String?  @db.Text
   scopeSummary  String?  @db.Text // LLM-drafted prose (price stays deterministic)
 
+  // price snapshot at creation time, so historical quotes don't shift if the
+  // pricing engine changes later: [{ label, amount }]
+  lineItems     Json?
+
+  // what we actually charged the client (for quoted-vs-actual analysis)
+  actualCharged Int?
+
+  // proposal email delivery tracking
+  emailStatus   String?  // SENT | FAILED | SKIPPED
+  emailError    String?  @db.Text
+
   // why a quote needs a custom follow-up (CUSTOM_PENDING)
   customReasons String[]
 

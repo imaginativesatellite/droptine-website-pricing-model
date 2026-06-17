@@ -13,14 +13,22 @@ import type { ProposalPdfData } from "./pdf";
 export function buildProposalData(
   quote: Quote & { client?: Client | null; createdBy?: User | null },
 ): ProposalPdfData {
-  const answers = quote.answers as unknown as PricingAnswers;
-  const result = computeQuote(answers);
   const hasOverride = quote.overrideTotal != null;
+  const snapshot = Array.isArray(quote.lineItems)
+    ? (quote.lineItems as unknown as { label: string; amount: number }[])
+    : null;
 
-  const lineItems =
-    !hasOverride && result.lineItems.length
-      ? result.lineItems
-      : [{ label: "Website build", amount: subtotal(quote) }];
+  let lineItems: { label: string; amount: number }[];
+  if (hasOverride) {
+    lineItems = [{ label: "Website build", amount: subtotal(quote) }];
+  } else if (snapshot && snapshot.length) {
+    // Prefer the price snapshot captured at creation time.
+    lineItems = snapshot;
+  } else {
+    // Fallback: recompute from saved answers (older quotes without a snapshot).
+    const result = computeQuote(quote.answers as unknown as PricingAnswers);
+    lineItems = result.lineItems.length ? result.lineItems : [{ label: "Website build", amount: subtotal(quote) }];
+  }
 
   return {
     proposalName: quote.proposalName,

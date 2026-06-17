@@ -1,4 +1,4 @@
-import type { Quote, Client } from "@prisma/client";
+import type { Quote, Client, User } from "@prisma/client";
 import { computeQuote, type PricingAnswers } from "./pricing";
 import { subtotal, finalPrice } from "./quote";
 import type { ProposalPdfData } from "./pdf";
@@ -7,12 +7,14 @@ import type { ProposalPdfData } from "./pdf";
  * Builds the display/PDF data for a quote. Line items are recomputed
  * deterministically from the saved answers. When an admin has set an override
  * (or it's an approved custom quote), we show a single "Website build" line at
- * the override price instead of the itemized breakdown.
+ * the override price instead of the itemized breakdown. The "prepared by"
+ * contact is pulled from the rep (createdBy).
  */
-export function buildProposalData(quote: Quote & { client?: Client | null }): ProposalPdfData {
+export function buildProposalData(
+  quote: Quote & { client?: Client | null; createdBy?: User | null },
+): ProposalPdfData {
   const answers = quote.answers as unknown as PricingAnswers;
   const result = computeQuote(answers);
-  const raw = quote.answers as Record<string, unknown>;
   const hasOverride = quote.overrideTotal != null;
 
   const lineItems =
@@ -22,9 +24,9 @@ export function buildProposalData(quote: Quote & { client?: Client | null }): Pr
 
   return {
     proposalName: quote.proposalName,
-    clientName: typeof raw.clientName === "string" ? raw.clientName : null,
-    clientEmail: quote.client?.email ?? (typeof raw.clientEmail === "string" ? raw.clientEmail : null),
-    clientPhone: quote.client?.phone ?? (typeof raw.clientPhone === "string" ? raw.clientPhone : null),
+    preparedByName: quote.createdBy?.name ?? null,
+    preparedByEmail: quote.createdBy?.email ?? null,
+    preparedByPhone: quote.createdBy?.phone ?? null,
     code: quote.code,
     scopeSummary: quote.scopeSummary,
     lineItems,

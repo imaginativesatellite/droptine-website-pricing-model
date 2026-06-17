@@ -9,7 +9,6 @@ export default function LoginPage() {
   return (
     <div className="container" style={{ maxWidth: 420 }}>
       <h1>Sign in</h1>
-      <p className="lede">Droptine website pricing</p>
 
       <form action={formAction} className="card">
         <div className="q">

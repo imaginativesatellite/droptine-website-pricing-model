@@ -4,7 +4,7 @@ import { buildProposalData } from "@/lib/proposal-data";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const quote = await prisma.quote.findUnique({ where: { code }, include: { client: true } });
+  const quote = await prisma.quote.findUnique({ where: { code }, include: { client: true, createdBy: true } });
 
   // Custom quotes have no proposal until approved.
   if (!quote || quote.status === "CUSTOM_PENDING") {

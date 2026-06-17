@@ -37,10 +37,10 @@ const s = StyleSheet.create({
 });
 
 export type ProposalPdfData = {
-  proposalName: string;
-  clientName?: string | null;
-  clientEmail?: string | null;
-  clientPhone?: string | null;
+  proposalName: string; // = the client name (the proposal is for)
+  preparedByName?: string | null;
+  preparedByEmail?: string | null;
+  preparedByPhone?: string | null;
   code: string;
   scopeSummary?: string | null;
   lineItems: { label: string; amount: number }[];
@@ -75,13 +75,17 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
 
         <View style={s.section}>
           <Text style={s.label}>Prepared for</Text>
-          <Text style={s.para}>
-            {d.proposalName}
-            {d.clientName ? `\n${d.clientName}` : ""}
-            {d.clientEmail ? `\n${d.clientEmail}` : ""}
-            {d.clientPhone ? `\n${d.clientPhone}` : ""}
-          </Text>
+          <Text style={s.para}>{d.proposalName}</Text>
         </View>
+
+        {(d.preparedByName || d.preparedByEmail || d.preparedByPhone) && (
+          <View style={s.section}>
+            <Text style={s.label}>Prepared by</Text>
+            <Text style={s.para}>
+              {[d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  |  ")}
+            </Text>
+          </View>
+        )}
 
         {d.scopeSummary ? (
           <View style={s.section}>

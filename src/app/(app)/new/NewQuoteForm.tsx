@@ -1,8 +1,7 @@
 "use client";
 
-import { useMemo, useState, useTransition } from "react";
+import { useState, useTransition } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
-import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 import { createQuote } from "./actions";
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
@@ -17,22 +16,18 @@ function visible(q: Question, answers: Answers): boolean {
   });
 }
 
-const money = (n: number) => `$${n.toLocaleString()}`;
-
 export default function NewQuoteForm() {
   const [answers, setAnswers] = useState<Answers>({});
   const [pending, startTransition] = useTransition();
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
-
-  const result = useMemo(() => computeQuote(answers as PricingAnswers), [answers]);
   const questions = QUESTIONNAIRE.filter((q) => visible(q, answers));
   const proposalName = String(answers.proposalName ?? "").trim();
 
   const submit = () => startTransition(() => createQuote(answers));
 
   return (
-    <div className="grid">
+    <div style={{ maxWidth: 640 }}>
       <div className="card">
         {questions.map((q) => (
           <div className="q" key={q.id}>
@@ -43,50 +38,11 @@ export default function NewQuoteForm() {
         ))}
       </div>
 
-      <div className="summary">
-        <div className="card">
-          <h2>Estimate</h2>
-          {result.requiresCustomQuote ? (
-            <div className="custom-banner">
-              <h3>Custom quote</h3>
-              <ul>{result.reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
-              <p style={{ fontSize: "0.85rem", marginTop: 8 }}>
-                We&apos;ll review this and follow up with pricing.
-              </p>
-            </div>
-          ) : (
-            <>
-              {result.lineItems.map((li, i) => (
-                <div className="line" key={i}>
-                  <span>{li.label}</span>
-                  <span className="amt">{money(li.amount)}</span>
-                </div>
-              ))}
-              <div className="total">
-                <span>Total</span>
-                <span className="big">{money(result.total)}</span>
-              </div>
-              <div className="monthly">+ {money(result.monthly)}/mo hosting &amp; maintenance</div>
-            </>
-          )}
-
-          <button
-            type="button"
-            className="btn-primary"
-            style={{ marginTop: 18, width: "100%" }}
-            disabled={pending || !proposalName}
-            onClick={submit}
-          >
-            {pending
-              ? "Saving…"
-              : result.requiresCustomQuote
-                ? "Request custom quote"
-                : "Generate proposal"}
-          </button>
-          {!proposalName && (
-            <p className="help" style={{ marginTop: 8 }}>Enter a project / business name to continue.</p>
-          )}
-        </div>
+      <div style={{ marginTop: 18 }}>
+        <button type="button" className="btn-primary" disabled={pending || !proposalName} onClick={submit}>
+          {pending ? "Saving…" : "Generate Proposal"}
+        </button>
+        {!proposalName && <p className="help" style={{ marginTop: 8 }}>Enter a client name to continue.</p>}
       </div>
     </div>
   );

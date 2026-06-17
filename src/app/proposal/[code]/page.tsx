@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ProposalPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const quote = await prisma.quote.findUnique({ where: { code }, include: { client: true } });
+  const quote = await prisma.quote.findUnique({ where: { code }, include: { client: true, createdBy: true } });
 
   if (!quote || quote.status === "CUSTOM_PENDING") notFound();
 
@@ -33,9 +33,14 @@ export default async function ProposalPage({ params }: { params: Promise<{ code:
         <div className="q">
           <div className="label" style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1 }}>Prepared for</div>
           <div style={{ fontWeight: 600 }}>{d.proposalName}</div>
-          {d.clientName && <div>{d.clientName}</div>}
-          {[d.clientEmail, d.clientPhone].filter(Boolean).join(" · ")}
         </div>
+
+        {(d.preparedByName || d.preparedByEmail || d.preparedByPhone) && (
+          <div className="q">
+            <div className="label" style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1 }}>Prepared by</div>
+            {[d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ")}
+          </div>
+        )}
 
         {d.scopeSummary && (
           <div className="q">

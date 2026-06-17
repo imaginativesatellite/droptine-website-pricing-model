@@ -111,6 +111,10 @@ h1 {
 input[type="text"],
 input[type="email"],
 input[type="tel"],
+input[type="password"],
+input[type="url"],
+input[type="search"],
+input[type="number"],
 select,
 textarea {
   width: 100%;

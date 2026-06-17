@@ -8,6 +8,7 @@ import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 import { generateScopeSummary } from "@/lib/anthropic";
 import { generateAccessCode } from "@/lib/code";
 import { renderProposalPdf } from "@/lib/pdf";
+import { buildProposalData } from "@/lib/proposal-data";
 import { notifyAdmins, sendProposalToStaff } from "@/lib/email";
 import { appUrl, proposalUrl } from "@/lib/quote";
 
@@ -28,26 +29,22 @@ export async function createQuote(answers: RawAnswers): Promise<void> {
   const proposalName = String(answers.proposalName ?? "").trim();
   if (!proposalName) throw new Error("A project / business name is required.");
 
-  const clientEmail = answers.clientEmail ? String(answers.clientEmail).trim() : null;
-  const clientPhone = answers.clientPhone ? String(answers.clientPhone).trim() : null;
-
   const pricing = answers as PricingAnswers;
   const result = computeQuote(pricing);
 
-  // Group quotes under a client (business) owned by this user.
+  // Group quotes under the end client owned by this user.
   let client = await prisma.client.findFirst({
     where: { ownerId: user.id, name: proposalName },
   });
   if (!client) {
     client = await prisma.client.create({
-      data: { name: proposalName, email: clientEmail, phone: clientPhone, ownerId: user.id },
+      data: { name: proposalName, ownerId: user.id },
     });
   }
 
   const code = await uniqueCode();
   const scopeSummary = await generateScopeSummary({
     proposalName,
-    industry: answers.industry ? String(answers.industry) : undefined,
     answers: pricing,
   });
 
@@ -81,20 +78,12 @@ export async function createQuote(answers: RawAnswers): Promise<void> {
       manageUrl,
     });
   } else {
-    // Generate the PDF, email the requester, and notify admins.
-    const pdf = await renderProposalPdf({
-      proposalName,
-      clientName: answers.clientName ? String(answers.clientName) : null,
-      clientEmail,
-      clientPhone,
-      code,
-      scopeSummary,
-      lineItems: result.lineItems,
-      subtotal: result.total,
-      discount: 0,
-      total: result.total,
-      monthly: result.monthly,
+    // Generate the PDF (contact pulled from the rep), email the requester, notify admins.
+    const full = await prisma.quote.findUniqueOrThrow({
+      where: { id: quote.id },
+      include: { createdBy: true, client: true },
     });
+    const pdf = await renderProposalPdf(buildProposalData(full));
 
     await sendProposalToStaff({
       staffEmail: user.email ?? "",

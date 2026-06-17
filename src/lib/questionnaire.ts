@@ -1,12 +1,11 @@
 /**
  * Droptine quote questionnaire.
  *
- * The staff member answers these; answers feed the deterministic pricing engine
- * (src/lib/pricing.ts). Industry options are tailored to the ranch / hunting /
- * breeder community Droptine works with.
+ * Answers feed the deterministic pricing engine (src/lib/pricing.ts). Industry
+ * options are tailored to the ranch / hunting / breeder community.
  *
- * `showIf` declaratively gates follow-up questions on a previous answer, so it
- * stays serializable for a future admin-editable (DB-backed) version.
+ * `showIf` declaratively gates follow-up questions (serializable for a future
+ * admin-editable version).
  */
 
 export type ShowIf = { field: string; equals: string | boolean };
@@ -21,7 +20,7 @@ type Base = {
 };
 
 export type Question =
-  | (Base & { type: "text" | "email" | "tel"; placeholder?: string; required?: boolean })
+  | (Base & { type: "text" | "email" | "tel" | "url"; placeholder?: string; required?: boolean })
   | (Base & { type: "longtext"; placeholder?: string })
   | (Base & { type: "boolean" })
   | (Base & { type: "single" | "multi"; options: { value: string; label: string; help?: string }[] });
@@ -37,33 +36,27 @@ const COUNT_OPTIONS = [
 ];
 
 export const QUESTIONNAIRE: Question[] = [
-  // --- Client / project identity (appears on the proposal) ---
-  { id: "proposalName", type: "text", label: "Project / business name", placeholder: "e.g. Texas Hidden Springs Ranch", required: true, group: "client" },
-  { id: "clientName", type: "text", label: "Client contact name", placeholder: "e.g. Austin Pradon", group: "client" },
-  { id: "clientEmail", type: "email", label: "Client email", group: "client" },
-  { id: "clientPhone", type: "tel", label: "Client phone", group: "client" },
+  // The client the proposal will eventually go to (Droptine's end client).
+  { id: "proposalName", type: "text", label: "Client Name", placeholder: "e.g. Texas Hidden Springs Ranch", required: true, group: "client" },
 
   // --- Scope ---
+  { id: "existingWebsite", type: "boolean", label: "Does the client have an existing website?", group: "scope" },
   {
-    id: "industry",
-    type: "single",
-    label: "What industry is this site for?",
+    id: "existingWebsiteUrl",
+    type: "url",
+    label: "Existing website URL",
+    placeholder: "https://…",
     group: "scope",
-    options: [
-      { value: "ranch", label: "Ranch / outfitter / hunting" },
-      { value: "breeder", label: "Breeder (whitetail / exotics)" },
-      { value: "realestate", label: "Ranch / land real estate" },
-      { value: "retail", label: "Retail / product brand" },
-      { value: "other", label: "Other" },
-    ],
+    showIf: { field: "existingWebsite", equals: true },
   },
+
   // --- E-commerce (asked before page count: e-commerce sites are priced by
   //     store cost, not by number of pages) ---
   { id: "ecommerce", type: "boolean", label: "Does the site need an online store / e-commerce?", group: "scope" },
   {
     id: "ecommerceItems",
     type: "single",
-    label: "Roughly how many items will be sold?",
+    label: "How many items will be sold?",
     group: "scope",
     showIf: { field: "ecommerce", equals: true },
     options: [
@@ -80,32 +73,21 @@ export const QUESTIONNAIRE: Question[] = [
     id: "ecommerceShopify",
     type: "boolean",
     label: "Does the store need to be built on Shopify?",
-    help: "Adds $1,000.",
     group: "scope",
     showIf: { field: "ecommerce", equals: true },
   },
 
   // --- Pages (skipped for e-commerce sites) ---
   {
-    id: "basicSite",
-    type: "boolean",
-    label: "Is this a small, basic 3–4 page site?",
-    help: "Simple brochure site with no extra functionality. Sets the $4,000 floor.",
-    group: "scope",
-    showIf: { field: "ecommerce", equals: false },
-  },
-  {
     id: "pageTier",
     type: "single",
-    label: "Roughly how many pages?",
+    label: "How many pages?",
     help: "Do NOT count individual animal or pedigree pages here — those are priced separately below.",
     group: "scope",
-    showIf: [
-      { field: "ecommerce", equals: false },
-      { field: "basicSite", equals: false },
-    ],
+    showIf: { field: "ecommerce", equals: false },
     options: [
-      { value: "5-9", label: "5–9 pages (standard)" },
+      { value: "1-4", label: "1–4 pages" },
+      { value: "5-9", label: "5–9 pages" },
       { value: "10-14", label: "10–14 pages" },
       { value: "15-19", label: "15–19 pages" },
       { value: "20-24", label: "20–24 pages" },
@@ -116,67 +98,35 @@ export const QUESTIONNAIRE: Question[] = [
 
   // --- Animals ---
   { id: "animalPages", type: "boolean", label: "Do they need animals listed (an animals page)?", group: "scope" },
-  {
-    id: "animalIndividualPages",
-    type: "boolean",
-    label: "Will the animals need individual pages?",
-    group: "scope",
-    showIf: { field: "animalPages", equals: true },
-  },
-  {
-    id: "animalCount",
-    type: "single",
-    label: "How many animals?",
-    group: "scope",
-    showIf: { field: "animalIndividualPages", equals: true },
-    options: COUNT_OPTIONS,
-  },
+  { id: "animalIndividualPages", type: "boolean", label: "Will the animals need individual pages?", group: "scope", showIf: { field: "animalPages", equals: true } },
+  { id: "animalCount", type: "single", label: "How many animals?", group: "scope", showIf: { field: "animalIndividualPages", equals: true }, options: COUNT_OPTIONS },
 
   // --- Pedigrees ---
   { id: "pedigreePages", type: "boolean", label: "Do they need pedigree / bloodline pages?", group: "scope" },
-  {
-    id: "pedigreeIndividualPages",
-    type: "boolean",
-    label: "Will the pedigrees need individual pages?",
-    group: "scope",
-    showIf: { field: "pedigreePages", equals: true },
-  },
-  {
-    id: "pedigreeCount",
-    type: "single",
-    label: "How many pedigrees?",
-    group: "scope",
-    showIf: { field: "pedigreeIndividualPages", equals: true },
-    options: COUNT_OPTIONS,
-  },
+  { id: "pedigreeIndividualPages", type: "boolean", label: "Will the pedigrees need individual pages?", group: "scope", showIf: { field: "pedigreePages", equals: true } },
+  { id: "pedigreeCount", type: "single", label: "How many pedigrees?", group: "scope", showIf: { field: "pedigreeIndividualPages", equals: true }, options: COUNT_OPTIONS },
 
   // --- Real estate ---
   {
     id: "realEstate",
     type: "boolean",
     label: "Real-estate package?",
-    help: "Property/land listings + team/agent logins + interactive property map. Adds $2,500.",
+    help: "Property/land listings + team/agent logins + interactive property map.",
     group: "scope",
   },
 
-  // --- Content pages ---
-  { id: "blog", type: "boolean", label: "Blog page?", help: "Adds $500.", group: "scope" },
-  { id: "news", type: "boolean", label: "News page?", help: "Adds $500.", group: "scope" },
-  { id: "events", type: "boolean", label: "Events page?", help: "Adds $500.", group: "scope" },
+  // --- Content ---
+  { id: "blog", type: "boolean", label: "Blog?", group: "scope" },
+  { id: "news", type: "boolean", label: "News?", group: "scope" },
+  { id: "events", type: "boolean", label: "Events?", group: "scope" },
 
   // --- Complex / custom ---
-  {
-    id: "mlsIdx",
-    type: "boolean",
-    label: "Does it need live MLS/IDX real-estate syncing?",
-    help: "Out-of-Webflow scope. Triggers a custom quote + monthly surcharge (we generally recommend against it).",
-    group: "scope",
-  },
+  { id: "mlsIdx", type: "boolean", label: "Does it need live MLS/IDX real-estate syncing?", help: "(custom quote)", group: "scope" },
   {
     id: "additionalFunctionality",
     type: "longtext",
     label: "Any other / complex functionality requested?",
-    placeholder: "Describe anything beyond the options above. Anything here routes the request to a custom quote instead of an instant price.",
+    placeholder: "Describe anything beyond the options above. Anything here routes the request to a custom quote.",
     group: "scope",
   },
 ];

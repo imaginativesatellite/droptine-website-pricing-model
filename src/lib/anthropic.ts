@@ -4,8 +4,7 @@ import { computeQuote, type PricingAnswers } from "./pricing";
 /** Plain-English list of what's included, derived from the answers. */
 export function describeScope(answers: PricingAnswers): string[] {
   const items: string[] = [];
-  if (answers.basicSite) items.push("a basic 3–4 page brochure site");
-  else items.push(`a ${answers.pageTier ?? "5-9"}-page website`);
+  if (!answers.ecommerce) items.push(`a ${answers.pageTier ?? "5-9"}-page website`);
   if (answers.ecommerce)
     items.push(
       `an online store${answers.ecommerceShopify ? " on Shopify" : ""}` +

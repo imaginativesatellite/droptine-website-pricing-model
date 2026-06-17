@@ -1,0 +1,47 @@
+"use client";
+
+import { useActionState } from "react";
+import { updateProfile, type FormState } from "./actions";
+
+export default function ProfileForm({
+  email,
+  defaultName,
+  defaultPhone,
+}: {
+  email: string;
+  defaultName: string;
+  defaultPhone: string;
+}) {
+  const [state, action, pending] = useActionState<FormState, FormData>(updateProfile, undefined);
+
+  return (
+    <form action={action} className="card" style={{ marginBottom: 18 }}>
+      <h3 style={{ marginBottom: 12 }}>Your details</h3>
+      <p className="help" style={{ marginBottom: 12 }}>
+        This name and phone appear on proposals as the contact (&ldquo;prepared by&rdquo;).
+      </p>
+      <div className="q" style={{ paddingTop: 0 }}>
+        <label className="qlabel" htmlFor="name">Name</label>
+        <input id="name" name="name" type="text" defaultValue={defaultName} required />
+      </div>
+      <div className="q">
+        <label className="qlabel" htmlFor="phone">Phone</label>
+        <input id="phone" name="phone" type="tel" defaultValue={defaultPhone} placeholder="e.g. 432.853.6300" />
+      </div>
+      <div className="q">
+        <label className="qlabel" htmlFor="email">Email (sign-in)</label>
+        <input id="email" type="email" value={email} disabled />
+      </div>
+
+      {state && (
+        <p style={{ fontSize: "0.9rem", margin: "6px 0", color: state.ok ? "var(--good)" : "#b3261e" }}>
+          {state.message}
+        </p>
+      )}
+
+      <button type="submit" className="btn-primary" disabled={pending}>
+        {pending ? "Saving…" : "Save details"}
+      </button>
+    </form>
+  );
+}

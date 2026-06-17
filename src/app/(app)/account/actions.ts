@@ -1,10 +1,28 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 
 export type FormState = { ok: boolean; message: string } | undefined;
+
+/** Update the signed-in user's name + phone (shown on proposals as "prepared by"). */
+export async function updateProfile(_prev: FormState, formData: FormData): Promise<FormState> {
+  const sessionUser = await requireUser();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const phone = String(formData.get("phone") ?? "").trim();
+  if (!name) return { ok: false, message: "Name is required." };
+
+  await prisma.user.update({
+    where: { id: sessionUser.id },
+    data: { name, phone: phone || null },
+  });
+
+  revalidatePath("/account");
+  return { ok: true, message: "Profile saved." };
+}
 
 export async function changePassword(_prev: FormState, formData: FormData): Promise<FormState> {
   const sessionUser = await requireUser();

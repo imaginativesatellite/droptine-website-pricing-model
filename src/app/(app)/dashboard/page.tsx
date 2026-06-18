@@ -40,7 +40,6 @@ export default async function Dashboard() {
       <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
         <div style={{ flex: 1 }}>
           <h1>Dashboard</h1>
-          <p className="lede" style={{ margin: 0 }}>{isAdmin ? "All quotes." : "Your quotes."} {items.length} total.</p>
         </div>
         <Link href="/new" className="btn-primary">+ New Quote</Link>
       </div>

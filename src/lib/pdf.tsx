@@ -41,7 +41,7 @@ const s = StyleSheet.create({
   para: { marginBottom: 6 },
   small: { fontSize: 9, color: MUTED },
 
-  devTitle: { fontFamily: "Helvetica-Bold", fontSize: 11, color: CHARCOAL },
+  devTitle: { fontFamily: "Helvetica-Bold", fontSize: 10 },
   rowLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 3, fontSize: 9.5 },
   discount: { color: "#2e7d32" },
 
@@ -59,7 +59,7 @@ const s = StyleSheet.create({
   termsHeading: { fontSize: 16, fontFamily: "Helvetica-Bold", color: CHARCOAL, marginBottom: 2 },
   termsTitle: { fontSize: 9.5, fontFamily: "Helvetica-Bold", color: CHARCOAL, marginTop: 11, marginBottom: 1 },
   bullet: { flexDirection: "row", marginBottom: 6 },
-  bulletDot: { width: 12, color: GOLD },
+  bulletDot: { width: 12, color: "#2b2b2b" },
   sigRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 30 },
   sigBlock: { width: "46%", borderTopWidth: 1, borderTopColor: CHARCOAL, paddingTop: 5, fontSize: 8, color: MUTED },
 
@@ -108,6 +108,8 @@ function Footer({ code }: { code: string }) {
 function ProposalDoc({ d }: { d: ProposalPdfData }) {
   const half = Math.round(d.total / 2);
   const preparedBy = [d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ");
+  const features = STANDARD_FEATURES.replace(/^Standard Features:\s*/, "");
+  const leadTime = LEAD_TIME.replace(/^Estimated Lead Time:\s*/, "");
 
   return (
     <Document>
@@ -135,8 +137,14 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
 
         <Text style={s.label}>Website Development</Text>
         <Text style={s.devTitle}>Coding, Programming, and Implementation of Website</Text>
-        <Text style={[s.small, { marginTop: 5 }]}>{STANDARD_FEATURES}</Text>
-        <Text style={[s.small, { marginTop: 3 }]}>{LEAD_TIME}</Text>
+        <View style={[s.bullet, { marginTop: 6 }]}>
+          <Text style={s.bulletDot}>•</Text>
+          <Text style={{ flex: 1 }}><Text style={{ fontFamily: "Helvetica-Bold" }}>Standard Features: </Text>{features}</Text>
+        </View>
+        <View style={s.bullet}>
+          <Text style={s.bulletDot}>•</Text>
+          <Text style={{ flex: 1 }}><Text style={{ fontFamily: "Helvetica-Bold" }}>Estimated Lead Time: </Text>{leadTime}</Text>
+        </View>
 
         {d.discount > 0 && (
           <>
@@ -162,11 +170,12 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         <Header />
         <Text style={s.title}>Monthly Hosting, Security & Maintenance</Text>
 
-        <View style={{ marginTop: 16 }}>
+        <View style={{ marginTop: 14 }}>
           {MONTHLY_ITEMS.map((m, i) => (
-            <Text key={i} style={s.mItem}>
-              <Text style={s.mTitle}>{m.title}: </Text>{m.desc}
-            </Text>
+            <View key={i} style={s.bullet}>
+              <Text style={s.bulletDot}>•</Text>
+              <Text style={{ flex: 1 }}><Text style={{ fontFamily: "Helvetica-Bold" }}>{m.title}: </Text>{m.desc}</Text>
+            </View>
           ))}
         </View>
 

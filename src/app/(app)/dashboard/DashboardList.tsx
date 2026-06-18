@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import BrandSelect from "@/components/BrandSelect";
 
@@ -67,6 +67,17 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
   const [view, setView] = useState<"list" | "tiles">("list");
+  const [isMobile, setIsMobile] = useState(false);
+
+  // On mobile, always use the list view (no tile toggle).
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 640px)");
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  const effectiveView = isMobile ? "list" : view;
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -93,7 +104,7 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
           <input type="search" placeholder="Search by client…" value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
         </div>
 
-        <label className="help" style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+        <div className="help" style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
           Show
           <div style={{ width: 84 }}>
             <BrandSelect
@@ -102,16 +113,18 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
               options={PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }))}
             />
           </div>
-        </label>
-
-        <div className="viewtoggle">
-          <button type="button" className={view === "list" ? "on" : ""} onClick={() => setView("list")} title="List view" aria-label="List view">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-          </button>
-          <button type="button" className={view === "tiles" ? "on" : ""} onClick={() => setView("tiles")} title="Tile view" aria-label="Tile view">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /></svg>
-          </button>
         </div>
+
+        {!isMobile && (
+          <div className="viewtoggle">
+            <button type="button" className={view === "list" ? "on" : ""} onClick={() => setView("list")} title="List view" aria-label="List view">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
+            </button>
+            <button type="button" className={view === "tiles" ? "on" : ""} onClick={() => setView("tiles")} title="Tile view" aria-label="Tile view">
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /></svg>
+            </button>
+          </div>
+        )}
       </div>
 
       {filtered.length === 0 && (
@@ -121,14 +134,14 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
       {pending.length > 0 && (
         <section style={{ marginBottom: 24 }}>
           <div className="section-label attention">Needs attention · {pending.length}</div>
-          <Group items={pending} view={view} attention />
+          <Group items={pending} view={effectiveView} attention />
         </section>
       )}
 
       {rest.length > 0 && (
         <section>
           <div className="section-label">All quotes</div>
-          <Group items={slice} view={view} />
+          <Group items={slice} view={effectiveView} />
 
           {rest.length > pageSize && (
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>

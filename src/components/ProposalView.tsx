@@ -22,13 +22,15 @@ const bodyStyle = { fontSize: "1rem", color: "var(--ink)", lineHeight: 1.5, marg
 const bodyBold = { ...bodyStyle, fontWeight: 600 };
 
 /** The client-facing proposal (single total). Used on the public code page and
- *  on the internal quote page. */
-export default function ProposalView({ d }: { d: ProposalPdfData }) {
+ *  on the internal quote page. `publicLink` adds a button to open the public link. */
+export default function ProposalView({ d, publicLink = false }: { d: ProposalPdfData; publicLink?: boolean }) {
   const half = Math.round(d.total / 2);
   const preparedBy = [d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ");
   const monthlyNote = ["No tax.", d.ecommerce ? ECOMMERCE_MONTHLY_DISCLAIMER : "", d.mlsIdx ? IDX_MONTHLY_DISCLAIMER : ""]
     .filter(Boolean)
     .join(" ");
+  const features = STANDARD_FEATURES.replace(/^Standard Features:\s*/, "");
+  const leadTime = LEAD_TIME.replace(/^Estimated Lead Time:\s*/, "");
 
   return (
     <div className="card" style={{ padding: 0, overflow: "hidden" }}>
@@ -44,9 +46,22 @@ export default function ProposalView({ d }: { d: ProposalPdfData }) {
         }}
       >
         <div style={{ fontWeight: 800, fontSize: "1.45rem", letterSpacing: 1, color: "var(--gold)" }}>LUNA CREATIVE</div>
-        <a href={`/api/proposal/${d.code}/pdf`} className="btn-gold" style={{ padding: "13px 26px", fontSize: "0.98rem" }}>
-          Download PDF
-        </a>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+          {publicLink && (
+            <a
+              href={`/proposal/${d.code}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="btn-secondary"
+              style={{ padding: "13px 22px", fontSize: "0.98rem" }}
+            >
+              View public link ↗
+            </a>
+          )}
+          <a href={`/api/proposal/${d.code}/pdf`} className="btn-gold" style={{ padding: "13px 26px", fontSize: "0.98rem" }}>
+            Download PDF
+          </a>
+        </div>
       </div>
 
       <div style={{ padding: "26px 28px" }}>
@@ -71,8 +86,10 @@ export default function ProposalView({ d }: { d: ProposalPdfData }) {
         <div className="q">
           <div style={labelStyle}>Website Development</div>
           <p style={bodyBold}>Coding, Programming, and Implementation of Website</p>
-          <p style={{ ...bodyStyle, marginTop: 8 }}>{STANDARD_FEATURES}</p>
-          <p style={{ ...bodyStyle, marginTop: 6 }}>{LEAD_TIME}</p>
+          <ul className="bullets">
+            <li><span style={{ fontWeight: 600 }}>Standard Features:</span> {features}</li>
+            <li><span style={{ fontWeight: 600 }}>Estimated Lead Time:</span> {leadTime}</li>
+          </ul>
 
           {d.discount > 0 && (
             <>
@@ -98,11 +115,11 @@ export default function ProposalView({ d }: { d: ProposalPdfData }) {
 
         <div className="q">
           <div style={labelStyle}>Monthly Hosting, Security &amp; Maintenance</div>
-          <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 2 }}>
+          <ul className="bullets">
             {MONTHLY_ITEMS.map((m, i) => (
-              <p key={i} style={bodyStyle}><span style={{ fontWeight: 600 }}>{m.title}:</span> {m.desc}</p>
+              <li key={i}><span style={{ fontWeight: 600 }}>{m.title}:</span> {m.desc}</li>
             ))}
-          </div>
+          </ul>
           <div className="total"><span>Per month</span><span className="big">{money(d.monthly)}</span></div>
           <p className="note">{monthlyNote}</p>
         </div>

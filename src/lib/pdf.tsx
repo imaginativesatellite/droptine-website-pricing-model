@@ -44,7 +44,7 @@ const s = StyleSheet.create({
   rowLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 3, fontSize: 9.5 },
   discount: { color: "#2e7d32" },
 
-  totalBox: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 2, borderTopColor: CHARCOAL, paddingTop: 12, paddingHorizontal: 14, marginTop: 18 },
+  totalBox: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 2, borderBottomWidth: 2, borderTopColor: CHARCOAL, borderBottomColor: CHARCOAL, paddingVertical: 12, marginTop: 18 },
   totalLabel: { fontSize: 11, fontFamily: "Helvetica-Bold", color: CHARCOAL, textTransform: "uppercase", letterSpacing: 1 },
   totalAmt: { fontSize: 18, fontFamily: "Helvetica-Bold", color: CHARCOAL },
   splitRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 6, fontSize: 9.5 },

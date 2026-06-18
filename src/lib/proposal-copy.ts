@@ -11,7 +11,7 @@ export const LEAD_TIME =
   "Estimated Lead Time: 45 Business Days from Payment Date of Initial Deposit.";
 
 export const PROPOSAL_DISCLAIMER =
-  "All business conducted via email or phone are subject to the terms and conditions listed on our website at www.luna-creative.com/terms-conditions. By approving artwork for print via email you certify that all artwork is correct and free of error. Any approvals of proposals or estimates are bound by the terms and conditions.";
+  "All business conducted via email or phone is subject to the terms and conditions listed at www.luna-creative.com/terms-conditions. By approving this proposal via email, you certify that the scope and details are correct. Any approvals of proposals or estimates are bound by the terms and conditions.";
 
 export const PROPOSAL_VALIDITY =
   "Please note that this proposal is valid for 60 days from the original proposal date.";

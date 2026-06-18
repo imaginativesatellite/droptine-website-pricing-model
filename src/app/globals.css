@@ -473,6 +473,104 @@ select {
 .pill.pending  { background: #fff7ec; color: var(--gold-dark); }
 .pill.approved { background: #e8eef7; color: #1c4e9c; }
 
+/* Dashboard search bar (reads as a control, not a card) */
+.searchbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 18px;
+}
+.searchbar .search-field {
+  position: relative;
+  flex: 1;
+}
+.searchbar .search-field .icon {
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  pointer-events: none;
+  display: flex;
+}
+.searchbar .search-field input {
+  width: 100%;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  padding: 11px 16px 11px 40px;
+  font-size: 0.95rem;
+}
+.searchbar .search-field input:focus {
+  outline: none;
+  border-color: var(--gold);
+  background: #fff;
+}
+
+/* Section labels */
+.section-label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--muted);
+  font-weight: 700;
+  margin: 4px 0 10px;
+}
+.section-label.attention {
+  color: var(--gold-dark);
+}
+
+/* Dashboard quote rows with hierarchy */
+.qrow {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: var(--ink);
+}
+.qrow:hover {
+  border-color: var(--gold);
+}
+.qrow.attention {
+  border-left: 4px solid var(--gold);
+  background: #fffaf2;
+}
+.qrow .main {
+  flex: 1;
+  min-width: 0;
+}
+.qrow .name {
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--charcoal);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.qrow .meta {
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+.qrow .right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  white-space: nowrap;
+}
+.qrow .price {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  font-variant-numeric: tabular-nums;
+}
+
 /* Client groups on the dashboard */
 .client-group { margin-bottom: 26px; }
 .client-group h3 {

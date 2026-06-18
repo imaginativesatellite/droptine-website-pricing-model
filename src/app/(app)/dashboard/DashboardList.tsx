@@ -21,6 +21,23 @@ function pill(status: string) {
   return <span className="pill proposal">Proposal</span>;
 }
 
+function Row({ q, attention }: { q: QuoteItem; attention?: boolean }) {
+  return (
+    <Link href={`/quote/${q.id}`} className={`qrow${attention ? " attention" : ""}`}>
+      <div className="main">
+        <div className="name">{q.name}</div>
+        <div className="meta">
+          {new Date(q.createdAt).toLocaleDateString(undefined, { month: "short", day: "numeric" })} · {q.requestedBy} · {q.code}
+        </div>
+      </div>
+      <div className="right">
+        {pill(q.status)}
+        <div className="price">{q.price == null ? "—" : money(q.price)}</div>
+      </div>
+    </Link>
+  );
+}
+
 const PAGE_SIZES = [10, 25, 50, 100];
 
 export default function DashboardList({ items }: { items: QuoteItem[] }) {
@@ -33,55 +50,62 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
     return q ? items.filter((i) => i.name.toLowerCase().includes(q)) : items;
   }, [items, query]);
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / pageSize));
+  const pending = filtered.filter((i) => i.status === "CUSTOM_PENDING");
+  const rest = filtered.filter((i) => i.status !== "CUSTOM_PENDING");
+
+  const totalPages = Math.max(1, Math.ceil(rest.length / pageSize));
   const current = Math.min(page, totalPages);
-  const slice = filtered.slice((current - 1) * pageSize, current * pageSize);
+  const slice = rest.slice((current - 1) * pageSize, current * pageSize);
 
   return (
     <>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16, flexWrap: "wrap" }}>
-        <input
-          type="search"
-          placeholder="Search by client…"
-          value={query}
-          onChange={(e) => { setQuery(e.target.value); setPage(1); }}
-          style={{ flex: 1, minWidth: 200 }}
-        />
-        <label className="help" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div className="searchbar">
+        <div className="search-field">
+          <span className="icon" aria-hidden>
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.6" />
+              <path d="M11 11l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+            </svg>
+          </span>
+          <input
+            type="search"
+            placeholder="Search by client…"
+            value={query}
+            onChange={(e) => { setQuery(e.target.value); setPage(1); }}
+          />
+        </div>
+        <label className="help" style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
           Show
-          <select
-            value={pageSize}
-            onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }}
-            style={{ width: "auto" }}
-          >
+          <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} style={{ width: "auto" }}>
             {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
           </select>
         </label>
       </div>
 
-      {slice.length === 0 ? (
+      {filtered.length === 0 && (
         <div className="card"><p className="help">No quotes match.</p></div>
-      ) : (
-        slice.map((q) => (
-          <Link href={`/quote/${q.id}`} className="quote-row" key={q.id}>
-            <div className="grow">
-              <div style={{ fontWeight: 600 }}>{q.name}</div>
-              <div className="help">{new Date(q.createdAt).toLocaleDateString()} · {q.requestedBy} · {q.code}</div>
-            </div>
-            {pill(q.status)}
-            <div className="price">{q.price == null ? "—" : money(q.price)}</div>
-          </Link>
-        ))
       )}
 
-      {filtered.length > pageSize && (
-        <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
-          <button className="btn-secondary" disabled={current <= 1} onClick={() => setPage(current - 1)}
-                  style={{ padding: "8px 14px" }}>← Prev</button>
-          <span className="help">Page {current} of {totalPages} · {filtered.length} quotes</span>
-          <button className="btn-secondary" disabled={current >= totalPages} onClick={() => setPage(current + 1)}
-                  style={{ padding: "8px 14px" }}>Next →</button>
-        </div>
+      {pending.length > 0 && (
+        <section style={{ marginBottom: 24 }}>
+          <div className="section-label attention">Needs attention · {pending.length}</div>
+          {pending.map((q) => <Row key={q.id} q={q} attention />)}
+        </section>
+      )}
+
+      {rest.length > 0 && (
+        <section>
+          <div className="section-label">All quotes</div>
+          {slice.map((q) => <Row key={q.id} q={q} />)}
+
+          {rest.length > pageSize && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
+              <button className="btn-secondary" disabled={current <= 1} onClick={() => setPage(current - 1)} style={{ padding: "8px 14px" }}>← Prev</button>
+              <span className="help">Page {current} of {totalPages} · {rest.length} quotes</span>
+              <button className="btn-secondary" disabled={current >= totalPages} onClick={() => setPage(current + 1)} style={{ padding: "8px 14px" }}>Next →</button>
+            </div>
+          )}
+        </section>
       )}
     </>
   );

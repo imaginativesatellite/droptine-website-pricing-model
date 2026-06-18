@@ -1,24 +1,27 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import { logout } from "./actions";
 
-function initialsOf(name: string, email: string): string {
+function initialOf(name: string, email: string): string {
   const n = (name || "").trim();
-  if (n) {
-    const parts = n.split(/\s+/);
-    if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
-    return n.slice(0, 2).toUpperCase();
-  }
-  return email.slice(0, 2).toUpperCase();
+  return (n ? n[0] : email[0] || "?").toUpperCase();
 }
 
 export default function AppNav({ user }: { user: { email: string; name: string; role: string } }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
+  const pathname = usePathname();
   const isAdmin = user.role === "ADMIN";
-  const initials = initialsOf(user.name, user.email);
+  const initials = initialOf(user.name, user.email);
+
+  // Close any open menu when navigating to another tab/page.
+  useEffect(() => {
+    setMenuOpen(false);
+    setNavOpen(false);
+  }, [pathname]);
 
   const navLinks = (onClick?: () => void) => (
     <>

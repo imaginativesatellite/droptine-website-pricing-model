@@ -21,7 +21,7 @@ export default async function EditQuotePage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="container">
-      <Link href={`/quote/${id}`} className="help backlink">‹ Back to quote</Link>
+      <Link href={`/quote/${id}`} className="help backlink"><span className="backarrow">‹</span> Back to quote</Link>
       <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
         <h1>Edit answers</h1>
         <p className="lede">Changing answers re-computes the price and is recorded in the activity log.</p>

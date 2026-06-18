@@ -30,7 +30,7 @@ a {
 }
 
 .container {
-  max-width: 1080px;
+  max-width: 820px;
   margin: 0 auto;
   padding: 32px 24px 80px;
 }
@@ -265,6 +265,11 @@ textarea {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+.backlink .backarrow {
+  font-size: 1.25rem;
+  vertical-align: middle;
+  margin-right: 2px;
+}
 
 /* Consistent small disclaimer/note line */
 .note {
@@ -281,7 +286,7 @@ textarea {
   position: relative;
 }
 .appnav .wrap {
-  max-width: 1080px;
+  max-width: 820px;
   margin: 0 auto;
   display: flex;
   align-items: center;
@@ -339,11 +344,16 @@ textarea {
   z-index: 50;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
 }
+.appnav .menu form {
+  width: 100%;
+}
 .appnav .menu a,
 .appnav .menu button {
+  display: block;
+  width: 100%;
   color: var(--ink);
   text-align: left;
-  padding: 8px 10px;
+  padding: 10px 10px;
   border-radius: 6px;
   background: none;
   border: none;
@@ -388,24 +398,30 @@ textarea {
   .appnav .mobile-panel {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    padding: 4px 0 16px;
+    gap: 2px;
+    padding: 6px 0 16px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
   }
+  .appnav .mobile-panel form {
+    width: 100%;
+  }
+  .appnav .mobile-panel a,
   .appnav .mobile-panel .linklike {
+    display: block;
+    width: 100%;
     color: #d8d4cd;
     background: none;
     border: none;
     font: inherit;
     text-align: left;
-    padding: 6px 0;
+    padding: 12px 8px;
     cursor: pointer;
   }
   .appnav .mobile-panel .menu-email {
     color: #9a948b;
     font-size: 0.8rem;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding-top: 10px;
+    padding: 12px 8px 0;
     margin-top: 6px;
     word-break: break-all;
   }

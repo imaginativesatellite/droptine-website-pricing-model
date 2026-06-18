@@ -43,15 +43,11 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
   return (
     <div className="container" style={{ maxWidth: 820 }}>
-      <Link href="/dashboard" className="help backlink">‹ Dashboard</Link>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8 }}>
+      <Link href="/dashboard" className="help backlink"><span className="backarrow">‹</span> Dashboard</Link>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8, marginBottom: 18 }}>
         <h1 style={{ flex: 1 }}>{quote!.proposalName}</h1>
         {statusPill(quote!.status)}
       </div>
-      <p className="lede">
-        {quote!.client.name} · {quote!.code}
-        {isAdmin ? ` · by ${quote!.createdBy.email}` : ""}
-      </p>
 
       {isPending ? (
         <div className="card">

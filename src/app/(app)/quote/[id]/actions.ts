@@ -147,10 +147,18 @@ export async function editAnswers(quoteId: string, answers: RawAnswers): Promise
   redirect(`/quote/${quoteId}`);
 }
 
-/** Admin: permanently delete a quote (its edit history cascades). */
+/** Admin: permanently delete a quote (its edit history cascades). Also removes
+ *  the client if it has no remaining quotes, so its name leaves the suggestions. */
 export async function deleteQuote(quoteId: string): Promise<void> {
   await requireAdmin();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId }, select: { clientId: true } });
   await prisma.quote.delete({ where: { id: quoteId } });
+  if (quote) {
+    const remaining = await prisma.quote.count({ where: { clientId: quote.clientId } });
+    if (remaining === 0) {
+      await prisma.client.delete({ where: { id: quote.clientId } }).catch(() => {});
+    }
+  }
   redirect("/dashboard");
 }
 

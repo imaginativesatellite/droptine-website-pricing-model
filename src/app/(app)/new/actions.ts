@@ -25,11 +25,22 @@ async function uniqueCode(): Promise<string> {
 
 export type CreateResult = { error: string } | void;
 
-export async function createQuote(answers: RawAnswers): Promise<CreateResult> {
+export async function createQuote(answers: RawAnswers, assigneeId?: string): Promise<CreateResult> {
   const user = await requireUser();
 
   const proposalName = String(answers.proposalName ?? "").trim();
   if (!proposalName) return { error: "A client name is required." };
+
+  // Admins may create a quote on behalf of (and assigned to) another user.
+  let creatorId = user.id;
+  let creatorEmail = user.email ?? "";
+  if (assigneeId && user.role === "ADMIN" && assigneeId !== user.id) {
+    const assignee = await prisma.user.findUnique({ where: { id: assigneeId } });
+    if (assignee) {
+      creatorId = assignee.id;
+      creatorEmail = assignee.email;
+    }
+  }
 
   const pricing = answers as PricingAnswers;
   const result = computeQuote(pricing);
@@ -38,9 +49,9 @@ export async function createQuote(answers: RawAnswers): Promise<CreateResult> {
   //    return an inline error so the user can retry without losing their answers.
   let quote;
   try {
-    let client = await prisma.client.findFirst({ where: { ownerId: user.id, name: proposalName } });
+    let client = await prisma.client.findFirst({ where: { ownerId: creatorId, name: proposalName } });
     if (!client) {
-      client = await prisma.client.create({ data: { name: proposalName, ownerId: user.id } });
+      client = await prisma.client.create({ data: { name: proposalName, ownerId: creatorId } });
     }
 
     const code = await uniqueCode();
@@ -52,7 +63,7 @@ export async function createQuote(answers: RawAnswers): Promise<CreateResult> {
       data: {
         code,
         clientId: client.id,
-        createdById: user.id,
+        createdById: creatorId,
         proposalName,
         answers: answersJson,
         lineItems: lineItemsJson,
@@ -73,7 +84,7 @@ export async function createQuote(answers: RawAnswers): Promise<CreateResult> {
   try {
     if (result.requiresCustomQuote) {
       await notifyAdmins({
-        proposalName, staffEmail: user.email ?? "", isCustom: true, code: quote.code,
+        proposalName, staffEmail: creatorEmail, isCustom: true, code: quote.code,
         reasons: result.reasons, manageUrl,
       });
     } else {
@@ -83,11 +94,11 @@ export async function createQuote(answers: RawAnswers): Promise<CreateResult> {
       });
       const pdf = await renderProposalPdf(buildProposalData(full));
       await sendProposalToStaff({
-        staffEmail: user.email ?? "", proposalName, total: result.total,
+        staffEmail: creatorEmail, proposalName, total: result.total,
         code: quote.code, proposalUrl: proposalUrl(quote.code), pdf,
       });
       await notifyAdmins({
-        proposalName, staffEmail: user.email ?? "", isCustom: false, total: result.total,
+        proposalName, staffEmail: creatorEmail, isCustom: false, total: result.total,
         code: quote.code, manageUrl,
       });
       await prisma.quote.update({ where: { id: quote.id }, data: { emailStatus: "SENT", emailError: null } });

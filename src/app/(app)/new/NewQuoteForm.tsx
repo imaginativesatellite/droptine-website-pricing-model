@@ -27,8 +27,17 @@ function isAnswered(q: Question, answers: Answers): boolean {
   return v !== undefined && String(v).trim() !== "";
 }
 
-export default function NewQuoteForm({ clientNames }: { clientNames: string[] }) {
+export default function NewQuoteForm({
+  clientNames,
+  assignableUsers = [],
+  currentUserId,
+}: {
+  clientNames: string[];
+  assignableUsers?: { id: string; name: string; email: string }[];
+  currentUserId: string;
+}) {
   const [answers, setAnswers] = useState<Answers>({});
+  const [assigneeId, setAssigneeId] = useState<string>(currentUserId);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const loaded = useRef(false);
@@ -57,7 +66,7 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
     setError(null);
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     startTransition(async () => {
-      const res = await createQuote(answers);
+      const res = await createQuote(answers, assigneeId);
       if (res?.error) {
         setError(res.error);
         try { localStorage.setItem(DRAFT_KEY, JSON.stringify(answers)); } catch {}
@@ -67,6 +76,19 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
+      {assignableUsers.length > 0 && (
+        <div className="card" style={{ marginBottom: 16, borderColor: "var(--gold)" }}>
+          <label className="qlabel" htmlFor="assignee">Assign to</label>
+          <div className="help">The proposal will be created under this person and emailed to them.</div>
+          <select id="assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
+            {assignableUsers.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name} ({u.email}){u.id === currentUserId ? " — me" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
       <div className="card">
         {questions.map((q) => (
           <div className="q" key={q.id}>

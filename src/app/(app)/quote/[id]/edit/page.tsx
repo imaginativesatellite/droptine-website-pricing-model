@@ -13,10 +13,10 @@ export default async function EditQuotePage({ params }: { params: Promise<{ id: 
   const quote = await prisma.quote.findUnique({ where: { id } });
   if (!quote) notFound();
 
-  const clients = await prisma.client.findMany({
-    select: { name: true },
-    distinct: ["name"],
-    orderBy: { name: "asc" },
+  const named = await prisma.quote.findMany({
+    select: { proposalName: true },
+    distinct: ["proposalName"],
+    orderBy: { proposalName: "asc" },
   });
 
   return (
@@ -29,7 +29,7 @@ export default async function EditQuotePage({ params }: { params: Promise<{ id: 
       <EditAnswersForm
         quoteId={id}
         initialAnswers={quote!.answers as Answers}
-        clientNames={clients.map((c) => c.name)}
+        clientNames={named.map((q) => q.proposalName)}
       />
     </div>
   );

@@ -3,21 +3,33 @@ import { requireUser } from "@/lib/session";
 import NewQuoteForm from "./NewQuoteForm";
 
 export default async function NewQuotePage() {
-  await requireUser();
+  const user = await requireUser();
+  const isAdmin = user.role === "ADMIN";
 
-  // Suggest existing client names (across the team) for reuse.
-  const clients = await prisma.client.findMany({
-    select: { name: true },
-    distinct: ["name"],
-    orderBy: { name: "asc" },
+  // Suggest client names that still have at least one quote (so names from
+  // deleted proposals drop off).
+  const named = await prisma.quote.findMany({
+    select: { proposalName: true },
+    distinct: ["proposalName"],
+    orderBy: { proposalName: "asc" },
   });
+  const clientNames = named.map((q) => q.proposalName);
+
+  // Admins can assign a new quote to another user.
+  const assignableUsers = isAdmin
+    ? (await prisma.user.findMany({ orderBy: { name: "asc" }, select: { id: true, name: true, email: true } }))
+    : [];
 
   return (
     <div className="container">
       <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
         <h1>New Quote</h1>
       </div>
-      <NewQuoteForm clientNames={clients.map((c) => c.name)} />
+      <NewQuoteForm
+        clientNames={clientNames}
+        assignableUsers={assignableUsers}
+        currentUserId={user.id}
+      />
     </div>
   );
 }

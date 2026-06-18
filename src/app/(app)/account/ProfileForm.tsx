@@ -4,11 +4,9 @@ import { useActionState } from "react";
 import { updateProfile, type FormState } from "./actions";
 
 export default function ProfileForm({
-  email,
   defaultName,
   defaultPhone,
 }: {
-  email: string;
   defaultName: string;
   defaultPhone: string;
 }) {
@@ -27,10 +25,6 @@ export default function ProfileForm({
       <div className="q">
         <label className="qlabel" htmlFor="phone">Phone</label>
         <input id="phone" name="phone" type="tel" defaultValue={defaultPhone} placeholder="e.g. 432.853.6300" />
-      </div>
-      <div className="q">
-        <label className="qlabel" htmlFor="email">Email (sign-in)</label>
-        <input id="email" type="email" value={email} disabled />
       </div>
 
       {state && (

@@ -258,8 +258,13 @@ textarea {
   background: var(--gold-dark);
 }
 
-/* Back links (no underline) */
-.backlink { text-decoration: none; }
+/* Back links (no underline, small, uppercase) */
+.backlink {
+  text-decoration: none;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
 
 /* Consistent small disclaimer/note line */
 .note {
@@ -273,13 +278,14 @@ textarea {
   background: var(--charcoal);
   color: #fff;
   padding: 0 24px;
+  position: relative;
 }
 .appnav .wrap {
   max-width: 1080px;
   margin: 0 auto;
   display: flex;
   align-items: center;
-  gap: 22px;
+  gap: 20px;
   height: 56px;
 }
 .appnav a {
@@ -290,12 +296,119 @@ textarea {
 .appnav a:hover {
   color: #fff;
 }
+.appnav .brandlink {
+  font-weight: 800;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.appnav .links {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
 .appnav .spacer {
   flex: 1;
 }
-.appnav .who {
-  color: #9a948b;
-  font-size: 0.82rem;
+.appnav .avatarwrap {
+  position: relative;
+}
+.appnav .avatar {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: var(--gold);
+  color: #fff;
+  border: none;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+.appnav .menu {
+  position: absolute;
+  right: 0;
+  top: 44px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  min-width: 200px;
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 50;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+.appnav .menu a,
+.appnav .menu button {
+  color: var(--ink);
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: none;
+  border: none;
+  font: inherit;
+  cursor: pointer;
+  text-decoration: none;
+}
+.appnav .menu a:hover,
+.appnav .menu button:hover {
+  background: var(--bg);
+  color: var(--ink);
+}
+.appnav .menu .menu-email {
+  font-size: 0.78rem;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+  word-break: break-all;
+}
+.appnav .hamburger {
+  display: none;
+  background: none;
+  border: none;
+  color: #fff;
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+}
+.appnav .mobile-panel {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .appnav .links,
+  .appnav .avatarwrap {
+    display: none;
+  }
+  .appnav .hamburger {
+    display: block;
+  }
+  .appnav .mobile-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 4px 0 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .appnav .mobile-panel .linklike {
+    color: #d8d4cd;
+    background: none;
+    border: none;
+    font: inherit;
+    text-align: left;
+    padding: 6px 0;
+    cursor: pointer;
+  }
+  .appnav .mobile-panel .menu-email {
+    color: #9a948b;
+    font-size: 0.8rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 10px;
+    margin-top: 6px;
+    word-break: break-all;
+  }
 }
 
 /* Status pills */

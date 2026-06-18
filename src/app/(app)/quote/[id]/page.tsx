@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice } from "@/lib/quote";
+import ProposalView from "@/components/ProposalView";
 import { updateQuote, approveQuote, resendProposalEmail } from "./actions";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 
@@ -20,6 +21,8 @@ function describeActivity(e: { field: string; oldValue: string | null; newValue:
   return `${e.field}: ${e.oldValue ?? "—"} → ${e.newValue ?? "—"}`;
 }
 
+const sublabel = { fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 8 };
+
 export default async function QuoteDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
   const user = await requireUser();
@@ -34,7 +37,6 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
     },
   });
   if (!quote) notFound();
-  // Staff and admins can view any quote; only admins get the edit/approve controls.
 
   const isPending = quote!.status === "CUSTOM_PENDING";
   const d = buildProposalData(quote!);
@@ -47,7 +49,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         {statusPill(quote!.status)}
       </div>
       <p className="lede">
-        {quote!.client.name} · code {quote!.code}
+        {quote!.client.name} · {quote!.code}
         {isAdmin ? ` · by ${quote!.createdBy.email}` : ""}
       </p>
 
@@ -60,41 +62,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
           {!isAdmin && <p className="help" style={{ marginTop: 10 }}>We&apos;ll review this and follow up with pricing.</p>}
         </div>
       ) : (
-        <div className="card">
-          {/* Itemized breakdown is admin-only; staff see the total only. */}
-          {isAdmin && (
-            <table className="simple">
-              <tbody>
-                {d.lineItems.map((li, i) => (
-                  <tr key={i}><td>{li.label}</td><td className="amt">{money(li.amount)}</td></tr>
-                ))}
-                {quote!.discount > 0 && (
-                  <>
-                    <tr><td>Subtotal</td><td className="amt">{money(subtotal(quote!))}</td></tr>
-                    <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
-                  </>
-                )}
-              </tbody>
-            </table>
-          )}
-          <div className="total"><span>Total</span><span className="big">{money(finalPrice(quote!))}</span></div>
-          <div className="monthly">+ {money(quote!.monthly)}/mo</div>
-          <div style={{ display: "flex", gap: 10, marginTop: 16, flexWrap: "wrap", alignItems: "center" }}>
-            <Link className="btn-secondary" href={`/proposal/${quote!.code}`}>View proposal page</Link>
-            <a className="btn-secondary" href={`/api/proposal/${quote!.code}/pdf`}>Download PDF</a>
-            {isAdmin && (
-              <form action={resendProposalEmail.bind(null, quote!.id)}>
-                <button type="submit" className="btn-secondary">Resend email</button>
-              </form>
-            )}
-          </div>
-          {isAdmin && quote!.emailStatus && (
-            <p className="help" style={{ marginTop: 10, color: quote!.emailStatus === "FAILED" ? "#b3261e" : "var(--muted)" }}>
-              Proposal email: <strong>{quote!.emailStatus}</strong>
-              {quote!.emailError ? ` — ${quote!.emailError}` : ""}
-            </p>
-          )}
-        </div>
+        <ProposalView d={d} />
       )}
 
       {/* Admin controls */}
@@ -105,6 +73,36 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
           <div style={{ marginBottom: 16 }}>
             <Link href={`/quote/${quote!.id}/edit`} className="btn-secondary">Edit answers</Link>
           </div>
+
+          {!isPending && (
+            <div style={{ marginBottom: 20 }}>
+              <div style={sublabel}>Internal breakdown</div>
+              <table className="simple">
+                <tbody>
+                  {d.lineItems.map((li, i) => (
+                    <tr key={i}><td>{li.label}</td><td className="amt">{money(li.amount)}</td></tr>
+                  ))}
+                  {quote!.discount > 0 && (
+                    <>
+                      <tr><td>Subtotal</td><td className="amt">{money(subtotal(quote!))}</td></tr>
+                      <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
+                    </>
+                  )}
+                  <tr><td><strong>Total</strong></td><td className="amt"><strong>{money(finalPrice(quote!))}</strong></td></tr>
+                </tbody>
+              </table>
+              <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap", alignItems: "center" }}>
+                <form action={resendProposalEmail.bind(null, quote!.id)}>
+                  <button type="submit" className="btn-secondary">Resend email</button>
+                </form>
+                {quote!.emailStatus && (
+                  <span className="help" style={{ color: quote!.emailStatus === "FAILED" ? "#b3261e" : "var(--muted)" }}>
+                    Email: <strong>{quote!.emailStatus}</strong>{quote!.emailError ? ` — ${quote!.emailError}` : ""}
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {isPending && (
             <form action={approveQuote.bind(null, quote!.id)} style={{ marginBottom: 20 }}>
@@ -144,7 +142,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
           </form>
 
           <div style={{ marginTop: 20 }}>
-            <div className="label" style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1, marginBottom: 8 }}>Activity log</div>
+            <div style={sublabel}>Activity log</div>
             <div className="help" style={{ padding: "4px 0", borderBottom: "1px solid var(--line)" }}>
               {new Date(quote!.createdAt).toLocaleString()} · Requested by {quote!.createdBy.email}
             </div>

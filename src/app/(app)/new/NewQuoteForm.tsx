@@ -81,7 +81,6 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
         <button type="button" className="btn-primary" disabled={pending || !proposalName} onClick={submit}>
           {pending ? "Saving…" : "Generate Proposal"}
         </button>
-        {!proposalName && <p className="help" style={{ marginTop: 8 }}>Enter a client name to continue.</p>}
       </div>
     </div>
   );

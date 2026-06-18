@@ -719,6 +719,71 @@ select:focus {
   background: #fff;
 }
 
+/* View toggle (list / tiles) */
+.viewtoggle {
+  display: inline-flex;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  overflow: hidden;
+  flex: none;
+}
+.viewtoggle button {
+  background: #fff;
+  border: none;
+  padding: 9px 11px;
+  cursor: pointer;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+.viewtoggle button + button {
+  border-left: 1px solid var(--line);
+}
+.viewtoggle button.on {
+  background: var(--charcoal);
+  color: #fff;
+}
+
+/* Tile view */
+.qtiles {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+.qtile {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  text-decoration: none;
+  color: var(--ink);
+}
+.qtile:hover {
+  border-color: var(--gold);
+}
+.qtile.attention {
+  border-left: 4px solid var(--gold);
+  background: #fffaf2;
+}
+.qtile .name {
+  font-weight: 600;
+  font-size: 1.05rem;
+  color: var(--charcoal);
+}
+.qtile .price {
+  font-size: 1.35rem;
+  font-weight: 800;
+  color: var(--charcoal);
+  font-variant-numeric: tabular-nums;
+}
+.qtile .meta {
+  font-size: 0.74rem;
+  color: var(--muted);
+}
+
 /* Section labels */
 .section-label {
   font-size: 0.72rem;

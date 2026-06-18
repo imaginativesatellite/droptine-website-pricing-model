@@ -152,8 +152,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         <View style={s.splitRow}><Text>50% deposit to begin</Text><Text>{usd(half)}</Text></View>
         <View style={s.splitRow}><Text>50% on completion</Text><Text>{usd(d.total - half)}</Text></View>
 
-        <Text style={s.italic}>{PROPOSAL_DISCLAIMER}</Text>
-        <Text style={s.note}>{PROPOSAL_VALIDITY}</Text>
+        <Text style={[s.italic, { marginTop: 22 }]}>{PROPOSAL_DISCLAIMER} {PROPOSAL_VALIDITY}</Text>
 
         <Footer code={d.code} />
       </Page>

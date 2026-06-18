@@ -5,8 +5,9 @@ import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice } from "@/lib/quote";
 import ProposalView from "@/components/ProposalView";
-import { updateQuote, approveQuote, resendProposalEmail, setShared } from "./actions";
+import { updateQuote, approveQuote, resendProposalEmail } from "./actions";
 import DeleteQuoteButton from "./DeleteQuoteButton";
+import VisibilityToggle from "./VisibilityToggle";
 
 const statusPill = (status: string) => {
   if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending approval</span>;
@@ -69,18 +70,9 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
       )}
 
       {(isAdmin || isCreator) && (
-        <div className="card" style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: 200 }}>
-            <div style={{ fontWeight: 600 }}>Visibility</div>
-            <div className="help">
-              {quote!.shared ? "Viewable to everybody." : "Private — only you and admins can see it."}
-            </div>
-          </div>
-          <form action={setShared.bind(null, quote!.id, !quote!.shared)}>
-            <button type="submit" className="btn-secondary">
-              {quote!.shared ? "Make private" : "Make viewable to everybody"}
-            </button>
-          </form>
+        <div className="card" style={{ marginTop: 18 }}>
+          <div style={{ fontWeight: 600, marginBottom: 10 }}>Visibility</div>
+          <VisibilityToggle quoteId={quote!.id} shared={quote!.shared} />
         </div>
       )}
 

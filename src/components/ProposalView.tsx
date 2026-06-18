@@ -112,8 +112,9 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
           <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between" }}>
             <span>50% on completion</span><span>{money(d.total - half)}</span>
           </div>
-          <p className="note">{PROPOSAL_DISCLAIMER}</p>
-          <p className="note">{PROPOSAL_VALIDITY}</p>
+          <p style={{ fontStyle: "italic", fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.5, marginTop: 28 }}>
+            {PROPOSAL_DISCLAIMER} {PROPOSAL_VALIDITY}
+          </p>
         </div>
 
         <div className="q">

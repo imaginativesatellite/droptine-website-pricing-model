@@ -19,6 +19,7 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
 
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const phone = String(formData.get("phone") ?? "").trim();
   const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.STAFF;
   const password = String(formData.get("password") ?? "");
 
@@ -35,10 +36,37 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   }
 
   const passwordHash = await bcrypt.hash(password, 12);
-  await prisma.user.create({ data: { name, email, role, passwordHash } });
+  await prisma.user.create({ data: { name, email, phone: phone || null, role, passwordHash } });
 
   revalidatePath("/users");
   return { ok: true, message: `Created ${email}. Share the temporary password — they can change it under Account.` };
+}
+
+/** Admin: edit a user's name, email, phone, and role. */
+export async function updateUser(userId: string, formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim().toLowerCase();
+  const phone = String(formData.get("phone") ?? "").trim();
+  const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.STAFF;
+
+  if (!name || !email) flash("Name and email are required.");
+
+  const target = await prisma.user.findUnique({ where: { id: userId } });
+  if (!target) flash("User not found.");
+
+  const clash = await prisma.user.findUnique({ where: { email } });
+  if (clash && clash.id !== userId) flash("Another user already has that email.");
+
+  // Don't let an admin change their own role (avoid locking themselves out).
+  const finalRole = userId === admin.id ? target!.role : role;
+
+  await prisma.user.update({
+    where: { id: userId },
+    data: { name, email, phone: phone || null, role: finalRole },
+  });
+  flash(`Saved ${email}.`);
 }
 
 /** Admin: set a new password for a user. */
@@ -50,19 +78,6 @@ export async function resetPassword(userId: string, formData: FormData): Promise
   const passwordHash = await bcrypt.hash(password, 12);
   const user = await prisma.user.update({ where: { id: userId }, data: { passwordHash } });
   flash(`Password reset for ${user.email}.`);
-}
-
-/** Admin: flip a user between STAFF and ADMIN (can't change your own role). */
-export async function toggleRole(userId: string): Promise<void> {
-  const admin = await requireAdmin();
-  if (userId === admin.id) flash("You can't change your own role.");
-
-  const user = await prisma.user.findUnique({ where: { id: userId } });
-  if (!user) flash("User not found.");
-
-  const next = user!.role === Role.ADMIN ? Role.STAFF : Role.ADMIN;
-  await prisma.user.update({ where: { id: userId }, data: { role: next } });
-  flash(`${user!.email} is now ${next}.`);
 }
 
 /** Admin: delete a user (blocked if they own clients/quotes, or it's you). */

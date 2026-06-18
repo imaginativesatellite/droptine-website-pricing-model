@@ -29,6 +29,10 @@ export default function AddUserForm() {
           <input id="email" name="email" type="email" required autoComplete="off" />
         </div>
         <div>
+          <label className="qlabel" htmlFor="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" placeholder="e.g. 432.853.6300" />
+        </div>
+        <div>
           <label className="qlabel" htmlFor="role">Role</label>
           <input type="hidden" name="role" value={role} />
           <BrandSelect

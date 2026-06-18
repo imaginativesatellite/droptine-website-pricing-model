@@ -72,6 +72,7 @@ export type ProposalPdfData = {
   preparedByEmail?: string | null;
   preparedByPhone?: string | null;
   code: string;
+  publicCode: string;
   scopeSummary?: string | null;
   lineItems: { label: string; amount: number }[];
   subtotal: number;
@@ -174,7 +175,6 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
           <Text style={s.totalLabel}>Per Month</Text>
           <Text style={s.totalAmt}>{usd(d.monthly)}</Text>
         </View>
-        <Text style={s.note}>No tax.</Text>
         {d.ecommerce && <Text style={s.note}>{ECOMMERCE_MONTHLY_DISCLAIMER}</Text>}
         {d.mlsIdx && <Text style={s.note}>{IDX_MONTHLY_DISCLAIMER}</Text>}
         <Text style={s.note}>{PROPOSAL_VALIDITY}</Text>

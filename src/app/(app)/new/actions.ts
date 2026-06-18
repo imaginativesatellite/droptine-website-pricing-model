@@ -6,7 +6,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 import { generateScopeSummary } from "@/lib/anthropic";
-import { generateAccessCode } from "@/lib/code";
+import { generateAccessCode, generatePublicCode } from "@/lib/code";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { notifyAdmins, sendProposalToStaff } from "@/lib/email";
@@ -21,6 +21,15 @@ async function uniqueCode(): Promise<string> {
     if (!existing) return c;
   }
   return generateAccessCode() + Date.now().toString(36).slice(-2).toUpperCase();
+}
+
+async function uniquePublicCode(): Promise<string> {
+  for (let i = 0; i < 6; i++) {
+    const c = generatePublicCode();
+    const existing = await prisma.quote.findUnique({ where: { publicCode: c } });
+    if (!existing) return c;
+  }
+  return generatePublicCode();
 }
 
 export type CreateResult = { error: string } | void;
@@ -45,6 +54,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
     }
 
     const code = await uniqueCode();
+    const publicCode = await uniquePublicCode();
     const scopeSummary = await generateScopeSummary({ proposalName, answers: pricing });
     const answersJson = JSON.parse(JSON.stringify(pricing)) as Prisma.InputJsonValue;
     const lineItemsJson = result.lineItems as unknown as Prisma.InputJsonValue;
@@ -52,6 +62,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
     quote = await prisma.quote.create({
       data: {
         code,
+        publicCode,
         clientId: client.id,
         createdById: user.id,
         proposalName,
@@ -86,7 +97,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
       const pdf = await renderProposalPdf(buildProposalData(full));
       await sendProposalToStaff({
         staffEmail: creatorEmail, proposalName, total: result.total,
-        code: quote.code, proposalUrl: proposalUrl(quote.code), pdf,
+        code: quote.publicCode, proposalUrl: proposalUrl(quote.publicCode), pdf,
       });
       await notifyAdmins({
         proposalName, staffEmail: creatorEmail, isCustom: false, total: result.total,

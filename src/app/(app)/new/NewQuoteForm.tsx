@@ -72,7 +72,10 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
       <div className="card">
         {questions.map((q) => (
           <div className="q" key={q.id}>
-            <label className="qlabel" htmlFor={q.id}>{q.label}</label>
+            <label className="qlabel" htmlFor={q.id}>
+              {q.label}
+              {q.id !== "additionalFunctionality" && <span className="req">*</span>}
+            </label>
             {q.help && <div className="help">{q.help}</div>}
             {q.id === "proposalName" ? (
               <ClientNameInput
@@ -95,13 +98,17 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
         </p>
       )}
 
-      <div className="q" style={{ marginTop: 14, borderBottom: "none" }}>
-        <label className="qlabel">Viewable to everybody?</label>
-        <div className="help">Off = only you (and admins) can see it. On = visible to all staff.</div>
-        <div className="toggle">
-          <button type="button" className={shared ? "on" : ""} onClick={() => setShared(true)}>Yes</button>
-          <button type="button" className={!shared ? "on" : ""} onClick={() => setShared(false)}>No</button>
-        </div>
+      <div style={{ marginTop: 16 }}>
+        <label className="switch-row">
+          <span className="switch">
+            <input type="checkbox" checked={!shared} onChange={(e) => setShared(!e.target.checked)} />
+            <span className="slider" />
+          </span>
+          <span>
+            Private{" "}
+            <span className="tip" title="When on, only you and admins can see this quote. When off, it's visible to all staff.">ⓘ</span>
+          </span>
+        </label>
       </div>
 
       <div style={{ marginTop: 14 }}>

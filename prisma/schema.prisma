@@ -55,6 +55,8 @@ model Quote {
   id     String      @id @default(cuid())
   // short, human-shareable access code for the private proposal page
   code   String      @unique
+  // long, hard-to-guess code used in the public proposal URL
+  publicCode String   @unique
   status QuoteStatus @default(PROPOSAL)
 
   // who generated it (proposal email always goes to this user)

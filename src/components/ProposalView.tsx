@@ -26,7 +26,7 @@ const bodyBold = { ...bodyStyle, fontWeight: 600 };
 export default function ProposalView({ d, publicLink = false }: { d: ProposalPdfData; publicLink?: boolean }) {
   const half = Math.round(d.total / 2);
   const preparedBy = [d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ");
-  const monthlyNote = ["No tax.", d.ecommerce ? ECOMMERCE_MONTHLY_DISCLAIMER : "", d.mlsIdx ? IDX_MONTHLY_DISCLAIMER : ""]
+  const monthlyNote = [d.ecommerce ? ECOMMERCE_MONTHLY_DISCLAIMER : "", d.mlsIdx ? IDX_MONTHLY_DISCLAIMER : ""]
     .filter(Boolean)
     .join(" ");
   const features = STANDARD_FEATURES.replace(/^Standard Features:\s*/, "");
@@ -49,16 +49,19 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
           {publicLink && (
             <a
-              href={`/proposal/${d.code}`}
+              href={`/proposal/${d.publicCode}`}
               target="_blank"
               rel="noopener noreferrer"
               className="btn-secondary"
-              style={{ padding: "13px 22px", fontSize: "0.98rem" }}
+              style={{ padding: "13px 22px", fontSize: "0.98rem", display: "inline-flex", alignItems: "center", gap: 7 }}
             >
-              View public link ↗
+              View public link
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
+                <path d="M5 3h6v6M11 3L4 10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
             </a>
           )}
-          <a href={`/api/proposal/${d.code}/pdf`} className="btn-gold" style={{ padding: "13px 26px", fontSize: "0.98rem" }}>
+          <a href={`/api/proposal/${d.publicCode}/pdf`} className="btn-gold" style={{ padding: "13px 26px", fontSize: "0.98rem" }}>
             Download PDF
           </a>
         </div>
@@ -121,7 +124,7 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
             ))}
           </ul>
           <div className="total"><span>Per month</span><span className="big">{money(d.monthly)}</span></div>
-          <p className="note">{monthlyNote}</p>
+          {monthlyNote && <p className="note">{monthlyNote}</p>}
         </div>
 
         <p className="note">{d.code}</p>

@@ -37,6 +37,7 @@ export function buildProposalData(
     preparedByEmail: quote.createdBy?.email ?? null,
     preparedByPhone: quote.createdBy?.phone ?? null,
     code: quote.code,
+    publicCode: quote.publicCode,
     scopeSummary: quote.scopeSummary,
     lineItems,
     subtotal: subtotal(quote),

@@ -8,3 +8,11 @@ const generate = customAlphabet(alphabet, 8);
 export function generateAccessCode(): string {
   return generate();
 }
+
+// Long, hard-to-guess code for the public proposal URL (full alphanumeric, 15 chars).
+const publicAlphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+const generatePublic = customAlphabet(publicAlphabet, 15);
+
+export function generatePublicCode(): string {
+  return generatePublic();
+}

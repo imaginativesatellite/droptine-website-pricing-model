@@ -101,8 +101,8 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
       requesterEmail: quote.createdBy.email,
       proposalName: updated.proposalName,
       total: finalPrice(updated),
-      code: updated.code,
-      proposalUrl: proposalUrl(updated.code),
+      code: updated.publicCode,
+      proposalUrl: proposalUrl(updated.publicCode),
       dashboardUrl: `${appUrl()}/dashboard`,
       pdf,
     });
@@ -188,8 +188,8 @@ export async function resendProposalEmail(quoteId: string): Promise<void> {
       staffEmail: quote.createdBy.email,
       proposalName: quote.proposalName,
       total: finalPrice(quote),
-      code: quote.code,
-      proposalUrl: proposalUrl(quote.code),
+      code: quote.publicCode,
+      proposalUrl: proposalUrl(quote.publicCode),
       pdf,
     });
     await prisma.quote.update({ where: { id: quoteId }, data: { emailStatus: "SENT", emailError: null } });

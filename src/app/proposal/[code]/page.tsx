@@ -9,7 +9,7 @@ export const metadata = { robots: { index: false, follow: false, nocache: true }
 
 export default async function ProposalPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
-  const quote = await prisma.quote.findUnique({ where: { code }, include: { client: true, createdBy: true } });
+  const quote = await prisma.quote.findUnique({ where: { publicCode: code }, include: { client: true, createdBy: true } });
 
   if (!quote || quote.status === "CUSTOM_PENDING") notFound();
 

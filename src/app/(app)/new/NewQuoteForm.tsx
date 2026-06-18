@@ -28,9 +28,9 @@ function isAnswered(q: Question, answers: Answers): boolean {
   return v !== undefined && String(v).trim() !== "";
 }
 
-export default function NewQuoteForm({ clientNames }: { clientNames: string[] }) {
+export default function NewQuoteForm({ clientNames, defaultShared }: { clientNames: string[]; defaultShared: boolean }) {
   const [answers, setAnswers] = useState<Answers>({});
-  const [shared, setShared] = useState(false);
+  const [shared, setShared] = useState(defaultShared);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const loaded = useRef(false);

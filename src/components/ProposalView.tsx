@@ -23,20 +23,34 @@ export default function ProposalView({ d }: { d: ProposalPdfData }) {
   const half = Math.round(d.total / 2);
 
   return (
-    <div className="card">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
-        <div style={{ fontWeight: 800, fontSize: "1.3rem", color: "var(--gold)" }}>LUNA CREATIVE</div>
-        <a href={`/api/proposal/${d.code}/pdf`} className="btn-gold" style={{ padding: "14px 28px", fontSize: "1rem" }}>
+    <div className="card" style={{ padding: 0, overflow: "hidden" }}>
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          gap: 16,
+          flexWrap: "wrap",
+          padding: "22px 28px",
+          borderBottom: "1px solid var(--line)",
+        }}
+      >
+        <div style={{ fontWeight: 800, fontSize: "1.45rem", letterSpacing: 1, color: "var(--gold)" }}>LUNA CREATIVE</div>
+        <a href={`/api/proposal/${d.code}/pdf`} className="btn-gold" style={{ padding: "13px 26px", fontSize: "0.98rem" }}>
           Download PDF
         </a>
       </div>
 
-      <h1 style={{ marginTop: 18 }}>Website Proposal</h1>
+      <div style={{ padding: "26px 28px" }}>
+        <div style={{ ...labelStyle, marginBottom: 6 }}>Website Proposal · prepared for</div>
+        <div style={{ fontWeight: 800, fontSize: "2rem", lineHeight: 1.15, color: "var(--charcoal)" }}>{d.proposalName}</div>
 
-      <div className="q">
-        <div style={labelStyle}>Prepared for</div>
-        <div style={{ fontWeight: 800, fontSize: "1.5rem", color: "var(--charcoal)" }}>{d.proposalName}</div>
-      </div>
+      {(d.preparedByName || d.preparedByEmail || d.preparedByPhone) && (
+        <div className="q" style={{ marginTop: 18 }}>
+          <div style={labelStyle}>Prepared by</div>
+          {[d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ")}
+        </div>
+      )}
 
       {(d.preparedByName || d.preparedByEmail || d.preparedByPhone) && (
         <div className="q">
@@ -90,7 +104,8 @@ export default function ProposalView({ d }: { d: ProposalPdfData }) {
         {d.mlsIdx && <p className="note">{IDX_MONTHLY_DISCLAIMER}</p>}
       </div>
 
-      <p className="help" style={{ marginTop: 14 }}>{d.code}</p>
+        <p className="help" style={{ marginTop: 14 }}>{d.code}</p>
+      </div>
     </div>
   );
 }

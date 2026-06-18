@@ -21,7 +21,10 @@ export default async function EditQuotePage({ params }: { params: Promise<{ id: 
 
   return (
     <div className="container">
-      <Link href={`/quote/${id}`} className="help backlink">← Back to quote</Link>
+      <Link href={`/quote/${id}`} className="backnav">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        Back to quote
+      </Link>
       <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
         <h1>Edit answers</h1>
         <p className="lede">Changing answers re-computes the price and is recorded in the activity log.</p>

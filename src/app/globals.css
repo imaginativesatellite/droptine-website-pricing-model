@@ -377,6 +377,27 @@ select:focus {
   letter-spacing: 0.5px;
 }
 
+/* Back navigation with arrow icon */
+.backnav {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--muted);
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  transition: color 0.15s ease;
+}
+.backnav:hover {
+  color: var(--charcoal);
+}
+.backnav svg {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+
 /* Consistent small disclaimer/note line */
 .note {
   font-size: 0.8rem;
@@ -388,21 +409,24 @@ select:focus {
 .appnav {
   background: var(--charcoal);
   color: #fff;
-  padding: 0 24px;
+  padding: 0 28px;
   position: relative;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.08), 0 2px 8px rgba(0, 0, 0, 0.18);
 }
 .appnav .wrap {
   max-width: none;
   margin: 0;
   display: flex;
   align-items: center;
-  gap: 20px;
-  height: 56px;
+  gap: 32px;
+  height: 64px;
 }
 .appnav a {
-  color: #d8d4cd;
+  color: #b7b2a9;
   text-decoration: none;
-  font-size: 0.92rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: color 0.15s ease;
 }
 .appnav a:hover {
   color: #fff;
@@ -411,12 +435,28 @@ select:focus {
   font-weight: 800;
   color: var(--gold);
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1.5px;
+  font-size: 1.05rem;
+}
+.appnav .brandlink:hover {
+  color: var(--gold);
 }
 .appnav .links {
   display: flex;
-  gap: 20px;
+  gap: 26px;
+  align-items: stretch;
+  height: 100%;
+}
+.appnav .links a {
+  display: flex;
   align-items: center;
+  height: 100%;
+  border-bottom: 3px solid transparent;
+  padding-top: 3px;
+}
+.appnav .links a.active {
+  color: #fff;
+  border-bottom-color: var(--gold);
 }
 .appnav .spacer {
   flex: 1;
@@ -425,15 +465,22 @@ select:focus {
   position: relative;
 }
 .appnav .avatar {
-  width: 34px;
-  height: 34px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   background: var(--gold);
   color: #fff;
-  border: none;
+  border: 2px solid rgba(255, 255, 255, 0.2);
   font-weight: 700;
-  font-size: 0.78rem;
+  font-size: 0.95rem;
   cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.1s ease;
+}
+.appnav .avatar:hover {
+  border-color: #fff;
+}
+.appnav .avatar:active {
+  transform: scale(0.96);
 }
 .appnav .menu {
   position: absolute;
@@ -485,9 +532,10 @@ select:focus {
   background: none;
   border: none;
   color: #fff;
-  font-size: 1.4rem;
+  font-size: 1.7rem;
   cursor: pointer;
   line-height: 1;
+  padding: 6px 4px;
 }
 .appnav .mobile-panel {
   display: none;
@@ -518,10 +566,17 @@ select:focus {
     color: #d8d4cd;
     background: none;
     border: none;
+    border-left: 3px solid transparent;
     font: inherit;
+    font-size: 1rem;
     text-align: left;
-    padding: 12px 8px;
+    padding: 13px 10px;
     cursor: pointer;
+  }
+  .appnav .mobile-panel a.active {
+    color: #fff;
+    border-left-color: var(--gold);
+    background: rgba(255, 255, 255, 0.04);
   }
   .appnav .mobile-panel .menu-email {
     color: #9a948b;

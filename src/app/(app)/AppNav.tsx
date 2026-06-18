@@ -23,14 +23,22 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
     setNavOpen(false);
   }, [pathname]);
 
-  const navLinks = (onClick?: () => void) => (
-    <>
-      <Link href="/dashboard" onClick={onClick}>Dashboard</Link>
-      <Link href="/new" onClick={onClick}>New Quote</Link>
-      {isAdmin && <Link href="/admin" onClick={onClick}>Admin</Link>}
-      {isAdmin && <Link href="/users" onClick={onClick}>Users</Link>}
-    </>
-  );
+  const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  const navLinks = (onClick?: () => void) => {
+    const item = (href: string, label: string) => (
+      <Link key={href} href={href} className={isActive(href) ? "active" : ""} onClick={onClick}>
+        {label}
+      </Link>
+    );
+    return (
+      <>
+        {item("/dashboard", "Dashboard")}
+        {item("/new", "New Quote")}
+        {isAdmin && item("/admin", "Admin")}
+        {isAdmin && item("/users", "Users")}
+      </>
+    );
+  };
 
   return (
     <nav className="appnav">

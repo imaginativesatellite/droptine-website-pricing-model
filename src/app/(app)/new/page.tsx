@@ -3,7 +3,9 @@ import { requireUser } from "@/lib/session";
 import NewQuoteForm from "./NewQuoteForm";
 
 export default async function NewQuotePage() {
-  await requireUser();
+  const user = await requireUser();
+  // Staff default to sharing with everyone; admins default to private.
+  const defaultShared = user.role !== "ADMIN";
 
   // Suggest client names that still have at least one quote.
   const named = await prisma.quote.findMany({
@@ -17,7 +19,7 @@ export default async function NewQuotePage() {
       <div style={{ maxWidth: 640, margin: "0 auto", textAlign: "center" }}>
         <h1>New Quote</h1>
       </div>
-      <NewQuoteForm clientNames={named.map((q) => q.proposalName)} />
+      <NewQuoteForm clientNames={named.map((q) => q.proposalName)} defaultShared={defaultShared} />
     </div>
   );
 }

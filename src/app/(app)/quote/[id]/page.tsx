@@ -47,8 +47,11 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
   return (
     <div className="container" style={{ maxWidth: 820 }}>
-      <Link href="/dashboard" className="help backlink">← Dashboard</Link>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 8, marginBottom: 18 }}>
+      <Link href="/dashboard" className="backnav">
+        <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+        Dashboard
+      </Link>
+      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
         <h1 style={{ flex: 1 }}>{quote!.proposalName}</h1>
         {statusPill(quote!.status)}
       </div>

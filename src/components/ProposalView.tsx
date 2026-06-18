@@ -52,13 +52,6 @@ export default function ProposalView({ d }: { d: ProposalPdfData }) {
         </div>
       )}
 
-      {(d.preparedByName || d.preparedByEmail || d.preparedByPhone) && (
-        <div className="q">
-          <div style={labelStyle}>Prepared by</div>
-          {[d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ")}
-        </div>
-      )}
-
       {d.scopeSummary && (
         <div className="q">
           {d.scopeSummary.split(/\n+/).map((p, i) => <p key={i} style={{ marginBottom: 8 }}>{p}</p>)}

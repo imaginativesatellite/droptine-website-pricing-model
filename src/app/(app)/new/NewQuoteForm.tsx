@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
+import ClientNameInput from "@/components/ClientNameInput";
 import { createQuote } from "./actions";
 
 const DRAFT_KEY = "droptine-quote-draft";
@@ -16,6 +17,14 @@ function visible(q: Question, answers: Answers): boolean {
     if (typeof c.equals === "boolean") return c.equals ? v === true : !v;
     return v === c.equals;
   });
+}
+
+// Every visible question must be answered, except the free-text box at the end.
+function isAnswered(q: Question, answers: Answers): boolean {
+  const v = answers[q.id];
+  if (q.type === "boolean") return v === true || v === false;
+  if (q.type === "multi") return Array.isArray(v) && v.length > 0;
+  return v !== undefined && String(v).trim() !== "";
 }
 
 export default function NewQuoteForm({ clientNames }: { clientNames: string[] }) {
@@ -42,7 +51,7 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
   const questions = QUESTIONNAIRE.filter((q) => visible(q, answers));
-  const proposalName = String(answers.proposalName ?? "").trim();
+  const canSubmit = questions.every((q) => q.id === "additionalFunctionality" || isAnswered(q, answers));
 
   const submit = () => {
     setError(null);
@@ -58,15 +67,22 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <datalist id="client-names">
-        {clientNames.map((n) => <option key={n} value={n} />)}
-      </datalist>
       <div className="card">
         {questions.map((q) => (
           <div className="q" key={q.id}>
             <label className="qlabel" htmlFor={q.id}>{q.label}</label>
             {q.help && <div className="help">{q.help}</div>}
-            {renderInput(q, answers, set)}
+            {q.id === "proposalName" ? (
+              <ClientNameInput
+                id={q.id}
+                value={String(answers[q.id] ?? "")}
+                placeholder={(q as { placeholder?: string }).placeholder}
+                suggestions={clientNames}
+                onChange={(v) => set(q.id, v)}
+              />
+            ) : (
+              renderInput(q, answers, set)
+            )}
           </div>
         ))}
       </div>
@@ -78,7 +94,7 @@ export default function NewQuoteForm({ clientNames }: { clientNames: string[] })
       )}
 
       <div style={{ marginTop: 14 }}>
-        <button type="button" className="btn-primary" disabled={pending || !proposalName} onClick={submit}>
+        <button type="button" className="btn-primary" disabled={pending || !canSubmit} onClick={submit}>
           {pending ? "Saving…" : "Generate Proposal"}
         </button>
       </div>
@@ -132,7 +148,6 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
           id={q.id}
           type={q.type}
           placeholder={q.placeholder}
-          list={q.id === "proposalName" ? "client-names" : undefined}
           value={(answers[q.id] as string) ?? ""}
           onChange={(e) => set(q.id, e.target.value)}
         />

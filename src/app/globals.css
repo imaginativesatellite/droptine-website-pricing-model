@@ -130,6 +130,43 @@ textarea {
   resize: vertical;
 }
 
+/* Custom dropdown chevron with breathing room on the right */
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'><path d='M2 4.5l4 4 4-4' stroke='%236f6a63' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  padding-right: 38px;
+}
+
+/* Full-width autocomplete dropdown (client name) */
+.autocomplete-wrap {
+  position: relative;
+}
+.autocomplete-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  width: 100%;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  z-index: 30;
+  max-height: 240px;
+  overflow: auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+}
+.autocomplete-item {
+  padding: 10px 12px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.autocomplete-item:hover {
+  background: var(--bg);
+}
+
 .toggle {
   display: inline-flex;
   gap: 8px;
@@ -265,11 +302,6 @@ textarea {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.backlink .backarrow {
-  font-size: 1.25rem;
-  vertical-align: middle;
-  margin-right: 2px;
-}
 
 /* Consistent small disclaimer/note line */
 .note {
@@ -286,8 +318,8 @@ textarea {
   position: relative;
 }
 .appnav .wrap {
-  max-width: 820px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
   display: flex;
   align-items: center;
   gap: 20px;

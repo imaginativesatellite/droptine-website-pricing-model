@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
+import ClientNameInput from "@/components/ClientNameInput";
 import { editAnswers } from "./actions";
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
@@ -42,15 +43,22 @@ export default function EditAnswersForm({
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <datalist id="client-names">
-        {clientNames.map((n) => <option key={n} value={n} />)}
-      </datalist>
       <div className="card">
         {questions.map((q) => (
           <div className="q" key={q.id}>
             <label className="qlabel" htmlFor={q.id}>{q.label}</label>
             {q.help && <div className="help">{q.help}</div>}
-            {renderInput(q, answers, set)}
+            {q.id === "proposalName" ? (
+              <ClientNameInput
+                id={q.id}
+                value={String(answers[q.id] ?? "")}
+                placeholder={(q as { placeholder?: string }).placeholder}
+                suggestions={clientNames}
+                onChange={(v) => set(q.id, v)}
+              />
+            ) : (
+              renderInput(q, answers, set)
+            )}
           </div>
         ))}
       </div>
@@ -104,7 +112,6 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
     default:
       return (
         <input id={q.id} type={q.type} placeholder={q.placeholder}
-          list={q.id === "proposalName" ? "client-names" : undefined}
           value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value)} />
       );
   }

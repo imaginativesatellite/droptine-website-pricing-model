@@ -17,7 +17,7 @@ export default function PasswordForm() {
         <label className="qlabel" htmlFor="next">New password</label>
         <input id="next" name="next" type="password" minLength={8} required autoComplete="new-password" />
       </div>
-      <div className="q">
+      <div className="q" style={{ borderBottom: "none" }}>
         <label className="qlabel" htmlFor="confirm">Confirm new password</label>
         <input id="confirm" name="confirm" type="password" minLength={8} required autoComplete="new-password" />
       </div>

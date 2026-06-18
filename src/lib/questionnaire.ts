@@ -37,7 +37,7 @@ const COUNT_OPTIONS = [
 
 export const QUESTIONNAIRE: Question[] = [
   // The client the proposal will eventually go to (Droptine's end client).
-  { id: "proposalName", type: "text", label: "Client Name", placeholder: "e.g. Texas Hidden Springs Ranch", required: true, group: "client" },
+  { id: "proposalName", type: "text", label: "Client Name", placeholder: "e.g. Hidden Valley Ranch", required: true, group: "client" },
 
   // --- Scope ---
   { id: "existingWebsite", type: "boolean", label: "Does the client have an existing website?", group: "scope" },

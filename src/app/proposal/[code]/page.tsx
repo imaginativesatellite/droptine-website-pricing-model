@@ -4,6 +4,8 @@ import { buildProposalData } from "@/lib/proposal-data";
 import ProposalView from "@/components/ProposalView";
 
 export const dynamic = "force-dynamic";
+// Public link, but must never be indexed by search engines.
+export const metadata = { robots: { index: false, follow: false, nocache: true } };
 
 export default async function ProposalPage({ params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;

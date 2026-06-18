@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
 import { computeQuote, type PricingAnswers } from "@/lib/pricing";
+import BrandSelect from "@/components/BrandSelect";
 
 type Answers = Record<string, string | boolean | undefined>;
 
@@ -138,14 +139,12 @@ function renderInput(
       );
     case "single":
       return (
-        <select value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value || undefined)}>
-          <option value="">Select…</option>
-          {q.options.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
+        <BrandSelect
+          id={q.id}
+          value={(answers[q.id] as string) ?? ""}
+          onChange={(v) => set(q.id, v || undefined)}
+          options={q.options}
+        />
       );
     case "multi":
       return (

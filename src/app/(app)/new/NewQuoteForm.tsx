@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
+import BrandSelect from "@/components/BrandSelect";
 import { createQuote } from "./actions";
 
 const DRAFT_KEY = "droptine-quote-draft";
@@ -80,13 +81,15 @@ export default function NewQuoteForm({
         <div className="card" style={{ marginBottom: 16, borderColor: "var(--gold)" }}>
           <label className="qlabel" htmlFor="assignee">Assign to</label>
           <div className="help">The proposal will be created under this person and emailed to them.</div>
-          <select id="assignee" value={assigneeId} onChange={(e) => setAssigneeId(e.target.value)}>
-            {assignableUsers.map((u) => (
-              <option key={u.id} value={u.id}>
-                {u.name} ({u.email}){u.id === currentUserId ? " — me" : ""}
-              </option>
-            ))}
-          </select>
+          <BrandSelect
+            id="assignee"
+            value={assigneeId}
+            onChange={setAssigneeId}
+            options={assignableUsers.map((u) => ({
+              value: u.id,
+              label: `${u.name} (${u.email})${u.id === currentUserId ? " — me" : ""}`,
+            }))}
+          />
         </div>
       )}
       <div className="card">
@@ -135,10 +138,12 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
       );
     case "single":
       return (
-        <select value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value || undefined)}>
-          <option value="">Select…</option>
-          {q.options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
-        </select>
+        <BrandSelect
+          id={q.id}
+          value={(answers[q.id] as string) ?? ""}
+          onChange={(v) => set(q.id, v || undefined)}
+          options={q.options}
+        />
       );
     case "multi":
       return (

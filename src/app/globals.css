@@ -140,6 +140,80 @@ select {
   padding-right: 38px;
 }
 
+/* On-brand focus + text selection (replaces the default blue) */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(232, 148, 34, 0.15);
+}
+::selection {
+  background: rgba(232, 148, 34, 0.25);
+}
+
+/* Branded custom dropdown (no native blue highlight) */
+.bs {
+  position: relative;
+}
+.bs-trigger {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 0.95rem;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+}
+.bs-trigger:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 0 3px rgba(232, 148, 34, 0.15);
+}
+.bs-placeholder {
+  color: var(--muted);
+}
+.bs-chev {
+  color: var(--muted);
+  display: flex;
+  flex: none;
+}
+.bs-list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  z-index: 30;
+  max-height: 260px;
+  overflow: auto;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+  padding: 4px;
+}
+.bs-option {
+  padding: 9px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95rem;
+}
+.bs-option:hover {
+  background: var(--bg);
+}
+.bs-option.selected {
+  background: rgba(232, 148, 34, 0.12);
+  color: var(--gold-dark);
+  font-weight: 600;
+}
+
 /* Full-width autocomplete dropdown (client name) */
 .autocomplete-wrap {
   position: relative;

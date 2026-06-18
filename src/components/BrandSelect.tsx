@@ -1,0 +1,60 @@
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+
+export type Option = { value: string; label: string };
+
+export default function BrandSelect({
+  id,
+  value,
+  options,
+  placeholder = "Select…",
+  onChange,
+}: {
+  id?: string;
+  value: string;
+  options: Option[];
+  placeholder?: string;
+  onChange: (v: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const onDocClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", onDocClick);
+    return () => document.removeEventListener("mousedown", onDocClick);
+  }, []);
+
+  const selected = options.find((o) => o.value === value);
+
+  return (
+    <div className="bs" ref={ref}>
+      <button type="button" id={id} className="bs-trigger" onClick={() => setOpen((o) => !o)} aria-haspopup="listbox" aria-expanded={open}>
+        <span className={selected ? "" : "bs-placeholder"}>{selected ? selected.label : placeholder}</span>
+        <span className="bs-chev" aria-hidden>
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <path d="M2 4.5l4 4 4-4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </span>
+      </button>
+      {open && (
+        <div className="bs-list" role="listbox">
+          {options.map((o) => (
+            <div
+              key={o.value}
+              role="option"
+              aria-selected={o.value === value}
+              className={`bs-option${o.value === value ? " selected" : ""}`}
+              onClick={() => { onChange(o.value); setOpen(false); }}
+            >
+              {o.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

@@ -1,14 +1,19 @@
 "use client";
 
-import { useActionState, useEffect, useRef } from "react";
+import { useActionState, useEffect, useRef, useState } from "react";
+import BrandSelect from "@/components/BrandSelect";
 import { createUser, type FormState } from "./actions";
 
 export default function AddUserForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(createUser, undefined);
+  const [role, setRole] = useState("STAFF");
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
-    if (state?.ok) formRef.current?.reset();
+    if (state?.ok) {
+      formRef.current?.reset();
+      setRole("STAFF");
+    }
   }, [state]);
 
   return (
@@ -25,10 +30,16 @@ export default function AddUserForm() {
         </div>
         <div>
           <label className="qlabel" htmlFor="role">Role</label>
-          <select id="role" name="role" defaultValue="STAFF">
-            <option value="STAFF">Staff</option>
-            <option value="ADMIN">Admin</option>
-          </select>
+          <input type="hidden" name="role" value={role} />
+          <BrandSelect
+            id="role"
+            value={role}
+            onChange={setRole}
+            options={[
+              { value: "STAFF", label: "Staff" },
+              { value: "ADMIN", label: "Admin" },
+            ]}
+          />
         </div>
         <div>
           <label className="qlabel" htmlFor="password">Temporary password</label>

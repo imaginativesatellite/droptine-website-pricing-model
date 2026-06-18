@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import BrandSelect from "@/components/BrandSelect";
 
 export type QuoteItem = {
   id: string;
@@ -76,9 +77,13 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
         </div>
         <label className="help" style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
           Show
-          <select value={pageSize} onChange={(e) => { setPageSize(Number(e.target.value)); setPage(1); }} style={{ width: "auto" }}>
-            {PAGE_SIZES.map((n) => <option key={n} value={n}>{n}</option>)}
-          </select>
+          <div style={{ width: 84 }}>
+            <BrandSelect
+              value={String(pageSize)}
+              onChange={(v) => { setPageSize(Number(v)); setPage(1); }}
+              options={PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }))}
+            />
+          </div>
         </label>
       </div>
 

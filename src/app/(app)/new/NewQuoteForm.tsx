@@ -28,17 +28,9 @@ function isAnswered(q: Question, answers: Answers): boolean {
   return v !== undefined && String(v).trim() !== "";
 }
 
-export default function NewQuoteForm({
-  clientNames,
-  assignableUsers = [],
-  currentUserId,
-}: {
-  clientNames: string[];
-  assignableUsers?: { id: string; name: string; email: string }[];
-  currentUserId: string;
-}) {
+export default function NewQuoteForm({ clientNames }: { clientNames: string[] }) {
   const [answers, setAnswers] = useState<Answers>({});
-  const [assigneeId, setAssigneeId] = useState<string>(currentUserId);
+  const [shared, setShared] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
   const loaded = useRef(false);
@@ -67,7 +59,7 @@ export default function NewQuoteForm({
     setError(null);
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
     startTransition(async () => {
-      const res = await createQuote(answers, assigneeId);
+      const res = await createQuote(answers, shared);
       if (res?.error) {
         setError(res.error);
         try { localStorage.setItem(DRAFT_KEY, JSON.stringify(answers)); } catch {}
@@ -77,21 +69,6 @@ export default function NewQuoteForm({
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      {assignableUsers.length > 0 && (
-        <div className="card" style={{ marginBottom: 16, borderColor: "var(--gold)" }}>
-          <label className="qlabel" htmlFor="assignee">Assign to</label>
-          <div className="help">The proposal will be created under this person and emailed to them.</div>
-          <BrandSelect
-            id="assignee"
-            value={assigneeId}
-            onChange={setAssigneeId}
-            options={assignableUsers.map((u) => ({
-              value: u.id,
-              label: `${u.name} (${u.email})${u.id === currentUserId ? " — me" : ""}`,
-            }))}
-          />
-        </div>
-      )}
       <div className="card">
         {questions.map((q) => (
           <div className="q" key={q.id}>
@@ -117,6 +94,15 @@ export default function NewQuoteForm({
           {error} Your answers are saved on this device — just press the button again.
         </p>
       )}
+
+      <div className="q" style={{ marginTop: 14, borderBottom: "none" }}>
+        <label className="qlabel">Viewable to everybody?</label>
+        <div className="help">Off = only you (and admins) can see it. On = visible to all staff.</div>
+        <div className="toggle">
+          <button type="button" className={shared ? "on" : ""} onClick={() => setShared(true)}>Yes</button>
+          <button type="button" className={!shared ? "on" : ""} onClick={() => setShared(false)}>No</button>
+        </div>
+      </div>
 
       <div style={{ marginTop: 14 }}>
         <button type="button" className="btn-primary" disabled={pending || !canSubmit} onClick={submit}>

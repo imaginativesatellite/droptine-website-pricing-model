@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
-import { requireAdmin } from "@/lib/session";
+import { requireAdmin, requireUser } from "@/lib/session";
 import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
@@ -114,6 +114,16 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
     });
   }
 
+  revalidatePath(`/quote/${quoteId}`);
+}
+
+/** Creator or admin: toggle whether the quote is viewable by all staff. */
+export async function setShared(quoteId: string, shared: boolean): Promise<void> {
+  const user = await requireUser();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId }, select: { createdById: true } });
+  if (!quote) throw new Error("Quote not found.");
+  if (user.role !== "ADMIN" && quote.createdById !== user.id) throw new Error("Not allowed.");
+  await prisma.quote.update({ where: { id: quoteId }, data: { shared } });
   revalidatePath(`/quote/${quoteId}`);
 }
 

@@ -25,22 +25,12 @@ async function uniqueCode(): Promise<string> {
 
 export type CreateResult = { error: string } | void;
 
-export async function createQuote(answers: RawAnswers, assigneeId?: string): Promise<CreateResult> {
+export async function createQuote(answers: RawAnswers, shared?: boolean): Promise<CreateResult> {
   const user = await requireUser();
+  const creatorEmail = user.email ?? "";
 
   const proposalName = String(answers.proposalName ?? "").trim();
   if (!proposalName) return { error: "A client name is required." };
-
-  // Admins may create a quote on behalf of (and assigned to) another user.
-  let creatorId = user.id;
-  let creatorEmail = user.email ?? "";
-  if (assigneeId && user.role === "ADMIN" && assigneeId !== user.id) {
-    const assignee = await prisma.user.findUnique({ where: { id: assigneeId } });
-    if (assignee) {
-      creatorId = assignee.id;
-      creatorEmail = assignee.email;
-    }
-  }
 
   const pricing = answers as PricingAnswers;
   const result = computeQuote(pricing);
@@ -49,9 +39,9 @@ export async function createQuote(answers: RawAnswers, assigneeId?: string): Pro
   //    return an inline error so the user can retry without losing their answers.
   let quote;
   try {
-    let client = await prisma.client.findFirst({ where: { ownerId: creatorId, name: proposalName } });
+    let client = await prisma.client.findFirst({ where: { ownerId: user.id, name: proposalName } });
     if (!client) {
-      client = await prisma.client.create({ data: { name: proposalName, ownerId: creatorId } });
+      client = await prisma.client.create({ data: { name: proposalName, ownerId: user.id } });
     }
 
     const code = await uniqueCode();
@@ -63,7 +53,7 @@ export async function createQuote(answers: RawAnswers, assigneeId?: string): Pro
       data: {
         code,
         clientId: client.id,
-        createdById: creatorId,
+        createdById: user.id,
         proposalName,
         answers: answersJson,
         lineItems: lineItemsJson,
@@ -72,6 +62,7 @@ export async function createQuote(answers: RawAnswers, assigneeId?: string): Pro
         monthly: result.monthly,
         customReasons: result.reasons,
         scopeSummary,
+        shared: shared === true,
       },
     });
   } catch (e) {

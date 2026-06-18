@@ -91,6 +91,9 @@ model Quote {
   // why a quote needs a custom follow-up (CUSTOM_PENDING)
   customReasons String[]
 
+  // visibility: private to the creator (and admins) unless shared with everyone
+  shared        Boolean  @default(false)
+
   // custom-quote approval
   approvedById String?
   approvedBy   User?     @relation("ApprovedBy", fields: [approvedById], references: [id])

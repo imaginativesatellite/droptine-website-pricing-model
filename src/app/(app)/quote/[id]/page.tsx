@@ -5,7 +5,7 @@ import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice } from "@/lib/quote";
 import ProposalView from "@/components/ProposalView";
-import { updateQuote, approveQuote, resendProposalEmail } from "./actions";
+import { updateQuote, approveQuote, resendProposalEmail, setShared } from "./actions";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 
 const statusPill = (status: string) => {
@@ -38,6 +38,10 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   });
   if (!quote) notFound();
 
+  const isCreator = quote!.createdById === user.id;
+  // Private to the creator (and admins) unless shared with everyone.
+  if (!isAdmin && !isCreator && !quote!.shared) notFound();
+
   const isPending = quote!.status === "CUSTOM_PENDING";
   const d = buildProposalData(quote!);
 
@@ -59,6 +63,22 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         </div>
       ) : (
         <ProposalView d={d} />
+      )}
+
+      {(isAdmin || isCreator) && (
+        <div className="card" style={{ marginTop: 18, display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+          <div style={{ flex: 1, minWidth: 200 }}>
+            <div style={{ fontWeight: 600 }}>Visibility</div>
+            <div className="help">
+              {quote!.shared ? "Viewable to everybody." : "Private — only you and admins can see it."}
+            </div>
+          </div>
+          <form action={setShared.bind(null, quote!.id, !quote!.shared)}>
+            <button type="submit" className="btn-secondary">
+              {quote!.shared ? "Make private" : "Make viewable to everybody"}
+            </button>
+          </form>
+        </div>
       )}
 
       {/* Admin controls */}

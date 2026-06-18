@@ -12,7 +12,7 @@ export default async function AccountPage() {
       <h1>Account</h1>
       <p className="lede">Your contact details and password.</p>
 
-      <ProfileForm email={user.email} defaultName={user.name} defaultPhone={user.phone ?? ""} />
+      <ProfileForm defaultName={user.name} defaultPhone={user.phone ?? ""} />
       <PasswordForm />
     </div>
   );

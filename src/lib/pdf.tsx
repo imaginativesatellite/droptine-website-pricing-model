@@ -93,7 +93,7 @@ function Header() {
 function Footer({ code }: { code: string }) {
   return (
     <Text style={s.footer} fixed>
-      Proposal code {code} · Luna Creative · {LUNA_PHONE} · {LUNA_WEB}
+      {code} · Luna Creative · {LUNA_PHONE} · {LUNA_WEB}
     </Text>
   );
 }

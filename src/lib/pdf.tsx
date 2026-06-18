@@ -26,7 +26,6 @@ const GOLD = "#e89422";
 const CHARCOAL = "#1a1a1a";
 const MUTED = "#6f6a63";
 const LINE = "#e7e3dd";
-const TINT = "#fdf4e7";
 
 const s = StyleSheet.create({
   page: { paddingTop: 46, paddingBottom: 60, paddingHorizontal: 48, fontSize: 10, color: "#2b2b2b", fontFamily: "Helvetica", lineHeight: 1.5 },
@@ -45,7 +44,7 @@ const s = StyleSheet.create({
   rowLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 3, fontSize: 9.5 },
   discount: { color: "#2e7d32" },
 
-  totalBox: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", backgroundColor: TINT, borderRadius: 6, paddingVertical: 14, paddingHorizontal: 18, marginTop: 16 },
+  totalBox: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 2, borderTopColor: CHARCOAL, paddingTop: 12, paddingHorizontal: 14, marginTop: 18 },
   totalLabel: { fontSize: 11, fontFamily: "Helvetica-Bold", color: CHARCOAL, textTransform: "uppercase", letterSpacing: 1 },
   totalAmt: { fontSize: 18, fontFamily: "Helvetica-Bold", color: CHARCOAL },
   splitRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 6, fontSize: 9.5 },

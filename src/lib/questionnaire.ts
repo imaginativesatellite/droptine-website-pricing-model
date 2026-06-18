@@ -125,7 +125,7 @@ export const QUESTIONNAIRE: Question[] = [
   { id: "socialFeed", type: "boolean", label: "Social media feed integration?", group: "scope" },
 
   // --- Complex / custom ---
-  { id: "mlsIdx", type: "boolean", label: "Does it need live MLS/IDX real-estate syncing?", help: "Adds $930 to the build. 3rd-party IDX fees are billed directly to the client.", group: "scope" },
+  { id: "mlsIdx", type: "boolean", label: "Does it need live MLS/IDX real-estate syncing?", group: "scope" },
   {
     id: "additionalFunctionality",
     type: "longtext",

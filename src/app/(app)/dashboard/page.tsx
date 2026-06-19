@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
-import { finalPrice } from "@/lib/quote";
+import { finalPrice, isExpired } from "@/lib/quote";
 import DashboardList, { type QuoteItem } from "./DashboardList";
 
 export default async function Dashboard() {
@@ -22,20 +22,26 @@ export default async function Dashboard() {
       overrideTotal: true,
       discount: true,
       shared: true,
+      validFrom: true,
       createdBy: { select: { name: true, email: true } },
     },
   });
 
-  const items: QuoteItem[] = quotes.map((q) => ({
-    id: q.id,
-    code: q.code,
-    name: q.proposalName,
-    status: q.status,
-    createdAt: q.createdAt.toISOString(),
-    price: q.status === "CUSTOM_PENDING" ? null : finalPrice(q),
-    requestedBy: q.createdBy.name || q.createdBy.email,
-    shared: q.shared,
-  }));
+  const items: QuoteItem[] = quotes.map((q) => {
+    const expired = isExpired(q);
+    return {
+      id: q.id,
+      code: q.code,
+      name: q.proposalName,
+      status: q.status,
+      createdAt: q.createdAt.toISOString(),
+      // Staff don't see the price on expired quotes.
+      price: q.status === "CUSTOM_PENDING" || (!isAdmin && expired) ? null : finalPrice(q),
+      requestedBy: q.createdBy.name || q.createdBy.email,
+      shared: q.shared,
+      expired,
+    };
+  });
 
   return (
     <div className="container">
@@ -49,7 +55,7 @@ export default async function Dashboard() {
       {items.length === 0 ? (
         <div className="card"><p>No quotes yet. <Link href="/new">Create your first quote →</Link></p></div>
       ) : (
-        <DashboardList items={items} />
+        <DashboardList items={items} isAdmin={isAdmin} />
       )}
     </div>
   );

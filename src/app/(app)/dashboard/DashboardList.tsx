@@ -13,6 +13,7 @@ export type QuoteItem = {
   price: number | null;
   requestedBy: string;
   shared: boolean;
+  expired: boolean;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -36,52 +37,61 @@ function PrivateBadge() {
   );
 }
 
-function Row({ q, attention }: { q: QuoteItem; attention?: boolean }) {
+function badges(q: QuoteItem) {
   return (
-    <Link href={`/quote/${q.id}`} className={`qrow${attention ? " attention" : ""}`}>
+    <>
+      {q.expired && <span className="pill expired">Expired</span>}
+      {!q.shared && <PrivateBadge />}
+      {pill(q.status)}
+    </>
+  );
+}
+
+function Row({ q, attention, locked }: { q: QuoteItem; attention?: boolean; locked: boolean }) {
+  const inner = (
+    <>
       <div className="main">
         <div className="name">{q.name}</div>
         <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
       </div>
       <div className="right">
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-          {!q.shared && <PrivateBadge />}
-          {pill(q.status)}
-        </div>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{badges(q)}</div>
         <div className="price">{q.price == null ? "—" : money(q.price)}</div>
       </div>
-    </Link>
+    </>
   );
+  if (locked) return <div className="qrow" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
+  return <Link href={`/quote/${q.id}`} className={`qrow${attention ? " attention" : ""}`}>{inner}</Link>;
 }
 
-function Tile({ q, attention }: { q: QuoteItem; attention?: boolean }) {
-  return (
-    <Link href={`/quote/${q.id}`} className={`qtile${attention ? " attention" : ""}`}>
-      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
-        {pill(q.status)}
-        {!q.shared && <PrivateBadge />}
-      </div>
+function Tile({ q, attention, locked }: { q: QuoteItem; attention?: boolean; locked: boolean }) {
+  const inner = (
+    <>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{badges(q)}</div>
       <div className="name">{q.name}</div>
       <div className="price">{q.price == null ? "—" : money(q.price)}</div>
       <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
-    </Link>
+    </>
   );
+  if (locked) return <div className="qtile" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
+  return <Link href={`/quote/${q.id}`} className={`qtile${attention ? " attention" : ""}`}>{inner}</Link>;
 }
 
-function Group({ items, view, attention }: { items: QuoteItem[]; view: "list" | "tiles"; attention?: boolean }) {
+function Group({ items, view, isAdmin, attention }: { items: QuoteItem[]; view: "list" | "tiles"; isAdmin: boolean; attention?: boolean }) {
+  const locked = (q: QuoteItem) => q.expired && !isAdmin;
   if (view === "tiles") {
     return (
       <div className="qtiles">
-        {items.map((q) => <Tile key={q.id} q={q} attention={attention} />)}
+        {items.map((q) => <Tile key={q.id} q={q} attention={attention} locked={locked(q)} />)}
       </div>
     );
   }
-  return <>{items.map((q) => <Row key={q.id} q={q} attention={attention} />)}</>;
+  return <>{items.map((q) => <Row key={q.id} q={q} attention={attention} locked={locked(q)} />)}</>;
 }
 
 const PAGE_SIZES = [10, 25, 50, 100];
 
-export default function DashboardList({ items }: { items: QuoteItem[] }) {
+export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; isAdmin: boolean }) {
   const [query, setQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
   const [page, setPage] = useState(1);
@@ -152,15 +162,15 @@ export default function DashboardList({ items }: { items: QuoteItem[] }) {
 
       {pending.length > 0 && (
         <section style={{ marginBottom: 24 }}>
-          <div className="section-label attention">Needs attention · {pending.length}</div>
-          <Group items={pending} view={effectiveView} attention />
+          <div className="section-label attention">{isAdmin ? "Needs attention" : "Awaiting pricing"} · {pending.length}</div>
+          <Group items={pending} view={effectiveView} isAdmin={isAdmin} attention />
         </section>
       )}
 
       {rest.length > 0 && (
         <section>
           <div className="section-label">All quotes</div>
-          <Group items={slice} view={effectiveView} />
+          <Group items={slice} view={effectiveView} isAdmin={isAdmin} />
 
           {rest.length > pageSize && (
             <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>

@@ -61,6 +61,8 @@ export async function updateQuote(quoteId: string, formData: FormData): Promise<
   const leadDaysOverride = toInt(formData.get("leadDaysOverride"));
   const monthly = toInt(formData.get("monthly")) ?? quote.monthly;
   const scopeSummary = formData.get("scopeSummary") != null ? String(formData.get("scopeSummary")) : quote.scopeSummary;
+  const customDisclaimer = String(formData.get("customDisclaimer") ?? "").trim() || null;
+  const customDisclaimerPlacement = customDisclaimer ? String(formData.get("customDisclaimerPlacement") || "development") : null;
   const notes = formData.get("notes") ? String(formData.get("notes")) : null;
 
   await logEdit(quoteId, admin.id, "proposalName", quote.proposalName, proposalName);
@@ -70,11 +72,12 @@ export async function updateQuote(quoteId: string, formData: FormData): Promise<
   await logEdit(quoteId, admin.id, "leadDaysOverride", quote.leadDaysOverride?.toString() ?? null, leadDaysOverride?.toString() ?? null);
   await logEdit(quoteId, admin.id, "monthly", quote.monthly.toString(), monthly.toString());
   await logEdit(quoteId, admin.id, "scope", quote.scopeSummary ?? null, scopeSummary ?? null);
+  await logEdit(quoteId, admin.id, "customDisclaimer", quote.customDisclaimer ?? null, customDisclaimer);
   await logEdit(quoteId, admin.id, "notes", quote.notes ?? null, notes);
 
   await prisma.quote.update({
     where: { id: quoteId },
-    data: { proposalName, overrideTotal, discount, actualCharged, leadDaysOverride, monthly, scopeSummary, notes },
+    data: { proposalName, overrideTotal, discount, actualCharged, leadDaysOverride, monthly, scopeSummary, customDisclaimer, customDisclaimerPlacement, notes },
   });
 
   revalidatePath(`/quote/${quoteId}`);
@@ -94,16 +97,19 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
   const leadDaysOverride = toInt(formData.get("leadDaysOverride"));
   const monthly = toInt(formData.get("monthly")) ?? quote.monthly;
   const scopeSummary = formData.get("scopeSummary") != null ? String(formData.get("scopeSummary")) : quote.scopeSummary;
+  const customDisclaimer = String(formData.get("customDisclaimer") ?? "").trim() || null;
+  const customDisclaimerPlacement = customDisclaimer ? String(formData.get("customDisclaimerPlacement") || "development") : null;
 
   await logEdit(quoteId, admin.id, "overrideTotal", quote.overrideTotal?.toString() ?? null, price.toString());
   await logEdit(quoteId, admin.id, "leadDaysOverride", quote.leadDaysOverride?.toString() ?? null, leadDaysOverride?.toString() ?? null);
   await logEdit(quoteId, admin.id, "monthly", quote.monthly.toString(), monthly.toString());
   await logEdit(quoteId, admin.id, "scope", quote.scopeSummary ?? null, scopeSummary ?? null);
+  await logEdit(quoteId, admin.id, "customDisclaimer", quote.customDisclaimer ?? null, customDisclaimer);
   await logEdit(quoteId, admin.id, "status", quote.status, "APPROVED");
 
   const updated = await prisma.quote.update({
     where: { id: quoteId },
-    data: { overrideTotal: price, leadDaysOverride, monthly, scopeSummary, status: "APPROVED", approvedById: admin.id, approvedAt: new Date() },
+    data: { overrideTotal: price, leadDaysOverride, monthly, scopeSummary, customDisclaimer, customDisclaimerPlacement, status: "APPROVED", approvedById: admin.id, approvedAt: new Date() },
     include: { client: true, createdBy: true },
   });
 
@@ -126,6 +132,28 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
     });
   }
 
+  revalidatePath(`/quote/${quoteId}`);
+}
+
+/** Admin: reactivate an expired quote — reset the 60-day window and refresh
+ *  the computed pricing to the current model (override, if any, is kept). */
+export async function reactivateQuote(quoteId: string): Promise<void> {
+  const admin = await requireAdmin();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
+  if (!quote) throw new Error("Quote not found.");
+
+  const result = computeQuote(quote.answers as unknown as PricingAnswers);
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: {
+      validFrom: new Date(),
+      computedTotal: result.total,
+      monthly: result.monthly,
+      lineItems: result.lineItems as unknown as Prisma.InputJsonValue,
+      customReasons: result.reasons,
+    },
+  });
+  await logEdit(quoteId, admin.id, "reactivated", null, "Reset 60-day validity; refreshed pricing");
   revalidatePath(`/quote/${quoteId}`);
 }
 

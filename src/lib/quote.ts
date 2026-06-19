@@ -26,3 +26,14 @@ export function finalPrice(q: PriceParts): number {
 }
 
 export const money = (n: number) => `$${n.toLocaleString("en-US")}`;
+
+/** Proposals are valid for 60 days from validFrom (reset on admin reactivation). */
+export const VALID_DAYS = 60;
+
+export function expiresAt(q: { validFrom: Date }): Date {
+  return new Date(q.validFrom.getTime() + VALID_DAYS * 24 * 60 * 60 * 1000);
+}
+
+export function isExpired(q: { validFrom: Date }): boolean {
+  return expiresAt(q).getTime() < Date.now();
+}

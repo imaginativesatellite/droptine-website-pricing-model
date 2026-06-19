@@ -47,5 +47,7 @@ export function buildProposalData(
     monthly: quote.monthly,
     ecommerce: answers.ecommerce === true,
     mlsIdx: answers.mlsIdx === true,
+    customDisclaimer: quote.customDisclaimer,
+    customDisclaimerPlacement: quote.customDisclaimerPlacement,
   };
 }

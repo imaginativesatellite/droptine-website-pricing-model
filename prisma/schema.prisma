@@ -78,6 +78,9 @@ model Quote {
   monthly       Int      @default(169)
   // manual turnaround override (business days); falls back to price-based
   leadDaysOverride Int?
+  // optional admin disclaimer + where it shows: "development" | "monthly"
+  customDisclaimer String? @db.Text
+  customDisclaimerPlacement String?
   notes         String?  @db.Text
   scopeSummary  String?  @db.Text // LLM-drafted prose (price stays deterministic)
 
@@ -104,6 +107,8 @@ model Quote {
   approvedAt   DateTime?
 
   createdAt DateTime    @default(now())
+  // start of the 60-day validity window; reset when an admin reactivates
+  validFrom DateTime    @default(now())
   updatedAt DateTime    @updatedAt
   edits     QuoteEdit[]
 

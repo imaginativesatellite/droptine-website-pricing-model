@@ -3,10 +3,10 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
-import { money, subtotal, finalPrice } from "@/lib/quote";
+import { money, subtotal, finalPrice, isExpired } from "@/lib/quote";
 import { leadTimeDays } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
-import { updateQuote, approveQuote, resendProposalEmail } from "./actions";
+import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote } from "./actions";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 import VisibilityToggle from "./VisibilityToggle";
 
@@ -47,8 +47,28 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   // Private to the creator (and admins) unless shared with everyone.
   if (!isAdmin && !isCreator && !quote!.shared) notFound();
 
+  const expired = isExpired(quote!);
   const isPending = quote!.status === "CUSTOM_PENDING";
   const d = buildProposalData(quote!);
+
+  // Staff can't open an expired quote (no details, no price).
+  if (!isAdmin && expired) {
+    return (
+      <div className="container" style={{ maxWidth: 560 }}>
+        <Link href="/dashboard" className="backnav">
+          <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
+          Dashboard
+        </Link>
+        <h1>{quote!.proposalName}</h1>
+        <div className="card">
+          <span className="pill expired">Expired</span>
+          <p className="help" style={{ marginTop: 12 }}>
+            This proposal has expired. Ask an admin to reactivate it if you still need it.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container" style={{ maxWidth: 820 }}>
@@ -56,8 +76,9 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         Dashboard
       </Link>
-      <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
         <h1 style={{ flex: 1 }}>{quote!.proposalName}</h1>
+        {expired && <span className="pill expired">Expired</span>}
         {statusPill(quote!.status)}
       </div>
 
@@ -85,8 +106,20 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         <div className="card" style={{ marginTop: 18, borderColor: "var(--gold)" }}>
           <h3 style={{ marginBottom: 2 }}>Admin</h3>
 
+          {expired && (
+            <div style={{ marginTop: 16 }}>
+              <div style={sublabel}>Expired</div>
+              <p className="help" style={{ marginBottom: 10 }}>
+                The 60-day validity has passed. Reactivating resets the date and refreshes pricing to the current model.
+              </p>
+              <form action={reactivateQuote.bind(null, quote!.id)}>
+                <button type="submit" className="btn-gold">Reactivate</button>
+              </form>
+            </div>
+          )}
+
           {/* Breakdown */}
-          <div style={{ marginTop: 16 }}>
+          <div style={expired ? section : { marginTop: 16 }}>
             <div style={sublabel}>{isPending ? "Selection summary (suggested)" : "Internal breakdown"}</div>
             <table className="simple">
               <tbody>
@@ -137,6 +170,14 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                   <label className="qlabel" htmlFor="approve-scope">Scope</label>
                   <textarea id="approve-scope" name="scopeSummary" defaultValue={quote!.scopeSummary ?? ""} style={{ minHeight: 110 }} />
                 </div>
+                <div style={field}>
+                  <label className="qlabel" htmlFor="approve-disc">Additional disclaimer (optional)</label>
+                  <textarea id="approve-disc" name="customDisclaimer" defaultValue={quote!.customDisclaimer ?? ""} />
+                  <div style={{ display: "flex", gap: 18, marginTop: 8, fontSize: "0.9rem" }}>
+                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="development" defaultChecked={quote!.customDisclaimerPlacement !== "monthly"} /> Website price</label>
+                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="monthly" defaultChecked={quote!.customDisclaimerPlacement === "monthly"} /> Monthly</label>
+                  </div>
+                </div>
                 <button type="submit" className="btn-gold">Approve &amp; send</button>
                 <p className="help" style={{ marginTop: 10 }}>Approving emails the requester the PDF and a link to their quotes.</p>
               </form>
@@ -181,6 +222,14 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                 <div style={field}>
                   <label className="qlabel" htmlFor="scopeSummary">Scope</label>
                   <textarea id="scopeSummary" name="scopeSummary" defaultValue={quote!.scopeSummary ?? ""} style={{ minHeight: 110 }} />
+                </div>
+                <div style={field}>
+                  <label className="qlabel" htmlFor="customDisclaimer">Additional disclaimer (optional)</label>
+                  <textarea id="customDisclaimer" name="customDisclaimer" defaultValue={quote!.customDisclaimer ?? ""} />
+                  <div style={{ display: "flex", gap: 18, marginTop: 8, fontSize: "0.9rem" }}>
+                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="development" defaultChecked={quote!.customDisclaimerPlacement !== "monthly"} /> Website price</label>
+                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="monthly" defaultChecked={quote!.customDisclaimerPlacement === "monthly"} /> Monthly</label>
+                  </div>
                 </div>
                 <div style={field}>
                   <label className="qlabel" htmlFor="notes">Notes</label>

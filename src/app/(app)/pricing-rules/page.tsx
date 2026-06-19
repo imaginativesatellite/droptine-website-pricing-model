@@ -1,9 +1,6 @@
 import { requireAdmin } from "@/lib/session";
 import { PRICING_RULES as R } from "@/lib/pricing";
 import {
-  STANDARD_FEATURES,
-  PROPOSAL_DISCLAIMER,
-  PROPOSAL_VALIDITY,
   ECOMMERCE_MONTHLY_DISCLAIMER,
   IDX_MONTHLY_DISCLAIMER,
 } from "@/lib/proposal-copy";
@@ -103,14 +100,25 @@ export default async function PricingRulesPage() {
         </ul>
       </Card>
 
-      <Card title="Disclaimers added to proposals">
+      <Card title="Conditional disclaimers (only shown when triggered)">
+        <p className="help" style={{ marginBottom: 12 }}>
+          Standard features, lead time, the validity notice, and the general terms appear on every
+          proposal. The ones below only appear when their trigger is met:
+        </p>
         <div style={{ fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: 12 }}>
-          <div><strong>Standard features:</strong> {STANDARD_FEATURES.replace(/^Standard Features:\s*/, "")}</div>
-          <div><strong>Lead time (by final price):</strong> $3,500–5,000 = 45 business days · $5,001–7,500 = 50 · $7,501–10,000 = 55 · $10,001–12,500 = 60 · $12,501–15,000 = 65 — from payment of the initial deposit.</div>
-          <div><strong>Proposal disclaimer (italic):</strong> {PROPOSAL_DISCLAIMER}</div>
-          <div><strong>Validity:</strong> {PROPOSAL_VALIDITY}</div>
-          <div><strong>E-commerce monthly:</strong> {ECOMMERCE_MONTHLY_DISCLAIMER}</div>
-          <div><strong>MLS/IDX monthly:</strong> {IDX_MONTHLY_DISCLAIMER}</div>
+          <div>
+            <strong>E-commerce (monthly):</strong> {ECOMMERCE_MONTHLY_DISCLAIMER}
+            <div className="help" style={{ marginTop: 2 }}>Trigger: the site includes e-commerce.</div>
+          </div>
+          <div>
+            <strong>MLS/IDX (monthly):</strong> {IDX_MONTHLY_DISCLAIMER}
+            <div className="help" style={{ marginTop: 2 }}>Trigger: MLS/IDX syncing is selected.</div>
+          </div>
+          <div>
+            <strong>Custom disclaimer:</strong> A free-text note an admin can add when approving or
+            editing a quote, placed on either the website-price or monthly section.
+            <div className="help" style={{ marginTop: 2 }}>Trigger: an admin adds one to the quote.</div>
+          </div>
         </div>
       </Card>
     </div>

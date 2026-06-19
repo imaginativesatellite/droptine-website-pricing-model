@@ -2,7 +2,7 @@ import { money } from "@/lib/quote";
 import type { ProposalPdfData } from "@/lib/pdf";
 import {
   STANDARD_FEATURES,
-  LEAD_TIME,
+  LEAD_TIME_SUFFIX,
   PROPOSAL_DISCLAIMER,
   PROPOSAL_VALIDITY,
   MONTHLY_ITEMS,
@@ -30,7 +30,6 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
     .filter(Boolean)
     .join(" ");
   const features = STANDARD_FEATURES.replace(/^Standard Features:\s*/, "");
-  const leadTime = LEAD_TIME.replace(/^Estimated Lead Time:\s*/, "");
 
   return (
     <div className="card" style={{ padding: 0, overflow: "hidden" }}>
@@ -91,7 +90,10 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
           <p style={bodyBold}>Coding, Programming, and Implementation of Website</p>
           <ul className="bullets">
             <li><span style={{ fontWeight: 600 }}>Standard Features:</span> {features}</li>
-            <li><span style={{ fontWeight: 600 }}>Estimated Lead Time:</span> {leadTime}</li>
+            <li>
+              <span style={{ fontWeight: 600 }}>Estimated Lead Time:</span>{" "}
+              <span style={{ fontWeight: 600 }}>{d.leadDays} Business Days</span> {LEAD_TIME_SUFFIX}
+            </li>
           </ul>
 
           {d.discount > 0 && (

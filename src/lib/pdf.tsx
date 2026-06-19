@@ -8,7 +8,7 @@ import {
 } from "@react-pdf/renderer";
 import {
   STANDARD_FEATURES,
-  LEAD_TIME,
+  LEAD_TIME_SUFFIX,
   PROPOSAL_DISCLAIMER,
   PROPOSAL_VALIDITY,
   MONTHLY_ITEMS,
@@ -72,6 +72,7 @@ export type ProposalPdfData = {
   preparedByPhone?: string | null;
   code: string;
   publicCode: string;
+  leadDays: number;
   scopeSummary?: string | null;
   lineItems: { label: string; amount: number }[];
   subtotal: number;
@@ -108,7 +109,6 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
   const half = Math.round(d.total / 2);
   const preparedBy = [d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ");
   const features = STANDARD_FEATURES.replace(/^Standard Features:\s*/, "");
-  const leadTime = LEAD_TIME.replace(/^Estimated Lead Time:\s*/, "");
 
   return (
     <Document>
@@ -142,7 +142,11 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         </View>
         <View style={s.bullet}>
           <Text style={s.bulletDot}>•</Text>
-          <Text style={{ flex: 1 }}><Text style={{ fontFamily: "Helvetica-Bold" }}>Estimated Lead Time: </Text>{leadTime}</Text>
+          <Text style={{ flex: 1 }}>
+            <Text style={{ fontFamily: "Helvetica-Bold" }}>Estimated Lead Time: </Text>
+            <Text style={{ fontFamily: "Helvetica-Bold" }}>{d.leadDays} Business Days </Text>
+            {LEAD_TIME_SUFFIX}
+          </Text>
         </View>
 
         {d.discount > 0 && (

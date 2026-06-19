@@ -10,6 +10,9 @@ export const STANDARD_FEATURES =
 export const LEAD_TIME =
   "Estimated Lead Time: 45 Business Days from Payment Date of Initial Deposit.";
 
+// Suffix after the (price-based, bold) "N Business Days" on the proposal.
+export const LEAD_TIME_SUFFIX = "from Payment Date of Initial Deposit.";
+
 export const PROPOSAL_DISCLAIMER =
   "All business conducted via email or phone is subject to the terms and conditions listed at www.luna-creative.com/terms-conditions. By approving this proposal via email, you certify that the scope and details are correct. Any approvals of proposals or estimates are bound by the terms and conditions.";
 

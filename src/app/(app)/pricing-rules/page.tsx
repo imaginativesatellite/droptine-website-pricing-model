@@ -2,7 +2,6 @@ import { requireAdmin } from "@/lib/session";
 import { PRICING_RULES as R } from "@/lib/pricing";
 import {
   STANDARD_FEATURES,
-  LEAD_TIME,
   PROPOSAL_DISCLAIMER,
   PROPOSAL_VALIDITY,
   ECOMMERCE_MONTHLY_DISCLAIMER,
@@ -107,7 +106,7 @@ export default async function PricingRulesPage() {
       <Card title="Disclaimers added to proposals">
         <div style={{ fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: 12 }}>
           <div><strong>Standard features:</strong> {STANDARD_FEATURES.replace(/^Standard Features:\s*/, "")}</div>
-          <div><strong>Lead time:</strong> {LEAD_TIME.replace(/^Estimated Lead Time:\s*/, "")}</div>
+          <div><strong>Lead time (by final price):</strong> $3,500–5,000 = 45 business days · $5,001–7,500 = 50 · $7,501–10,000 = 55 · $10,001–12,500 = 60 · $12,501–15,000 = 65 — from payment of the initial deposit.</div>
           <div><strong>Proposal disclaimer (italic):</strong> {PROPOSAL_DISCLAIMER}</div>
           <div><strong>Validity:</strong> {PROPOSAL_VALIDITY}</div>
           <div><strong>E-commerce monthly:</strong> {ECOMMERCE_MONTHLY_DISCLAIMER}</div>

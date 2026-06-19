@@ -1,5 +1,5 @@
 import type { Quote, Client, User } from "@prisma/client";
-import { computeQuote, type PricingAnswers } from "./pricing";
+import { computeQuote, leadTimeDays, type PricingAnswers } from "./pricing";
 import { subtotal, finalPrice } from "./quote";
 import type { ProposalPdfData } from "./pdf";
 
@@ -38,6 +38,7 @@ export function buildProposalData(
     preparedByPhone: quote.createdBy?.phone ?? null,
     code: quote.code,
     publicCode: quote.publicCode,
+    leadDays: leadTimeDays(finalPrice(quote)),
     scopeSummary: quote.scopeSummary,
     lineItems,
     subtotal: subtotal(quote),

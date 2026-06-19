@@ -210,3 +210,12 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   const surcharge = answers.ecommerce || answers.realEstate || answers.mlsIdx ? R.monthlySurcharge : 0;
   return { requiresCustomQuote: false, reasons, total, monthly: R.monthlyBase + surcharge, lineItems };
 }
+
+/** Estimated lead time (business days) based on the final price. */
+export function leadTimeDays(total: number): number {
+  if (total <= 5000) return 45;
+  if (total <= 7500) return 50;
+  if (total <= 10000) return 55;
+  if (total <= 12500) return 60;
+  return 65;
+}

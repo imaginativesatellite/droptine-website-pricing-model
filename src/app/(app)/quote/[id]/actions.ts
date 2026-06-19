@@ -6,6 +6,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/session";
 import { computeQuote, type PricingAnswers } from "@/lib/pricing";
+import { generatePublicCode } from "@/lib/code";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
@@ -109,7 +110,8 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
 
   const updated = await prisma.quote.update({
     where: { id: quoteId },
-    data: { overrideTotal: price, leadDaysOverride, monthly, scopeSummary, customDisclaimer, customDisclaimerPlacement, status: "APPROVED", approvedById: admin.id, approvedAt: new Date() },
+    // Approval resets the 60-day validity window.
+    data: { overrideTotal: price, leadDaysOverride, monthly, scopeSummary, customDisclaimer, customDisclaimerPlacement, status: "APPROVED", approvedById: admin.id, approvedAt: new Date(), validFrom: new Date() },
     include: { client: true, createdBy: true },
   });
 
@@ -119,6 +121,7 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
       requesterEmail: quote.createdBy.email,
       proposalName: updated.proposalName,
       total: finalPrice(updated),
+      monthly: updated.monthly,
       code: updated.publicCode,
       proposalUrl: proposalUrl(updated.publicCode),
       dashboardUrl: `${appUrl()}/dashboard`,
@@ -143,17 +146,25 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
   if (!quote) throw new Error("Quote not found.");
 
   const result = computeQuote(quote.answers as unknown as PricingAnswers);
+  // Issue a fresh public code so the expired URL can never be used again.
+  let publicCode = generatePublicCode();
+  for (let i = 0; i < 6; i++) {
+    const clash = await prisma.quote.findUnique({ where: { publicCode } });
+    if (!clash) break;
+    publicCode = generatePublicCode();
+  }
   await prisma.quote.update({
     where: { id: quoteId },
     data: {
       validFrom: new Date(),
+      publicCode,
       computedTotal: result.total,
       monthly: result.monthly,
       lineItems: result.lineItems as unknown as Prisma.InputJsonValue,
       customReasons: result.reasons,
     },
   });
-  await logEdit(quoteId, admin.id, "reactivated", null, "Reset 60-day validity; refreshed pricing");
+  await logEdit(quoteId, admin.id, "reactivated", null, "Reset 60-day validity; new link; refreshed pricing");
   revalidatePath(`/quote/${quoteId}`);
 }
 
@@ -228,6 +239,7 @@ export async function resendProposalEmail(quoteId: string): Promise<void> {
       staffEmail: quote.createdBy.email,
       proposalName: quote.proposalName,
       total: finalPrice(quote),
+      monthly: quote.monthly,
       code: quote.publicCode,
       proposalUrl: proposalUrl(quote.publicCode),
       pdf,

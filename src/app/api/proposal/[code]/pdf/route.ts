@@ -1,13 +1,14 @@
 import { prisma } from "@/lib/db";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
+import { isExpired } from "@/lib/quote";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
   const { code } = await params;
   const quote = await prisma.quote.findUnique({ where: { publicCode: code }, include: { client: true, createdBy: true } });
 
-  // Custom quotes have no proposal until approved.
-  if (!quote || quote.status === "CUSTOM_PENDING") {
+  // Custom quotes have no proposal until approved; expired links stop working.
+  if (!quote || quote.status === "CUSTOM_PENDING" || isExpired(quote)) {
     return new Response("Not found", { status: 404 });
   }
 

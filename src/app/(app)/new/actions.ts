@@ -96,7 +96,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
       });
       const pdf = await renderProposalPdf(buildProposalData(full));
       await sendProposalToStaff({
-        staffEmail: creatorEmail, proposalName, total: result.total,
+        staffEmail: creatorEmail, proposalName, total: result.total, monthly: result.monthly,
         code: quote.publicCode, proposalUrl: proposalUrl(quote.publicCode), pdf,
       });
       await notifyAdmins({

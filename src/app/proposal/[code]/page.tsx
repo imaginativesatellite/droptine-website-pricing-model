@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { buildProposalData } from "@/lib/proposal-data";
+import { isExpired } from "@/lib/quote";
 import ProposalView from "@/components/ProposalView";
 
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ code:
   const { code } = await params;
   const quote = await prisma.quote.findUnique({ where: { publicCode: code }, include: { client: true, createdBy: true } });
 
-  if (!quote || quote.status === "CUSTOM_PENDING") notFound();
+  if (!quote || quote.status === "CUSTOM_PENDING" || isExpired(quote)) notFound();
 
   return (
     <div className="container" style={{ maxWidth: 720 }}>

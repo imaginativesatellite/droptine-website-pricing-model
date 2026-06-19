@@ -4,6 +4,17 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 
 const FROM = process.env.EMAIL_FROM ?? "Luna Creative <proposals@notifications.luna-creative.com>";
 
+/** Escape text before placing it in email HTML (client names are user-supplied). */
+function esc(s: string): string {
+  return String(s)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+const money = (n: number) => `$${n.toLocaleString("en-US")}`;
+
 function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")
     .split(",")
@@ -37,18 +48,20 @@ export async function sendProposalToStaff(args: {
   staffEmail: string;
   proposalName: string;
   total: number;
+  monthly: number;
   code: string;
   proposalUrl: string;
   pdf?: Buffer;
 }) {
+  const name = esc(args.proposalName);
   await send({
     to: args.staffEmail,
     subject: `Proposal ready: ${args.proposalName}`,
     html:
-      `<p>Your proposal for <strong>${args.proposalName}</strong> is ready.</p>` +
-      `<p>One-time build: <strong>$${args.total.toLocaleString()}</strong> &middot; $169/mo hosting &amp; maintenance.</p>` +
-      `<p>Private link: <a href="${args.proposalUrl}">${args.proposalUrl}</a><br/>Access code: <strong>${args.code}</strong></p>`,
-    attachments: args.pdf ? [{ filename: `${args.proposalName}-proposal.pdf`, content: args.pdf }] : undefined,
+      `<p>Your proposal for <strong>${name}</strong> is ready.</p>` +
+      `<p>One-time build: <strong>${money(args.total)}</strong> &middot; ${money(args.monthly)}/mo hosting &amp; maintenance.</p>` +
+      `<p>Link: <a href="${args.proposalUrl}">${args.proposalUrl}</a><br/>Access code: <strong>${esc(args.code)}</strong></p>`,
+    attachments: args.pdf ? [{ filename: `${name}-proposal.pdf`, content: args.pdf }] : undefined,
   });
 }
 
@@ -65,19 +78,21 @@ export async function notifyAdmins(args: {
   const to = adminEmails();
   if (to.length === 0) return;
 
+  const name = esc(args.proposalName);
+  const who = esc(args.staffEmail);
   const subject = args.isCustom
     ? `Custom quote requested: ${args.proposalName}`
     : `New proposal generated: ${args.proposalName}`;
 
   const body = args.isCustom
-    ? `<p><strong>${args.staffEmail}</strong> requested a custom quote for <strong>${args.proposalName}</strong>.</p>` +
-      `<p>Reasons: ${(args.reasons ?? []).join("; ") || "complex functionality"}.</p>` +
+    ? `<p><strong>${who}</strong> requested a custom quote for <strong>${name}</strong>.</p>` +
+      `<p>Reasons: ${esc((args.reasons ?? []).join("; ") || "complex functionality")}.</p>` +
       `<p><a href="${args.manageUrl}">Review &amp; approve in the app →</a></p>` +
-      `<p>Reference code: <strong>${args.code}</strong></p>`
-    : `<p><strong>${args.staffEmail}</strong> generated a proposal for <strong>${args.proposalName}</strong>.</p>` +
-      `<p>Total: <strong>$${(args.total ?? 0).toLocaleString()}</strong>. ` +
+      `<p>Reference code: <strong>${esc(args.code)}</strong></p>`
+    : `<p><strong>${who}</strong> generated a proposal for <strong>${name}</strong>.</p>` +
+      `<p>Total: <strong>${money(args.total ?? 0)}</strong>. ` +
       `<a href="${args.manageUrl}">View in the app →</a></p>` +
-      `<p>Reference code: <strong>${args.code}</strong></p>`;
+      `<p>Reference code: <strong>${esc(args.code)}</strong></p>`;
 
   await send({ to, subject, html: body });
 }
@@ -90,21 +105,23 @@ export async function sendApprovedQuoteToRequester(args: {
   requesterEmail: string;
   proposalName: string;
   total: number;
+  monthly: number;
   code: string;
   proposalUrl: string;
   dashboardUrl: string;
   pdf?: Buffer;
 }) {
+  const name = esc(args.proposalName);
   await send({
     to: args.requesterEmail,
     subject: `Your Droptine quote is ready: ${args.proposalName}`,
     html:
-      `<p>Good news — your custom quote for <strong>${args.proposalName}</strong> has been approved.</p>` +
-      `<p>One-time build: <strong>$${args.total.toLocaleString()}</strong> &middot; $169/mo hosting &amp; maintenance.</p>` +
+      `<p>Good news — your custom quote for <strong>${name}</strong> has been approved.</p>` +
+      `<p>One-time build: <strong>${money(args.total)}</strong> &middot; ${money(args.monthly)}/mo hosting &amp; maintenance.</p>` +
       `<p>The proposal is attached. You can also view it any time here: ` +
-      `<a href="${args.proposalUrl}">${args.proposalUrl}</a> (access code <strong>${args.code}</strong>).</p>` +
+      `<a href="${args.proposalUrl}">${args.proposalUrl}</a> (access code <strong>${esc(args.code)}</strong>).</p>` +
       `<p>See all the quotes you've received: <a href="${args.dashboardUrl}">${args.dashboardUrl}</a></p>` +
       `<p>— Droptine</p>`,
-    attachments: args.pdf ? [{ filename: `${args.proposalName}-quote.pdf`, content: args.pdf }] : undefined,
+    attachments: args.pdf ? [{ filename: `${name}-quote.pdf`, content: args.pdf }] : undefined,
   });
 }

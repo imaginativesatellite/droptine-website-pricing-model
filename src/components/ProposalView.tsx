@@ -101,7 +101,7 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
               <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between", marginTop: 12 }}>
                 <span>Subtotal</span><span>{money(d.subtotal)}</span>
               </div>
-              <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between", color: "var(--good)" }}>
+              <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between", color: "#c62828", fontWeight: 700 }}>
                 <span>Discount</span><span>−{money(d.discount)}</span>
               </div>
             </>

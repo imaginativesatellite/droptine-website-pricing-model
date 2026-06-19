@@ -41,13 +41,13 @@ const s = StyleSheet.create({
   small: { fontSize: 9, color: MUTED },
 
   devTitle: { fontFamily: "Helvetica-Bold", fontSize: 10 },
-  rowLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 3, fontSize: 9.5 },
-  discount: { color: "#2e7d32" },
+  rowLine: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, fontSize: 9.5 },
+  discount: { color: "#c62828", fontFamily: "Helvetica-Bold" },
 
-  totalBox: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 2, borderBottomWidth: 2, borderTopColor: CHARCOAL, borderBottomColor: CHARCOAL, paddingVertical: 12, marginTop: 18 },
-  totalLabel: { fontSize: 11, fontFamily: "Helvetica-Bold", color: CHARCOAL, textTransform: "uppercase", letterSpacing: 1 },
-  totalAmt: { fontSize: 18, fontFamily: "Helvetica-Bold", color: CHARCOAL },
-  splitRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 6, fontSize: 9.5 },
+  totalBox: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", borderTopWidth: 2, borderBottomWidth: 2, borderTopColor: CHARCOAL, borderBottomColor: CHARCOAL, paddingVertical: 13, marginTop: 14 },
+  totalLabel: { fontSize: 13, fontFamily: "Helvetica-Bold", color: CHARCOAL, textTransform: "uppercase", letterSpacing: 1, lineHeight: 1 },
+  totalAmt: { fontSize: 16, fontFamily: "Helvetica-Bold", color: CHARCOAL, lineHeight: 1 },
+  splitRow: { flexDirection: "row", justifyContent: "space-between", paddingVertical: 4, fontSize: 9.5 },
 
   italic: { fontFamily: "Helvetica-Oblique", fontSize: 8, color: MUTED, marginTop: 14 },
   note: { fontSize: 8, color: MUTED, marginTop: 6 },
@@ -150,18 +150,20 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         </View>
 
         {d.discount > 0 && (
-          <>
-            <View style={[s.rowLine, { marginTop: 8 }]}><Text>Subtotal</Text><Text>{usd(d.subtotal)}</Text></View>
+          <View style={{ marginTop: 14 }}>
+            <View style={s.rowLine}><Text>Subtotal</Text><Text>{usd(d.subtotal)}</Text></View>
             <View style={s.rowLine}><Text style={s.discount}>Discount</Text><Text style={s.discount}>-{usd(d.discount)}</Text></View>
-          </>
+          </View>
         )}
 
         <View style={s.totalBox}>
           <Text style={s.totalLabel}>Total</Text>
           <Text style={s.totalAmt}>{usd(d.total)}</Text>
         </View>
-        <View style={s.splitRow}><Text>50% deposit to begin</Text><Text>{usd(half)}</Text></View>
-        <View style={s.splitRow}><Text>50% on completion</Text><Text>{usd(d.total - half)}</Text></View>
+        <View style={{ marginTop: 12 }}>
+          <View style={s.splitRow}><Text>50% deposit to begin</Text><Text>{usd(half)}</Text></View>
+          <View style={s.splitRow}><Text>50% on completion</Text><Text>{usd(d.total - half)}</Text></View>
+        </View>
 
         <Text style={[s.italic, { marginTop: 22 }]}>{PROPOSAL_DISCLAIMER} {PROPOSAL_VALIDITY}</Text>
 

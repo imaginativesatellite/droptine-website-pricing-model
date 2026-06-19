@@ -95,3 +95,61 @@ function defaultSummary(input: { proposalName: string; answers: PricingAnswers }
 
 // Re-export so callers can compute alongside prose if needed.
 export { computeQuote };
+
+/**
+ * Admin tool: recommend a one-time price for a custom quote, with reasoning,
+ * considering the standard breakdown plus the complex functionality requested.
+ * Gated behind ENABLE_AI; returns an { error } when AI is off.
+ */
+export async function recommendCustomPrice(input: {
+  proposalName: string;
+  lineItems: { label: string; amount: number }[];
+  customReasons: string[];
+  additionalFunctionality?: string;
+  pageCountExact?: string;
+  min: number;
+  max: number;
+}): Promise<{ reasoning: string } | { error: string }> {
+  const aiEnabled = process.env.ENABLE_AI === "true";
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!aiEnabled || !apiKey) {
+    return { error: "AI recommendations are off. Set ENABLE_AI=true in the environment to use this." };
+  }
+
+  const client = new Anthropic({ apiKey });
+  const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
+
+  const itemized = input.lineItems.map((li) => `- ${li.label}: $${li.amount}`).join("\n") || "(none priced)";
+
+  const msg = await client.messages.create({
+    model,
+    max_tokens: 500,
+    system:
+      "You price custom Webflow website builds for Luna Creative (ranch / hunting / breeder clients). " +
+      "The standard calculator runs $4,000–$15,000; genuinely complex builds can exceed $15,000. " +
+      "Given the standard line items plus the complex/extra functionality requested, recommend ONE one-time " +
+      "build price (whole US dollars) and justify it in 2–4 sentences. Start your reply with a line exactly " +
+      "like 'Recommended: $12,500' and then the reasoning. Weigh the extra build effort, risk, and ongoing " +
+      "maintenance of the complex functionality.",
+    messages: [
+      {
+        role: "user",
+        content:
+          `Project: ${input.proposalName}\n` +
+          `Standard line items:\n${itemized}\n\n` +
+          `Why it's custom: ${input.customReasons.join("; ") || "n/a"}\n` +
+          (input.pageCountExact ? `Approx. page count requested: ${input.pageCountExact}\n` : "") +
+          (input.additionalFunctionality ? `Complex / additional functionality requested:\n${input.additionalFunctionality}\n` : "") +
+          `\nRecommend the one-time price and explain why.`,
+      },
+    ],
+  });
+
+  const text = msg.content
+    .filter((b): b is Anthropic.TextBlock => b.type === "text")
+    .map((b) => b.text)
+    .join("\n")
+    .trim();
+
+  return { reasoning: text || "No recommendation returned." };
+}

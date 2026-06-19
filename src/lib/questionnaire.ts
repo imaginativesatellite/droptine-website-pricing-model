@@ -95,6 +95,14 @@ export const QUESTIONNAIRE: Question[] = [
       { value: "30+", label: "30+ pages (custom quote)" },
     ],
   },
+  {
+    id: "pageCountExact",
+    type: "text",
+    label: "Roughly how many pages do they need?",
+    placeholder: "e.g. 35",
+    group: "scope",
+    showIf: { field: "pageTier", equals: "30+" },
+  },
 
   // --- Animals ---
   { id: "animalPages", type: "boolean", label: "Do they need animals listed (an animals page)?", group: "scope" },

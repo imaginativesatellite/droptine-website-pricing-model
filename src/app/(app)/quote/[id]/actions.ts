@@ -5,8 +5,9 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/session";
-import { computeQuote, type PricingAnswers } from "@/lib/pricing";
+import { computeQuote, PRICING_RULES, type PricingAnswers } from "@/lib/pricing";
 import { generatePublicCode } from "@/lib/code";
+import { recommendCustomPrice as aiRecommendCustomPrice } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
@@ -153,7 +154,7 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
     if (!clash) break;
     publicCode = generatePublicCode();
   }
-  await prisma.quote.update({
+  const updated = await prisma.quote.update({
     where: { id: quoteId },
     data: {
       validFrom: new Date(),
@@ -163,9 +164,51 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
       lineItems: result.lineItems as unknown as Prisma.InputJsonValue,
       customReasons: result.reasons,
     },
+    include: { createdBy: true, client: true },
   });
   await logEdit(quoteId, admin.id, "reactivated", null, "Reset 60-day validity; new link; refreshed pricing");
+
+  // Auto-resend the new link to the requester (proposals/approved quotes only).
+  if (updated.status !== "CUSTOM_PENDING") {
+    try {
+      const pdf = await renderProposalPdf(buildProposalData(updated));
+      await sendProposalToStaff({
+        staffEmail: updated.createdBy.email,
+        proposalName: updated.proposalName,
+        total: finalPrice(updated),
+        monthly: updated.monthly,
+        code: updated.publicCode,
+        proposalUrl: proposalUrl(updated.publicCode),
+        pdf,
+      });
+      await prisma.quote.update({ where: { id: quoteId }, data: { emailStatus: "SENT", emailError: null } });
+    } catch (e) {
+      await prisma.quote.update({
+        where: { id: quoteId },
+        data: { emailStatus: "FAILED", emailError: e instanceof Error ? e.message : String(e) },
+      });
+    }
+  }
   revalidatePath(`/quote/${quoteId}`);
+}
+
+/** Admin: AI recommendation of a custom-quote price + reasoning. */
+export async function recommendPriceAction(quoteId: string): Promise<{ reasoning: string } | { error: string }> {
+  await requireAdmin();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
+  if (!quote) return { error: "Quote not found." };
+
+  const answers = quote.answers as Record<string, unknown>;
+  const result = computeQuote(answers as unknown as PricingAnswers);
+  return aiRecommendCustomPrice({
+    proposalName: quote.proposalName,
+    lineItems: result.lineItems,
+    customReasons: quote.customReasons,
+    additionalFunctionality: typeof answers.additionalFunctionality === "string" ? answers.additionalFunctionality : undefined,
+    pageCountExact: typeof answers.pageCountExact === "string" ? answers.pageCountExact : undefined,
+    min: PRICING_RULES.min,
+    max: PRICING_RULES.max,
+  });
 }
 
 /** Creator or admin: toggle whether the quote is viewable by all staff. */

@@ -9,6 +9,7 @@ import ProposalView from "@/components/ProposalView";
 import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote } from "./actions";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 import VisibilityToggle from "./VisibilityToggle";
+import AiRecommendation from "./AiRecommendation";
 
 const statusPill = (status: string) => {
   if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending approval</span>;
@@ -50,6 +51,10 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   const expired = isExpired(quote!);
   const isPending = quote!.status === "CUSTOM_PENDING";
   const d = buildProposalData(quote!);
+  const ans = quote!.answers as Record<string, unknown>;
+  const exactPages = typeof ans.pageCountExact === "string" ? ans.pageCountExact : "";
+  const extraFunctionality = typeof ans.additionalFunctionality === "string" ? ans.additionalFunctionality : "";
+  const existingUrl = ans.existingWebsite === true && typeof ans.existingWebsiteUrl === "string" ? ans.existingWebsiteUrl : "";
 
   // Staff can't open an expired quote (no details, no price).
   if (!isAdmin && expired) {
@@ -110,7 +115,8 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             <div style={{ marginTop: 16 }}>
               <div style={sublabel}>Expired</div>
               <p className="help" style={{ marginBottom: 10 }}>
-                The 60-day validity has passed. Reactivating resets the date and refreshes pricing to the current model.
+                The 60-day validity has passed. Reactivating resets the date, refreshes pricing to the current model,
+                issues a new link, and <strong>auto-emails the new link to the requester</strong>.
               </p>
               <form action={reactivateQuote.bind(null, quote!.id)}>
                 <button type="submit" className="btn-gold">Reactivate</button>
@@ -148,6 +154,28 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
               </div>
             )}
           </div>
+
+          {/* Request details + AI recommendation — custom quotes only */}
+          {isPending && (extraFunctionality || exactPages || existingUrl) && (
+            <div style={section}>
+              <div style={sublabel}>Request details</div>
+              {exactPages && <p style={{ margin: "0 0 8px" }}><strong>Pages requested:</strong> {exactPages}</p>}
+              {existingUrl && <p style={{ margin: "0 0 8px" }}><strong>Existing site:</strong> {existingUrl}</p>}
+              {extraFunctionality && (
+                <p style={{ margin: "0 0 8px", whiteSpace: "pre-wrap" }}><strong>Complex functionality:</strong> {extraFunctionality}</p>
+              )}
+            </div>
+          )}
+
+          {isPending && (
+            <div style={section}>
+              <div style={sublabel}>AI price recommendation</div>
+              <p className="help" style={{ marginBottom: 10 }}>
+                Suggests a one-time price (with reasoning) from the selections and the complex functionality requested.
+              </p>
+              <AiRecommendation quoteId={quote!.id} />
+            </div>
+          )}
 
           {/* Approve — custom quotes only (editing is hidden until approved) */}
           {isPending && (

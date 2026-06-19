@@ -58,17 +58,23 @@ export async function updateQuote(quoteId: string, formData: FormData): Promise<
   const overrideTotal = toInt(formData.get("overrideTotal"));
   const discount = toInt(formData.get("discount")) ?? 0;
   const actualCharged = toInt(formData.get("actualCharged"));
+  const leadDaysOverride = toInt(formData.get("leadDaysOverride"));
+  const monthly = toInt(formData.get("monthly")) ?? quote.monthly;
+  const scopeSummary = formData.get("scopeSummary") != null ? String(formData.get("scopeSummary")) : quote.scopeSummary;
   const notes = formData.get("notes") ? String(formData.get("notes")) : null;
 
   await logEdit(quoteId, admin.id, "proposalName", quote.proposalName, proposalName);
   await logEdit(quoteId, admin.id, "overrideTotal", quote.overrideTotal?.toString() ?? null, overrideTotal?.toString() ?? null);
   await logEdit(quoteId, admin.id, "discount", quote.discount.toString(), discount.toString());
   await logEdit(quoteId, admin.id, "actualCharged", quote.actualCharged?.toString() ?? null, actualCharged?.toString() ?? null);
+  await logEdit(quoteId, admin.id, "leadDaysOverride", quote.leadDaysOverride?.toString() ?? null, leadDaysOverride?.toString() ?? null);
+  await logEdit(quoteId, admin.id, "monthly", quote.monthly.toString(), monthly.toString());
+  await logEdit(quoteId, admin.id, "scope", quote.scopeSummary ?? null, scopeSummary ?? null);
   await logEdit(quoteId, admin.id, "notes", quote.notes ?? null, notes);
 
   await prisma.quote.update({
     where: { id: quoteId },
-    data: { proposalName, overrideTotal, discount, actualCharged, notes },
+    data: { proposalName, overrideTotal, discount, actualCharged, leadDaysOverride, monthly, scopeSummary, notes },
   });
 
   revalidatePath(`/quote/${quoteId}`);
@@ -85,13 +91,19 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
 
   const price = toInt(formData.get("overrideTotal"));
   if (price == null) throw new Error("Enter an approved price.");
+  const leadDaysOverride = toInt(formData.get("leadDaysOverride"));
+  const monthly = toInt(formData.get("monthly")) ?? quote.monthly;
+  const scopeSummary = formData.get("scopeSummary") != null ? String(formData.get("scopeSummary")) : quote.scopeSummary;
 
   await logEdit(quoteId, admin.id, "overrideTotal", quote.overrideTotal?.toString() ?? null, price.toString());
+  await logEdit(quoteId, admin.id, "leadDaysOverride", quote.leadDaysOverride?.toString() ?? null, leadDaysOverride?.toString() ?? null);
+  await logEdit(quoteId, admin.id, "monthly", quote.monthly.toString(), monthly.toString());
+  await logEdit(quoteId, admin.id, "scope", quote.scopeSummary ?? null, scopeSummary ?? null);
   await logEdit(quoteId, admin.id, "status", quote.status, "APPROVED");
 
   const updated = await prisma.quote.update({
     where: { id: quoteId },
-    data: { overrideTotal: price, status: "APPROVED", approvedById: admin.id, approvedAt: new Date() },
+    data: { overrideTotal: price, leadDaysOverride, monthly, scopeSummary, status: "APPROVED", approvedById: admin.id, approvedAt: new Date() },
     include: { client: true, createdBy: true },
   });
 

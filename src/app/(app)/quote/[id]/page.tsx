@@ -4,6 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice } from "@/lib/quote";
+import { leadTimeDays } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
 import { updateQuote, approveQuote, resendProposalEmail } from "./actions";
 import DeleteQuoteButton from "./DeleteQuoteButton";
@@ -85,23 +86,23 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             <Link href={`/quote/${quote!.id}/edit`} className="btn-secondary">Edit answers</Link>
           </div>
 
-          {!isPending && (
-            <div style={{ marginBottom: 20 }}>
-              <div style={sublabel}>Internal breakdown</div>
-              <table className="simple">
-                <tbody>
-                  {d.lineItems.map((li, i) => (
-                    <tr key={i}><td>{li.label}</td><td className="amt">{money(li.amount)}</td></tr>
-                  ))}
-                  {quote!.discount > 0 && (
-                    <>
-                      <tr><td>Subtotal</td><td className="amt">{money(subtotal(quote!))}</td></tr>
-                      <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
-                    </>
-                  )}
-                  <tr><td><strong>Total</strong></td><td className="amt"><strong>{money(finalPrice(quote!))}</strong></td></tr>
-                </tbody>
-              </table>
+          <div style={{ marginBottom: 20 }}>
+            <div style={sublabel}>{isPending ? "Selection summary (suggested)" : "Internal breakdown"}</div>
+            <table className="simple">
+              <tbody>
+                {d.lineItems.map((li, i) => (
+                  <tr key={i}><td>{li.label}</td><td className="amt">{money(li.amount)}</td></tr>
+                ))}
+                {quote!.discount > 0 && (
+                  <>
+                    <tr><td>Subtotal</td><td className="amt">{money(subtotal(quote!))}</td></tr>
+                    <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
+                  </>
+                )}
+                <tr><td><strong>{isPending ? "Suggested total" : "Total"}</strong></td><td className="amt"><strong>{money(finalPrice(quote!))}</strong></td></tr>
+              </tbody>
+            </table>
+            {!isPending && (
               <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap", alignItems: "center" }}>
                 <form action={resendProposalEmail.bind(null, quote!.id)}>
                   <button type="submit" className="btn-secondary">Resend email</button>
@@ -112,16 +113,29 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                   </span>
                 )}
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {isPending && (
-            <form action={approveQuote.bind(null, quote!.id)} style={{ marginBottom: 20 }}>
-              <label className="qlabel" htmlFor="approve-price">Approve at price ($)</label>
-              <div style={{ display: "flex", gap: 10 }}>
-                <input id="approve-price" name="overrideTotal" type="text" inputMode="numeric" placeholder="e.g. 12000" required />
-                <button type="submit" className="btn-gold">Approve &amp; send</button>
+            <form action={approveQuote.bind(null, quote!.id)} style={{ marginBottom: 20, borderTop: "1px solid var(--line)", paddingTop: 16 }}>
+              <div style={sublabel}>Approve custom quote</div>
+              <div className="q" style={{ paddingTop: 0 }}>
+                <label className="qlabel" htmlFor="approve-price">Approved price ($)<span className="req">*</span></label>
+                <input id="approve-price" name="overrideTotal" type="text" inputMode="numeric" defaultValue={quote!.computedTotal || ""} required />
               </div>
+              <div className="q">
+                <label className="qlabel" htmlFor="approve-lead">Turnaround (business days)</label>
+                <input id="approve-lead" name="leadDaysOverride" type="text" inputMode="numeric" defaultValue={quote!.leadDaysOverride ?? leadTimeDays(finalPrice(quote!))} />
+              </div>
+              <div className="q">
+                <label className="qlabel" htmlFor="approve-monthly">Monthly ($)</label>
+                <input id="approve-monthly" name="monthly" type="text" inputMode="numeric" defaultValue={quote!.monthly} />
+              </div>
+              <div className="q">
+                <label className="qlabel" htmlFor="approve-scope">Scope</label>
+                <textarea id="approve-scope" name="scopeSummary" defaultValue={quote!.scopeSummary ?? ""} style={{ minHeight: 110 }} />
+              </div>
+              <button type="submit" className="btn-gold">Approve &amp; send</button>
               <p className="help" style={{ marginTop: 6 }}>Approving emails the requester the PDF and a link to their quotes.</p>
             </form>
           )}
@@ -144,6 +158,19 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
               <label className="qlabel" htmlFor="actualCharged">Actual charged ($)</label>
               <div className="help">What the client was actually billed — for quoted-vs-actual reporting.</div>
               <input id="actualCharged" name="actualCharged" type="text" inputMode="numeric" defaultValue={quote!.actualCharged ?? ""} />
+            </div>
+            <div className="q">
+              <label className="qlabel" htmlFor="leadDaysOverride">Turnaround (business days)</label>
+              <div className="help">Leave blank to use the price-based default.</div>
+              <input id="leadDaysOverride" name="leadDaysOverride" type="text" inputMode="numeric" defaultValue={quote!.leadDaysOverride ?? ""} />
+            </div>
+            <div className="q">
+              <label className="qlabel" htmlFor="monthly">Monthly ($)</label>
+              <input id="monthly" name="monthly" type="text" inputMode="numeric" defaultValue={quote!.monthly} />
+            </div>
+            <div className="q">
+              <label className="qlabel" htmlFor="scopeSummary">Scope</label>
+              <textarea id="scopeSummary" name="scopeSummary" defaultValue={quote!.scopeSummary ?? ""} style={{ minHeight: 110 }} />
             </div>
             <div className="q">
               <label className="qlabel" htmlFor="notes">Notes</label>

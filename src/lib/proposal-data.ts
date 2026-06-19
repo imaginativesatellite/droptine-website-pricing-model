@@ -38,7 +38,7 @@ export function buildProposalData(
     preparedByPhone: quote.createdBy?.phone ?? null,
     code: quote.code,
     publicCode: quote.publicCode,
-    leadDays: leadTimeDays(finalPrice(quote)),
+    leadDays: quote.leadDaysOverride ?? leadTimeDays(finalPrice(quote)),
     scopeSummary: quote.scopeSummary,
     lineItems,
     subtotal: subtotal(quote),

@@ -76,6 +76,8 @@ model Quote {
   overrideTotal Int?     // admin manual override; when set, replaces computedTotal
   discount      Int      @default(0) // admin discount, shown as a line item
   monthly       Int      @default(169)
+  // manual turnaround override (business days); falls back to price-based
+  leadDaysOverride Int?
   notes         String?  @db.Text
   scopeSummary  String?  @db.Text // LLM-drafted prose (price stays deterministic)
 

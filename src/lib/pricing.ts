@@ -138,17 +138,6 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   if (answers.pedigreePages && answers.pedigreeIndividualPages && answers.pedigreeCount === "60+")
     reasons.push("60+ pedigrees with individual pages needs a custom quote.");
 
-  if (reasons.length > 0) {
-    return {
-      requiresCustomQuote: true,
-      reasons,
-      total: 0,
-      // Complex/custom sites carry the monthly surcharge.
-      monthly: R.monthlyBase + R.monthlySurcharge,
-      lineItems: [],
-    };
-  }
-
   const lineItems: { label: string; amount: number }[] = [];
 
   // Base build
@@ -208,7 +197,7 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   const total = clamp(roundUp(sub, R.roundUpTo), min, R.max);
 
   const surcharge = answers.ecommerce || answers.realEstate || answers.mlsIdx ? R.monthlySurcharge : 0;
-  return { requiresCustomQuote: false, reasons, total, monthly: R.monthlyBase + surcharge, lineItems };
+  return { requiresCustomQuote: reasons.length > 0, reasons, total, monthly: R.monthlyBase + surcharge, lineItems };
 }
 
 /** Estimated lead time (business days) based on the final price. */

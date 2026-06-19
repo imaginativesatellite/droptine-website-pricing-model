@@ -20,6 +20,9 @@ export default function VisibilityToggle({ quoteId, shared }: { quoteId: string;
       <span>
         Private{" "}
         <span className="tip" title="When on, only you and admins can see this quote. When off, it's visible to all staff.">ⓘ</span>
+        <span className="help" style={{ display: "block" }}>
+          {shared ? "Currently shared with everyone" : "Currently only you & admins"}
+        </span>
       </span>
     </label>
   );

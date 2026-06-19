@@ -21,6 +21,7 @@ export default async function Dashboard() {
       computedTotal: true,
       overrideTotal: true,
       discount: true,
+      shared: true,
       createdBy: { select: { name: true, email: true } },
     },
   });
@@ -33,6 +34,7 @@ export default async function Dashboard() {
     createdAt: q.createdAt.toISOString(),
     price: q.status === "CUSTOM_PENDING" ? null : finalPrice(q),
     requestedBy: q.createdBy.name || q.createdBy.email,
+    shared: q.shared,
   }));
 
   return (

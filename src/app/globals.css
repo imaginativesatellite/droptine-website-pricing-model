@@ -684,6 +684,7 @@ select:focus {
 .pill.proposal { background: #e8f1ea; color: #2e7d32; }
 .pill.pending  { background: #fff7ec; color: var(--gold-dark); }
 .pill.approved { background: #e8eef7; color: #1c4e9c; }
+.pill.private  { background: #f0ede8; color: var(--muted); }
 
 /* Dashboard search bar (reads as a control, not a card) */
 .searchbar {

@@ -12,6 +12,7 @@ export type QuoteItem = {
   createdAt: string;
   price: number | null;
   requestedBy: string;
+  shared: boolean;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -23,6 +24,18 @@ function pill(status: string) {
   return <span className="pill proposal">Proposal</span>;
 }
 
+function PrivateBadge() {
+  return (
+    <span className="pill private">
+      <svg width="9" height="9" viewBox="0 0 12 12" fill="none" style={{ verticalAlign: "-1px", marginRight: 3 }}>
+        <rect x="2.5" y="5.5" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
+        <path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="currentColor" strokeWidth="1.2" />
+      </svg>
+      Private
+    </span>
+  );
+}
+
 function Row({ q, attention }: { q: QuoteItem; attention?: boolean }) {
   return (
     <Link href={`/quote/${q.id}`} className={`qrow${attention ? " attention" : ""}`}>
@@ -31,7 +44,10 @@ function Row({ q, attention }: { q: QuoteItem; attention?: boolean }) {
         <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
       </div>
       <div className="right">
-        {pill(q.status)}
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+          {!q.shared && <PrivateBadge />}
+          {pill(q.status)}
+        </div>
         <div className="price">{q.price == null ? "—" : money(q.price)}</div>
       </div>
     </Link>
@@ -41,7 +57,10 @@ function Row({ q, attention }: { q: QuoteItem; attention?: boolean }) {
 function Tile({ q, attention }: { q: QuoteItem; attention?: boolean }) {
   return (
     <Link href={`/quote/${q.id}`} className={`qtile${attention ? " attention" : ""}`}>
-      <div>{pill(q.status)}</div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>
+        {pill(q.status)}
+        {!q.shared && <PrivateBadge />}
+      </div>
       <div className="name">{q.name}</div>
       <div className="price">{q.price == null ? "—" : money(q.price)}</div>
       <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>

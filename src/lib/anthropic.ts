@@ -110,10 +110,10 @@ export async function recommendCustomPrice(input: {
   min: number;
   max: number;
 }): Promise<{ reasoning: string } | { error: string }> {
-  const aiEnabled = process.env.ENABLE_AI === "true";
+  const aiEnabled = process.env.ENABLE_AI_PRICING === "true";
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!aiEnabled || !apiKey) {
-    return { error: "AI recommendations are off. Set ENABLE_AI=true in the environment to use this." };
+    return { error: "AI price recommendations are off. Set ENABLE_AI_PRICING=true in the environment to use this." };
   }
 
   const client = new Anthropic({ apiKey });

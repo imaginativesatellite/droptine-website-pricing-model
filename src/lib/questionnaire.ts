@@ -116,7 +116,7 @@ export const QUESTIONNAIRE: Question[] = [
   { id: "animalIndividualPages", type: "boolean", label: "Will each animal have its own page?", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalPages", equals: true } },
   { id: "animalCount", type: "single", label: "How many animals will the website list?", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalIndividualPages", equals: true }, options: COUNT_OPTIONS },
 
-  { id: "pedigreePages", type: "boolean", label: "Will the website have pedigree / bloodline pages?", group: "scope", section: "Animals & pedigrees" },
+  { id: "pedigreePages", type: "boolean", label: "Will the website have a pedigree / bloodline page?", group: "scope", section: "Animals & pedigrees" },
   { id: "pedigreeIndividualPages", type: "boolean", label: "Will each pedigree have its own page?", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreePages", equals: true } },
   { id: "pedigreeCount", type: "single", label: "How many pedigrees will the website list?", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreeIndividualPages", equals: true }, options: COUNT_OPTIONS },
 

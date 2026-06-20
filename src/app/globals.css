@@ -773,6 +773,7 @@ select:focus {
 .pill.approved { background: #e8eef7; color: #1c4e9c; }
 .pill.private  { background: #f0ede8; color: var(--muted); }
 .pill.expired  { background: #fdeaea; color: #b3261e; }
+.pill.signed   { background: #e3f6e9; color: #1b5e20; }
 
 /* Dashboard search bar (reads as a control, not a card) */
 .searchbar {
@@ -857,6 +858,10 @@ select:focus {
   border-left: 4px solid var(--gold);
   background: #fffaf2;
 }
+.qtile.signed {
+  border-left: 4px solid var(--good);
+  background: #f3fbf4;
+}
 .qtile .name {
   font-weight: 600;
   font-size: 1.05rem;
@@ -905,6 +910,10 @@ select:focus {
 .qrow.attention {
   border-left: 4px solid var(--gold);
   background: #fffaf2;
+}
+.qrow.signed {
+  border-left: 4px solid var(--good);
+  background: #f3fbf4;
 }
 .qrow .main {
   flex: 1;

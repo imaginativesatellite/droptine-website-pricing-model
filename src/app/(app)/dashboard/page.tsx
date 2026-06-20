@@ -23,6 +23,8 @@ export default async function Dashboard() {
       discount: true,
       shared: true,
       validFrom: true,
+      clientSignedAt: true,
+      companySignedAt: true,
       createdBy: { select: { name: true, email: true } },
     },
   });
@@ -40,6 +42,7 @@ export default async function Dashboard() {
       requestedBy: q.createdBy.name || q.createdBy.email,
       shared: q.shared,
       expired,
+      signed: Boolean(q.clientSignedAt && q.companySignedAt),
     };
   });
 

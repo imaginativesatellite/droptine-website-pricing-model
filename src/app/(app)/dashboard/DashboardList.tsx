@@ -14,6 +14,7 @@ export type QuoteItem = {
   requestedBy: string;
   shared: boolean;
   expired: boolean;
+  signed: boolean;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -40,6 +41,7 @@ function PrivateBadge() {
 function badges(q: QuoteItem) {
   return (
     <>
+      {q.signed && <span className="pill signed">Signed</span>}
       {q.expired && <span className="pill expired">Expired</span>}
       {!q.shared && <PrivateBadge />}
       {pill(q.status)}
@@ -61,7 +63,8 @@ function Row({ q, attention, locked }: { q: QuoteItem; attention?: boolean; lock
     </>
   );
   if (locked) return <div className="qrow" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
-  return <Link href={`/quote/${q.id}`} className={`qrow${attention ? " attention" : ""}`}>{inner}</Link>;
+  const cls = `qrow${attention ? " attention" : q.signed ? " signed" : ""}`;
+  return <Link href={`/quote/${q.id}`} className={cls}>{inner}</Link>;
 }
 
 function Tile({ q, attention, locked }: { q: QuoteItem; attention?: boolean; locked: boolean }) {
@@ -74,7 +77,8 @@ function Tile({ q, attention, locked }: { q: QuoteItem; attention?: boolean; loc
     </>
   );
   if (locked) return <div className="qtile" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
-  return <Link href={`/quote/${q.id}`} className={`qtile${attention ? " attention" : ""}`}>{inner}</Link>;
+  const cls = `qtile${attention ? " attention" : q.signed ? " signed" : ""}`;
+  return <Link href={`/quote/${q.id}`} className={cls}>{inner}</Link>;
 }
 
 function Group({ items, view, isAdmin, attention }: { items: QuoteItem[]; view: "list" | "tiles"; isAdmin: boolean; attention?: boolean }) {

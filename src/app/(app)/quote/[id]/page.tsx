@@ -6,8 +6,8 @@ import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice, isExpired } from "@/lib/quote";
 import { leadTimeDays } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
-import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature } from "./actions";
-import { docusealEnabled } from "@/lib/docuseal";
+import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, confirmCompanySignature } from "./actions";
+import { documensoEnabled, documensoSignUrl } from "@/lib/documenso";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 import VisibilityToggle from "./VisibilityToggle";
 import AiRecommendation from "./AiRecommendation";
@@ -19,9 +19,9 @@ const statusPill = (status: string) => {
 };
 
 const signatureStatusLabel: Record<string, string> = {
-  SENT: "Sent — awaiting signature",
-  VIEWED: "Viewed by client",
-  SIGNED: "Signed",
+  SENT: "Sent — awaiting signatures",
+  PARTIALLY_SIGNED: "Partially signed",
+  SIGNED: "Fully signed",
   DECLINED: "Declined",
 };
 
@@ -163,24 +163,40 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             )}
           </div>
 
-          {/* E-signature (DocuSeal) — available once there's a proposal to sign */}
+          {/* E-signature (Documenso) — available once there's a proposal to sign */}
           {!isPending && (
             <div style={section}>
               <div style={sublabel}>E-signature</div>
-              {!docusealEnabled() ? (
-                <p className="help">DocuSeal isn&apos;t configured — set DOCUSEAL_API_KEY in the environment to enable this.</p>
+              {!documensoEnabled() ? (
+                <p className="help">Documenso isn&apos;t configured — set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment to enable this.</p>
               ) : (
                 <>
                   {quote!.signatureStatus && (
-                    <p style={{ margin: "0 0 10px" }}>
+                    <p style={{ margin: "0 0 4px" }}>
                       <strong>{signatureStatusLabel[quote!.signatureStatus] ?? quote!.signatureStatus}</strong>
                       {quote!.signatureSentAt && ` · sent ${new Date(quote!.signatureSentAt).toLocaleString()}`}
-                      {quote!.signatureSignedAt && ` · signed ${new Date(quote!.signatureSignedAt).toLocaleString()}`}
                       {quote!.signedDocumentUrl && (
                         <> · <a href={quote!.signedDocumentUrl} target="_blank" rel="noreferrer">View signed document</a></>
                       )}
                     </p>
                   )}
+                  {quote!.clientSignedAt && (
+                    <p className="help" style={{ margin: "0 0 2px" }}>
+                      Client signed {new Date(quote!.clientSignedAt).toLocaleString()}
+                    </p>
+                  )}
+                  {quote!.companySignedAt ? (
+                    <p className="help" style={{ margin: "0 0 10px" }}>
+                      {quote!.companySignedByName ?? "An admin"} signed as Luna Creative {new Date(quote!.companySignedAt).toLocaleString()}
+                    </p>
+                  ) : quote!.companySignedById ? (
+                    <p className="help" style={{ margin: "0 0 10px" }}>
+                      {quote!.companySignedByName} started the company signature below — waiting on Documenso to confirm completion.
+                    </p>
+                  ) : (
+                    <div style={{ marginBottom: 10 }} />
+                  )}
+
                   <form action={sendForSignature.bind(null, quote!.id)} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
                     <div style={{ ...field, marginBottom: 0, flex: 1, minWidth: 220 }}>
                       <label className="qlabel" htmlFor="clientEmail">Client email</label>
@@ -190,6 +206,22 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                       {quote!.signatureStatus ? "Resend for signature" : "Send for signature"}
                     </button>
                   </form>
+
+                  {quote!.clientSignedAt && quote!.companySigningToken && !quote!.companySignedAt && (
+                    <div style={{ marginTop: 16 }}>
+                      {!quote!.companySignedById ? (
+                        <form action={confirmCompanySignature.bind(null, quote!.id)}>
+                          <button type="submit" className="btn-gold">Sign as Luna Creative</button>
+                        </form>
+                      ) : (
+                        <iframe
+                          src={documensoSignUrl(quote!.companySigningToken)}
+                          style={{ width: "100%", height: 640, border: "1px solid var(--line)", borderRadius: 10 }}
+                          title="Sign as Luna Creative"
+                        />
+                      )}
+                    </div>
+                  )}
                 </>
               )}
             </div>

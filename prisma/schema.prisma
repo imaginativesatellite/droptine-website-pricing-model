@@ -33,6 +33,7 @@ model User {
   clients        Client[]    @relation("ClientOwner")
   quotes         Quote[]     @relation("CreatedBy")
   approvedQuotes Quote[]     @relation("ApprovedBy")
+  signedQuotes   Quote[]     @relation("CompanySignedBy")
   quoteEdits     QuoteEdit[]
 }
 
@@ -101,14 +102,21 @@ model Quote {
   // visibility: private to the creator (and admins) unless shared with everyone
   shared        Boolean  @default(false)
 
-  // e-signature (DocuSeal) tracking — set when an admin sends the proposal
-  // out for signature; updated by the DocuSeal webhook as the client signs.
-  signatureStatus       String?   // SENT | VIEWED | SIGNED | DECLINED
-  signatureSubmissionId String?   // DocuSeal submission id, for webhook correlation
-  signatureSentAt       DateTime?
-  signatureSignedAt     DateTime?
-  signedDocumentUrl     String?   @db.Text
-  signatureMeta         Json?     // raw DocuSeal response, kept for debugging
+  // e-signature (Documenso) tracking — two parties sign sequentially: the
+  // client, then any admin signing as the shared "Luna Creative" identity.
+  // Updated by the Documenso webhook as each party views/signs/declines.
+  signatureStatus      String?   // SENT | PARTIALLY_SIGNED | SIGNED | DECLINED
+  signatureEnvelopeId  String?   // Documenso envelope/document id, for webhook correlation
+  signatureSentAt      DateTime?
+  clientSigningToken   String?   // Documenso recipient token — builds the client's signing iframe URL
+  clientSignedAt       DateTime?
+  companySigningToken  String?   // Documenso recipient token — builds the admin's signing iframe URL
+  companySignedAt      DateTime?
+  companySignedById    String?
+  companySignedBy      User?     @relation("CompanySignedBy", fields: [companySignedById], references: [id])
+  companySignedByName  String?   // denormalized snapshot, survives if the admin account is later removed
+  signedDocumentUrl    String?   @db.Text
+  signatureMeta        Json?     // raw Documenso payloads, kept for debugging
 
   // custom-quote approval
   approvedById String?
@@ -124,7 +132,8 @@ model Quote {
   @@index([createdById])
   @@index([clientId])
   @@index([status])
-  @@index([signatureSubmissionId])
+  @@index([signatureEnvelopeId])
+  @@index([companySignedById])
 }
 
 // Audit trail: original auto price vs. manual edits, and who changed what.

@@ -21,6 +21,7 @@ import {
   LUNA_PHONE,
   LUNA_WEB,
 } from "./proposal-copy";
+import { SIGNATURE_FIELDS } from "./signature-layout";
 
 const GOLD = "#e89422";
 const CHARCOAL = "#1a1a1a";
@@ -59,11 +60,31 @@ const s = StyleSheet.create({
   termsTitle: { fontSize: 9.5, fontFamily: "Helvetica-Bold", color: CHARCOAL, marginTop: 11, marginBottom: 1 },
   bullet: { flexDirection: "row", marginBottom: 6 },
   bulletDot: { width: 12, color: "#2b2b2b" },
-  sigRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 30 },
-  sigBlock: { width: "46%", borderTopWidth: 1, borderTopColor: CHARCOAL, paddingTop: 5, fontSize: 8, color: MUTED },
 
   footer: { position: "absolute", bottom: 24, left: 48, right: 48, fontSize: 7, color: MUTED, textAlign: "center", borderTopWidth: 1, borderTopColor: LINE, paddingTop: 7 },
+
+  // Dedicated Signatures page — no page padding, so percentage coordinates
+  // map directly to the full LETTER page, matching the same percentages
+  // Documenso uses to place its interactive fields (see signature-layout.ts).
+  sigPage: { fontSize: 10, color: "#2b2b2b", fontFamily: "Helvetica" },
+  sigContent: { paddingTop: 46, paddingBottom: 60, paddingHorizontal: 48 },
+  sigOverlay: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  sigCaption: { fontSize: 7, color: MUTED },
 });
+
+function sigBoxStyle(box: { positionX: number; positionY: number; width: number; height: number }) {
+  return {
+    position: "absolute" as const,
+    left: `${box.positionX}%`,
+    top: `${box.positionY}%`,
+    width: `${box.width}%`,
+    height: `${box.height}%`,
+    borderWidth: 1,
+    borderColor: LINE,
+    justifyContent: "flex-end" as const,
+    padding: 4,
+  };
+}
 
 export type ProposalPdfData = {
   proposalName: string;
@@ -107,7 +128,7 @@ function Footer({ code }: { code: string }) {
   );
 }
 
-function ProposalDoc({ d, forSigning }: { d: ProposalPdfData; forSigning?: boolean }) {
+function ProposalDoc({ d }: { d: ProposalPdfData }) {
   const half = Math.round(d.total / 2);
   const preparedBy = [d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ");
   const features = STANDARD_FEATURES.replace(/^Standard Features:\s*/, "");
@@ -223,16 +244,35 @@ function ProposalDoc({ d, forSigning }: { d: ProposalPdfData; forSigning?: boole
           </View>
         ))}
 
-        <View style={s.sigRow} wrap={false}>
-          {forSigning ? (
-            <View style={s.sigBlock}>
-              <Text>{"{{Signature;role=Client;type=signature}}"}</Text>
-              <Text>{"{{Date;role=Client;type=date}}"}</Text>
-            </View>
-          ) : (
-            <Text style={s.sigBlock}>CLIENT SIGNATURE / DATE</Text>
-          )}
-          <Text style={s.sigBlock}>MANAGING MEMBER, LUNA CREATIVE LLC / DATE</Text>
+        <Footer code={d.code} />
+      </Page>
+
+      {/* Page 4 — Signatures. Fixed layout so the boxes below line up exactly
+          with the coordinate-based fields Documenso overlays on this same
+          rendered PDF (see signature-layout.ts). */}
+      <Page size="LETTER" style={s.sigPage}>
+        <View style={s.sigContent}>
+          <Header />
+          <Text style={s.title}>Signatures</Text>
+          <Text style={[s.small, { marginTop: 10, maxWidth: 460 }]}>
+            By signing below, both parties agree to the proposal, pricing, and terms &amp; conditions
+            outlined in this document.
+          </Text>
+        </View>
+
+        <View style={s.sigOverlay}>
+          <View style={sigBoxStyle(SIGNATURE_FIELDS.client.signature)}>
+            <Text style={s.sigCaption}>Client Signature</Text>
+          </View>
+          <View style={sigBoxStyle(SIGNATURE_FIELDS.client.date)}>
+            <Text style={s.sigCaption}>Date</Text>
+          </View>
+          <View style={sigBoxStyle(SIGNATURE_FIELDS.company.signature)}>
+            <Text style={s.sigCaption}>Company Signature — Luna Creative LLC</Text>
+          </View>
+          <View style={sigBoxStyle(SIGNATURE_FIELDS.company.date)}>
+            <Text style={s.sigCaption}>Date</Text>
+          </View>
         </View>
 
         <Footer code={d.code} />
@@ -241,6 +281,6 @@ function ProposalDoc({ d, forSigning }: { d: ProposalPdfData; forSigning?: boole
   );
 }
 
-export async function renderProposalPdf(d: ProposalPdfData, opts?: { forSigning?: boolean }): Promise<Buffer> {
-  return renderToBuffer(<ProposalDoc d={d} forSigning={opts?.forSigning} />);
+export async function renderProposalPdf(d: ProposalPdfData): Promise<Buffer> {
+  return renderToBuffer(<ProposalDoc d={d} />);
 }

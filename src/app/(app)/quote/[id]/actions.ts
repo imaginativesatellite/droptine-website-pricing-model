@@ -12,7 +12,7 @@ import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
 import { appUrl, proposalUrl, finalPrice } from "@/lib/quote";
-import { docusealEnabled, sendPdfForSignature } from "@/lib/docuseal";
+import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
 
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
 
@@ -267,12 +267,15 @@ export async function deleteQuote(quoteId: string): Promise<void> {
   redirect("/dashboard");
 }
 
-/** Admin: send the proposal out for e-signature via DocuSeal. Saves the client's
- *  email onto the Client record (if new/changed) and tracks the resulting
- *  submission id so the DocuSeal webhook can update status as it's signed. */
+/** Admin: send the proposal out for e-signature via Documenso. Saves the
+ *  client's email onto the Client record (if new/changed) and creates a
+ *  two-recipient envelope — the client signs first, then any admin can
+ *  complete the shared company signature (see confirmCompanySignature). */
 export async function sendForSignature(quoteId: string, formData: FormData): Promise<void> {
   const admin = await requireAdmin();
-  if (!docusealEnabled()) throw new Error("DocuSeal isn't configured — set DOCUSEAL_API_KEY in the environment.");
+  if (!documensoEnabled()) {
+    throw new Error("Documenso isn't configured — set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment.");
+  }
 
   const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { client: true, createdBy: true } });
   if (!quote) throw new Error("Quote not found.");
@@ -285,26 +288,50 @@ export async function sendForSignature(quoteId: string, formData: FormData): Pro
     await prisma.client.update({ where: { id: quote.client.id }, data: { email } });
   }
 
-  const pdf = await renderProposalPdf(buildProposalData(quote), { forSigning: true });
-  const { submissionId, raw } = await sendPdfForSignature({
-    name: `${quote.proposalName} — Proposal`,
+  const pdf = await renderProposalPdf(buildProposalData(quote));
+  const { envelopeId, clientToken, companyToken, raw } = await sendEnvelopeForSignature({
+    title: `${quote.proposalName} — Proposal`,
     pdf,
-    submitterEmail: email,
-    submitterName: quote.client.name,
+    clientEmail: email,
+    clientName: quote.client.name,
   });
 
   await prisma.quote.update({
     where: { id: quoteId },
     data: {
       signatureStatus: "SENT",
-      signatureSubmissionId: submissionId,
+      signatureEnvelopeId: envelopeId,
       signatureSentAt: new Date(),
-      signatureSignedAt: null,
+      clientSigningToken: clientToken,
+      clientSignedAt: null,
+      companySigningToken: companyToken,
+      companySignedAt: null,
+      companySignedById: null,
+      companySignedByName: null,
       signedDocumentUrl: null,
       signatureMeta: raw as Prisma.InputJsonValue,
     },
   });
   await logEdit(quoteId, admin.id, "signature", null, `Sent for signature to ${email}`);
+
+  revalidatePath(`/quote/${quoteId}`);
+}
+
+/** Admin: record which admin completed the shared "Luna Creative" signature.
+ *  Documenso only ever sees one shared recipient — this captures *which*
+ *  logged-in admin clicked through, before they sign in the embedded iframe. */
+export async function confirmCompanySignature(quoteId: string): Promise<void> {
+  const admin = await requireAdmin();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
+  if (!quote) throw new Error("Quote not found.");
+  if (!quote.companySigningToken) throw new Error("This quote hasn't been sent for signature yet.");
+  if (!quote.clientSignedAt) throw new Error("Waiting on the client's signature first.");
+
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: { companySignedById: admin.id, companySignedByName: admin.name },
+  });
+  await logEdit(quoteId, admin.id, "signature", null, `${admin.name} signed as Luna Creative`);
 
   revalidatePath(`/quote/${quoteId}`);
 }

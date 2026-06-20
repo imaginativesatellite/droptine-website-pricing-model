@@ -6,7 +6,8 @@ import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice, isExpired } from "@/lib/quote";
 import { leadTimeDays } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
-import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote } from "./actions";
+import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature } from "./actions";
+import { docusealEnabled } from "@/lib/docuseal";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 import VisibilityToggle from "./VisibilityToggle";
 import AiRecommendation from "./AiRecommendation";
@@ -15,6 +16,13 @@ const statusPill = (status: string) => {
   if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending approval</span>;
   if (status === "APPROVED") return <span className="pill approved">Approved</span>;
   return <span className="pill proposal">Proposal</span>;
+};
+
+const signatureStatusLabel: Record<string, string> = {
+  SENT: "Sent — awaiting signature",
+  VIEWED: "Viewed by client",
+  SIGNED: "Signed",
+  DECLINED: "Declined",
 };
 
 function describeActivity(e: { field: string; oldValue: string | null; newValue: string | null }): string {
@@ -154,6 +162,38 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
               </div>
             )}
           </div>
+
+          {/* E-signature (DocuSeal) — available once there's a proposal to sign */}
+          {!isPending && (
+            <div style={section}>
+              <div style={sublabel}>E-signature</div>
+              {!docusealEnabled() ? (
+                <p className="help">DocuSeal isn&apos;t configured — set DOCUSEAL_API_KEY in the environment to enable this.</p>
+              ) : (
+                <>
+                  {quote!.signatureStatus && (
+                    <p style={{ margin: "0 0 10px" }}>
+                      <strong>{signatureStatusLabel[quote!.signatureStatus] ?? quote!.signatureStatus}</strong>
+                      {quote!.signatureSentAt && ` · sent ${new Date(quote!.signatureSentAt).toLocaleString()}`}
+                      {quote!.signatureSignedAt && ` · signed ${new Date(quote!.signatureSignedAt).toLocaleString()}`}
+                      {quote!.signedDocumentUrl && (
+                        <> · <a href={quote!.signedDocumentUrl} target="_blank" rel="noreferrer">View signed document</a></>
+                      )}
+                    </p>
+                  )}
+                  <form action={sendForSignature.bind(null, quote!.id)} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+                    <div style={{ ...field, marginBottom: 0, flex: 1, minWidth: 220 }}>
+                      <label className="qlabel" htmlFor="clientEmail">Client email</label>
+                      <input id="clientEmail" name="clientEmail" type="email" defaultValue={quote!.client.email ?? ""} required />
+                    </div>
+                    <button type="submit" className="btn-gold">
+                      {quote!.signatureStatus ? "Resend for signature" : "Send for signature"}
+                    </button>
+                  </form>
+                </>
+              )}
+            </div>
+          )}
 
           {/* Request details + AI recommendation — custom quotes only */}
           {isPending && (extraFunctionality || exactPages || existingUrl) && (

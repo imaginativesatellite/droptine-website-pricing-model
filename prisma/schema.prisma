@@ -101,6 +101,15 @@ model Quote {
   // visibility: private to the creator (and admins) unless shared with everyone
   shared        Boolean  @default(false)
 
+  // e-signature (DocuSeal) tracking — set when an admin sends the proposal
+  // out for signature; updated by the DocuSeal webhook as the client signs.
+  signatureStatus       String?   // SENT | VIEWED | SIGNED | DECLINED
+  signatureSubmissionId String?   // DocuSeal submission id, for webhook correlation
+  signatureSentAt       DateTime?
+  signatureSignedAt     DateTime?
+  signedDocumentUrl     String?   @db.Text
+  signatureMeta         Json?     // raw DocuSeal response, kept for debugging
+
   // custom-quote approval
   approvedById String?
   approvedBy   User?     @relation("ApprovedBy", fields: [approvedById], references: [id])
@@ -115,6 +124,7 @@ model Quote {
   @@index([createdById])
   @@index([clientId])
   @@index([status])
+  @@index([signatureSubmissionId])
 }
 
 // Audit trail: original auto price vs. manual edits, and who changed what.

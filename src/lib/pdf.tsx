@@ -107,7 +107,7 @@ function Footer({ code }: { code: string }) {
   );
 }
 
-function ProposalDoc({ d }: { d: ProposalPdfData }) {
+function ProposalDoc({ d, forSigning }: { d: ProposalPdfData; forSigning?: boolean }) {
   const half = Math.round(d.total / 2);
   const preparedBy = [d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ");
   const features = STANDARD_FEATURES.replace(/^Standard Features:\s*/, "");
@@ -224,7 +224,14 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         ))}
 
         <View style={s.sigRow} wrap={false}>
-          <Text style={s.sigBlock}>CLIENT SIGNATURE / DATE</Text>
+          {forSigning ? (
+            <View style={s.sigBlock}>
+              <Text>{"{{Signature;role=Client;type=signature}}"}</Text>
+              <Text>{"{{Date;role=Client;type=date}}"}</Text>
+            </View>
+          ) : (
+            <Text style={s.sigBlock}>CLIENT SIGNATURE / DATE</Text>
+          )}
           <Text style={s.sigBlock}>MANAGING MEMBER, LUNA CREATIVE LLC / DATE</Text>
         </View>
 
@@ -234,6 +241,6 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
   );
 }
 
-export async function renderProposalPdf(d: ProposalPdfData): Promise<Buffer> {
-  return renderToBuffer(<ProposalDoc d={d} />);
+export async function renderProposalPdf(d: ProposalPdfData, opts?: { forSigning?: boolean }): Promise<Buffer> {
+  return renderToBuffer(<ProposalDoc d={d} forSigning={opts?.forSigning} />);
 }

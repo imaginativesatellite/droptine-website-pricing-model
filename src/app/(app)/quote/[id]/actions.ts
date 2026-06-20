@@ -12,6 +12,7 @@ import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
 import { appUrl, proposalUrl, finalPrice } from "@/lib/quote";
+import { docusealEnabled, sendPdfForSignature } from "@/lib/docuseal";
 
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
 
@@ -264,6 +265,48 @@ export async function deleteQuote(quoteId: string): Promise<void> {
     }
   }
   redirect("/dashboard");
+}
+
+/** Admin: send the proposal out for e-signature via DocuSeal. Saves the client's
+ *  email onto the Client record (if new/changed) and tracks the resulting
+ *  submission id so the DocuSeal webhook can update status as it's signed. */
+export async function sendForSignature(quoteId: string, formData: FormData): Promise<void> {
+  const admin = await requireAdmin();
+  if (!docusealEnabled()) throw new Error("DocuSeal isn't configured — set DOCUSEAL_API_KEY in the environment.");
+
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { client: true, createdBy: true } });
+  if (!quote) throw new Error("Quote not found.");
+  if (quote.status === "CUSTOM_PENDING") throw new Error("Approve this quote before sending it for signature.");
+
+  const email = String(formData.get("clientEmail") ?? "").trim();
+  if (!email) throw new Error("Enter the client's email to send for signature.");
+
+  if (email !== quote.client.email) {
+    await prisma.client.update({ where: { id: quote.client.id }, data: { email } });
+  }
+
+  const pdf = await renderProposalPdf(buildProposalData(quote), { forSigning: true });
+  const { submissionId, raw } = await sendPdfForSignature({
+    name: `${quote.proposalName} — Proposal`,
+    pdf,
+    submitterEmail: email,
+    submitterName: quote.client.name,
+  });
+
+  await prisma.quote.update({
+    where: { id: quoteId },
+    data: {
+      signatureStatus: "SENT",
+      signatureSubmissionId: submissionId,
+      signatureSentAt: new Date(),
+      signatureSignedAt: null,
+      signedDocumentUrl: null,
+      signatureMeta: raw as Prisma.InputJsonValue,
+    },
+  });
+  await logEdit(quoteId, admin.id, "signature", null, `Sent for signature to ${email}`);
+
+  revalidatePath(`/quote/${quoteId}`);
 }
 
 /** Admin: re-send the proposal email (with PDF) to the staff member who created it. */

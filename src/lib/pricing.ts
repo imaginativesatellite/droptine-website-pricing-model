@@ -88,6 +88,7 @@ export const PRICING_RULES = {
 
 export type PricingAnswers = {
   pageTier?: keyof typeof PRICING_RULES.pageBase;
+  pageCountExact?: string; // free-text rough count, only asked when pageTier === "30+"
 
   ecommerce?: boolean;
   ecommerceItems?: string; // tier key, or "150+"

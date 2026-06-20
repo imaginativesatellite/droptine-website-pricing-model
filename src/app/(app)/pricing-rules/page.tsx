@@ -111,17 +111,21 @@ export default async function PricingRulesPage() {
           <strong>Scope phrases, included only when their trigger is met:</strong>
         </p>
         <ul style={{ marginLeft: 18, fontSize: "0.92rem", marginBottom: 14 }}>
-          <li>Not e-commerce → &ldquo;a [page tier]-page website&rdquo;</li>
+          <li>Not e-commerce → &ldquo;a [page tier]-page website&rdquo; (uses the rough page count instead of &ldquo;30+&rdquo; when that follow-up was answered)</li>
           <li>E-commerce → &ldquo;an online store[ on Shopify] ([item count] items)&rdquo;</li>
           <li>Animals page → individual animal pages (with count) if each animal gets its own page, otherwise a single animal listing page</li>
           <li>Pedigree page → individual pedigree/bloodline pages (with count) if each gets its own page, otherwise a single pedigree/bloodline page</li>
           <li>Real-estate package → &ldquo;a real-estate package (property listings, agent logins, interactive property map)&rdquo;</li>
           <li>Blog, news, events → one phrase each, only if selected</li>
+          <li>Social media feed integration → one phrase, only if selected</li>
           <li>Animations → &ldquo;entrance animations&rdquo; or &ldquo;entrance &amp; interactive animations&rdquo;, only if selected</li>
+          <li>MLS/IDX syncing → &ldquo;live MLS/IDX real-estate syncing&rdquo;</li>
+          <li>Structure &amp; content provided by Droptine → one phrase, only if selected</li>
+          <li>Custom functionality free text → included verbatim as its own scope phrase, only if answered</li>
         </ul>
         <p className="help" style={{ marginBottom: 10 }}>
-          Social-feed integration, MLS/IDX syncing, content-provided-by-Droptine, and the free-text
-          custom-functionality answer affect price but are not currently mentioned in this paragraph.
+          The existing-website question and its URL are context only — they describe a site being
+          replaced, not something being built — so they&rsquo;re never part of this paragraph.
         </p>
         <p style={{ fontSize: "0.92rem", marginBottom: 6 }}>
           <strong>Two ways that list becomes a paragraph:</strong>

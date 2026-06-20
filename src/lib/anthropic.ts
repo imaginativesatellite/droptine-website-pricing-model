@@ -4,7 +4,13 @@ import { computeQuote, type PricingAnswers } from "./pricing";
 /** Plain-English list of what's included, derived from the answers. */
 export function describeScope(answers: PricingAnswers): string[] {
   const items: string[] = [];
-  if (!answers.ecommerce) items.push(`a ${answers.pageTier ?? "5-9"}-page website`);
+  if (!answers.ecommerce) {
+    const pages =
+      answers.pageTier === "30+" && answers.pageCountExact?.trim()
+        ? `~${answers.pageCountExact.trim()}`
+        : answers.pageTier ?? "5-9";
+    items.push(`a ${pages}-page website`);
+  }
   if (answers.ecommerce)
     items.push(
       `an online store${answers.ecommerceShopify ? " on Shopify" : ""}` +
@@ -27,8 +33,12 @@ export function describeScope(answers: PricingAnswers): string[] {
   if (answers.blog) items.push("a blog");
   if (answers.news) items.push("a news section");
   if (answers.events) items.push("an events page");
+  if (answers.socialFeed) items.push("social media feed integration");
   if (answers.animations === "entrance") items.push("entrance animations");
   if (answers.animations === "entrance-interactive") items.push("entrance & interactive animations");
+  if (answers.mlsIdx) items.push("live MLS/IDX real-estate syncing");
+  if (answers.contentProvided) items.push("page structure & content organized and provided by Droptine");
+  if (answers.additionalFunctionality?.trim()) items.push(`custom functionality: ${answers.additionalFunctionality.trim()}`);
   return items;
 }
 

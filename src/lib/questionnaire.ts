@@ -30,6 +30,23 @@ export type Question =
   | (Base & { type: "boolean" })
   | (Base & { type: "single" | "multi"; options: { value: string; label: string; help?: string }[] });
 
+// Whether a question should be shown given the current answers. A question is
+// visible only when every showIf condition is met AND the question that each
+// condition references is itself visible — so a deep follow-up (e.g. animal
+// count) hides as soon as anything above it in the chain is switched off, even
+// if its own controlling answer is still set from before.
+export function isVisible(q: Question, answers: Record<string, unknown>): boolean {
+  if (!q.showIf) return true;
+  const conds: ShowIf[] = Array.isArray(q.showIf) ? q.showIf : [q.showIf];
+  return conds.every((c) => {
+    const controller = QUESTIONNAIRE.find((x) => x.id === c.field);
+    if (controller && !isVisible(controller, answers)) return false;
+    const v = answers[c.field];
+    if (typeof c.equals === "boolean") return c.equals ? v === true : !v;
+    return v === c.equals;
+  });
+}
+
 // Splits a question's label into plain/bold segments around `emphasize`, so
 // the UI can render the emphasized word in <strong> without re-deriving it.
 export function splitLabel(q: Pick<Question, "label" | "emphasize">): { text: string; bold: boolean }[] {

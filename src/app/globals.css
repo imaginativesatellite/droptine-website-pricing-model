@@ -143,6 +143,13 @@ h1 {
   border-left: 2px solid var(--line);
 }
 
+/* In the questionnaire, a horizontal rule divides categories only (it comes
+   from the section header's top border). Questions within a category are
+   separated by spacing alone — no per-question rule. */
+.card.qform .q {
+  border-bottom: none;
+}
+
 input[type="text"],
 input[type="email"],
 input[type="tel"],

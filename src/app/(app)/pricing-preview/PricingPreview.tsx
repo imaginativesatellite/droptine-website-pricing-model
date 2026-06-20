@@ -1,21 +1,11 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import { QUESTIONNAIRE, isFollowUp, splitLabel, type Question, type ShowIf } from "@/lib/questionnaire";
+import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 import BrandSelect from "@/components/BrandSelect";
 
 type Answers = Record<string, string | boolean | undefined>;
-
-function visible(q: Question, answers: Answers): boolean {
-  if (!q.showIf) return true;
-  const conds: ShowIf[] = Array.isArray(q.showIf) ? q.showIf : [q.showIf];
-  return conds.every((c) => {
-    const v = answers[c.field];
-    if (typeof c.equals === "boolean") return c.equals ? v === true : !v;
-    return v === c.equals;
-  });
-}
 
 const money = (n: number) => `$${n.toLocaleString()}`;
 
@@ -28,7 +18,7 @@ export default function PricingPreview() {
 
   const result = useMemo(() => computeQuote(answers as PricingAnswers), [answers]);
 
-  const scopeQuestions = QUESTIONNAIRE.filter((q) => q.group === "scope" && visible(q, answers));
+  const scopeQuestions = QUESTIONNAIRE.filter((q) => q.group === "scope" && isVisible(q, answers));
 
   const discounted = Math.max(0, result.total - (discount || 0));
 
@@ -43,7 +33,7 @@ export default function PricingPreview() {
 
       <div className="grid">
         {/* Questions */}
-        <div className="card">
+        <div className="card qform">
           {scopeQuestions.map((q, i) => {
             const showHeader = q.section && q.section !== scopeQuestions[i - 1]?.section;
             const followUp = isFollowUp(q, scopeQuestions[i - 1]);

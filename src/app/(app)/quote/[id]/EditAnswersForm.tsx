@@ -1,22 +1,12 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
+import { QUESTIONNAIRE, isVisible, type Question } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
 import { editAnswers } from "./actions";
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
-
-function visible(q: Question, answers: Answers): boolean {
-  if (!q.showIf) return true;
-  const conds: ShowIf[] = Array.isArray(q.showIf) ? q.showIf : [q.showIf];
-  return conds.every((c) => {
-    const v = answers[c.field];
-    if (typeof c.equals === "boolean") return c.equals ? v === true : !v;
-    return v === c.equals;
-  });
-}
 
 export default function EditAnswersForm({
   quoteId,
@@ -32,7 +22,7 @@ export default function EditAnswersForm({
   const [pending, startTransition] = useTransition();
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
-  const questions = QUESTIONNAIRE.filter((q) => visible(q, answers));
+  const questions = QUESTIONNAIRE.filter((q) => isVisible(q, answers));
   const proposalName = String(answers.proposalName ?? "").trim();
 
   const submit = () => {

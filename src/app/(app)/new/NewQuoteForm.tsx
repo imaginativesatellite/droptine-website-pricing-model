@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
-import { QUESTIONNAIRE, isFollowUp, splitLabel, type Question, type ShowIf } from "@/lib/questionnaire";
+import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
 import { createQuote } from "./actions";
@@ -9,16 +9,6 @@ import { createQuote } from "./actions";
 const DRAFT_KEY = "droptine-quote-draft";
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
-
-function visible(q: Question, answers: Answers): boolean {
-  if (!q.showIf) return true;
-  const conds: ShowIf[] = Array.isArray(q.showIf) ? q.showIf : [q.showIf];
-  return conds.every((c) => {
-    const v = answers[c.field];
-    if (typeof c.equals === "boolean") return c.equals ? v === true : !v;
-    return v === c.equals;
-  });
-}
 
 // Every visible question must be answered, except the free-text box at the end.
 function isAnswered(q: Question, answers: Answers): boolean {
@@ -52,7 +42,7 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
   }, [answers]);
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
-  const questions = QUESTIONNAIRE.filter((q) => visible(q, answers));
+  const questions = QUESTIONNAIRE.filter((q) => isVisible(q, answers));
   const canSubmit = questions.every((q) => q.id === "additionalFunctionality" || isAnswered(q, answers));
 
   const submit = () => {
@@ -69,7 +59,7 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <div className="card">
+      <div className="card qform">
         {questions.map((q, i) => {
           const showHeader = q.section && q.section !== questions[i - 1]?.section;
           const followUp = isFollowUp(q, questions[i - 1]);

@@ -151,6 +151,7 @@ export const QUESTIONNAIRE: Question[] = [
     id: "pageCountExact",
     type: "text",
     label: "Roughly how many pages will the website need?",
+    emphasize: "how many",
     placeholder: "e.g. 35",
     group: "scope",
     section: "Pages",

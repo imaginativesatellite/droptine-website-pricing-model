@@ -128,6 +128,18 @@ export const QUESTIONNAIRE: Question[] = [
   { id: "news", type: "boolean", label: "News?", group: "scope" },
   { id: "events", type: "boolean", label: "Events?", group: "scope" },
 
+  {
+    id: "animations",
+    type: "single",
+    label: "Do they want animations?",
+    group: "scope",
+    options: [
+      { value: "none", label: "None" },
+      { value: "entrance", label: "Entrance animations only" },
+      { value: "entrance-interactive", label: "Entrance & interactive animations" },
+    ],
+  },
+
   { id: "contentProvided", type: "boolean", label: "Will the page structure and content be organized and provided by Droptine?", group: "scope" },
 
   { id: "socialFeed", type: "boolean", label: "Social media feed integration?", group: "scope" },

@@ -75,6 +75,8 @@ export default async function PricingRulesPage() {
             ["Blog", `+ ${money(R.contentPage)}`],
             ["News", `+ ${money(R.contentPage)}`],
             ["Events", `+ ${money(R.contentPage)}`],
+            ["Entrance animations", `+ ${money(R.animationTiers["entrance"])}`],
+            ["Entrance & interactive animations", `+ ${money(R.animationTiers["entrance-interactive"])}`],
             ["MLS/IDX syncing (one-time build)", `+ ${money(R.mlsBuildAdd)}`],
             ["Structure & content provided by Droptine", `− ${money(R.contentProvidedReduction)} (floor ${money(R.minContentProvided)})`],
           ]}

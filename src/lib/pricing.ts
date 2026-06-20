@@ -76,6 +76,12 @@ export const PRICING_RULES = {
   contentProvidedReduction: 500,
   // Social media feed integration add-on.
   socialFeedFee: 100,
+  // Animations.
+  animationTiers: {
+    "none": 0,
+    "entrance": 150,
+    "entrance-interactive": 950,
+  } as Record<string, number>,
   // MLS/IDX integration: one-time build add (3rd-party IDX fees billed to client).
   mlsBuildAdd: 930,
 } as const;
@@ -103,6 +109,7 @@ export type PricingAnswers = {
 
   contentProvided?: boolean; // Droptine provides page structure & content (−$500)
   socialFeed?: boolean; // social media feed integration (+$100)
+  animations?: string; // "none" | "entrance" (+$150) | "entrance-interactive" (+$950)
 
   mlsIdx?: boolean; // MLS/IDX real-estate syncing (+$930 build, +$50/mo)
   additionalFunctionality?: string; // free-text custom request (complex → custom)
@@ -186,6 +193,16 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
 
   if (answers.socialFeed)
     lineItems.push({ label: "Social media feed integration", amount: R.socialFeedFee });
+
+  if (answers.animations && answers.animations !== "none") {
+    const animAmt = R.animationTiers[answers.animations] ?? 0;
+    if (animAmt > 0)
+      lineItems.push({
+        label: answers.animations === "entrance-interactive" ? "Entrance & interactive animations" : "Entrance animations",
+        amount: animAmt,
+      });
+  }
+
   if (answers.mlsIdx)
     lineItems.push({ label: "MLS/IDX integration", amount: R.mlsBuildAdd });
 

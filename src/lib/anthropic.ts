@@ -27,6 +27,8 @@ export function describeScope(answers: PricingAnswers): string[] {
   if (answers.blog) items.push("a blog");
   if (answers.news) items.push("a news section");
   if (answers.events) items.push("an events page");
+  if (answers.animations === "entrance") items.push("entrance animations");
+  if (answers.animations === "entrance-interactive") items.push("entrance & interactive animations");
   return items;
 }
 

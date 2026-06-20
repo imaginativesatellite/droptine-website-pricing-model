@@ -17,6 +17,9 @@ type Base = {
   group: "client" | "scope";
   // Visual section header this question sits under (rendered once per section).
   section?: string;
+  // Exact substring of `label` to render bold, so staff can scan the question
+  // list without reading every word (e.g. "blog" in "Will the website have a blog?").
+  emphasize?: string;
   // A single condition, or an array of conditions that must ALL be true (AND).
   showIf?: ShowIf | ShowIf[];
 };
@@ -26,6 +29,28 @@ export type Question =
   | (Base & { type: "longtext"; placeholder?: string })
   | (Base & { type: "boolean" })
   | (Base & { type: "single" | "multi"; options: { value: string; label: string; help?: string }[] });
+
+// Splits a question's label into plain/bold segments around `emphasize`, so
+// the UI can render the emphasized word in <strong> without re-deriving it.
+export function splitLabel(q: Pick<Question, "label" | "emphasize">): { text: string; bold: boolean }[] {
+  if (!q.emphasize) return [{ text: q.label, bold: false }];
+  const idx = q.label.indexOf(q.emphasize);
+  if (idx === -1) return [{ text: q.label, bold: false }];
+  const parts: { text: string; bold: boolean }[] = [];
+  if (idx > 0) parts.push({ text: q.label.slice(0, idx), bold: false });
+  parts.push({ text: q.emphasize, bold: true });
+  const rest = q.label.slice(idx + q.emphasize.length);
+  if (rest) parts.push({ text: rest, bold: false });
+  return parts;
+}
+
+// True when `q` is gated by a showIf in the same section as the question before
+// it — i.e. it's a follow-up reveal, not an independent top-level question. Used
+// to group follow-ups tightly with what triggered them instead of spacing every
+// question identically.
+export function isFollowUp(q: Question, prev: Question | undefined): boolean {
+  return Boolean(q.showIf) && prev !== undefined && prev.section === q.section;
+}
 
 const COUNT_OPTIONS = [
   { value: "1-10", label: "1–10" },
@@ -42,11 +67,12 @@ export const QUESTIONNAIRE: Question[] = [
   { id: "proposalName", type: "text", label: "Client Name", placeholder: "e.g. Hidden Valley Ranch", required: true, group: "client" },
 
   // --- Existing site ---
-  { id: "existingWebsite", type: "boolean", label: "Does the client already have a website?", group: "scope", section: "Existing site" },
+  { id: "existingWebsite", type: "boolean", label: "Does the client already have a website?", emphasize: "website", group: "scope", section: "Existing site" },
   {
     id: "existingWebsiteUrl",
     type: "url",
     label: "Existing website URL",
+    emphasize: "URL",
     placeholder: "https://…",
     group: "scope",
     section: "Existing site",
@@ -55,11 +81,12 @@ export const QUESTIONNAIRE: Question[] = [
 
   // --- E-commerce (asked before page count: e-commerce sites are priced by
   //     store cost, not by number of pages) ---
-  { id: "ecommerce", type: "boolean", label: "Will the website have an online store / e-commerce?", group: "scope", section: "E-commerce" },
+  { id: "ecommerce", type: "boolean", label: "Will the website have an online store / e-commerce?", emphasize: "online store / e-commerce", group: "scope", section: "E-commerce" },
   {
     id: "ecommerceItems",
     type: "single",
     label: "How many items will the store sell?",
+    emphasize: "items",
     group: "scope",
     section: "E-commerce",
     showIf: { field: "ecommerce", equals: true },
@@ -77,6 +104,7 @@ export const QUESTIONNAIRE: Question[] = [
     id: "ecommerceShopify",
     type: "boolean",
     label: "Will the store be built on Shopify?",
+    emphasize: "Shopify",
     group: "scope",
     section: "E-commerce",
     showIf: { field: "ecommerce", equals: true },
@@ -87,6 +115,7 @@ export const QUESTIONNAIRE: Question[] = [
     id: "pageTier",
     type: "single",
     label: "How many pages will the website have?",
+    emphasize: "pages",
     help: "Only count main pages — not their individual dynamic sub-pages (e.g. animals, pedigree, news, blog, events), and not legal pages (e.g. privacy policy, terms & conditions).",
     group: "scope",
     section: "Pages",
@@ -105,6 +134,7 @@ export const QUESTIONNAIRE: Question[] = [
     id: "pageCountExact",
     type: "text",
     label: "Roughly how many pages will the website need?",
+    emphasize: "pages",
     placeholder: "e.g. 35",
     group: "scope",
     section: "Pages",
@@ -112,25 +142,26 @@ export const QUESTIONNAIRE: Question[] = [
   },
 
   // --- Animals & pedigrees ---
-  { id: "animalPages", type: "boolean", label: "Will the website have an animals page?", group: "scope", section: "Animals & pedigrees" },
-  { id: "animalIndividualPages", type: "boolean", label: "Will each animal have its own page?", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalPages", equals: true } },
-  { id: "animalCount", type: "single", label: "How many animals will the website list?", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalIndividualPages", equals: true }, options: COUNT_OPTIONS },
+  { id: "animalPages", type: "boolean", label: "Will the website have an animals page?", emphasize: "animals page", group: "scope", section: "Animals & pedigrees" },
+  { id: "animalIndividualPages", type: "boolean", label: "Will each animal have its own page?", emphasize: "own page", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalPages", equals: true } },
+  { id: "animalCount", type: "single", label: "How many animals will the website list?", emphasize: "animals", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalIndividualPages", equals: true }, options: COUNT_OPTIONS },
 
-  { id: "pedigreePages", type: "boolean", label: "Will the website have a pedigree / bloodline page?", group: "scope", section: "Animals & pedigrees" },
-  { id: "pedigreeIndividualPages", type: "boolean", label: "Will each pedigree have its own page?", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreePages", equals: true } },
-  { id: "pedigreeCount", type: "single", label: "How many pedigrees will the website list?", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreeIndividualPages", equals: true }, options: COUNT_OPTIONS },
+  { id: "pedigreePages", type: "boolean", label: "Will the website have a pedigree / bloodline page?", emphasize: "pedigree / bloodline page", group: "scope", section: "Animals & pedigrees" },
+  { id: "pedigreeIndividualPages", type: "boolean", label: "Will each pedigree have its own page?", emphasize: "own page", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreePages", equals: true } },
+  { id: "pedigreeCount", type: "single", label: "How many pedigrees will the website list?", emphasize: "pedigrees", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreeIndividualPages", equals: true }, options: COUNT_OPTIONS },
 
   // --- Content ---
-  { id: "blog", type: "boolean", label: "Will the website have a blog?", group: "scope", section: "Content" },
-  { id: "news", type: "boolean", label: "Will the website have a news section?", group: "scope", section: "Content" },
-  { id: "events", type: "boolean", label: "Will the website have an events page?", group: "scope", section: "Content" },
-  { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", group: "scope", section: "Content" },
+  { id: "blog", type: "boolean", label: "Will the website have a blog?", emphasize: "blog", group: "scope", section: "Content" },
+  { id: "news", type: "boolean", label: "Will the website have a news section?", emphasize: "news section", group: "scope", section: "Content" },
+  { id: "events", type: "boolean", label: "Will the website have an events page?", emphasize: "events page", group: "scope", section: "Content" },
+  { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", emphasize: "Droptine", group: "scope", section: "Content" },
 
   // --- Add-ons ---
   {
     id: "animations",
     type: "single",
     label: "Will the website have animations?",
+    emphasize: "animations",
     group: "scope",
     section: "Add-ons",
     options: [
@@ -139,24 +170,26 @@ export const QUESTIONNAIRE: Question[] = [
       { value: "entrance-interactive", label: "Entrance & interactive animations" },
     ],
   },
-  { id: "socialFeed", type: "boolean", label: "Will the website have social media feed integration?", group: "scope", section: "Add-ons" },
+  { id: "socialFeed", type: "boolean", label: "Will the website have social media feed integration?", emphasize: "social media feed", group: "scope", section: "Add-ons" },
   {
     id: "realEstate",
     type: "boolean",
     label: "Will the website have the real-estate package?",
+    emphasize: "real-estate package",
     help: "Property/land listings + team/agent logins + interactive property map.",
     group: "scope",
     section: "Add-ons",
   },
 
   // --- Custom ---
-  { id: "mlsIdx", type: "boolean", label: "Will the website have live MLS/IDX real-estate syncing?", group: "scope", section: "Custom" },
+  { id: "mlsIdx", type: "boolean", label: "Will the website have live MLS/IDX real-estate syncing?", emphasize: "MLS/IDX", group: "scope", section: "Custom" },
   {
     id: "additionalFunctionality",
     type: "longtext",
     label: "Will the website need any other / complex functionality?",
+    emphasize: "complex functionality",
     placeholder: "Describe anything beyond the options above. Anything here routes the request to a custom quote.",
     group: "scope",
-    section: "Complex / custom",
+    section: "Custom",
   },
 ];

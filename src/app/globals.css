@@ -104,6 +104,10 @@ h1 {
   padding-top: 0;
   border-top: none;
 }
+.q {
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
 /* The question right after a header shouldn't double up borders. */
 .section-head + .q {
   border-top: none;
@@ -113,14 +117,30 @@ h1 {
 }
 .q label.qlabel {
   display: block;
-  font-weight: 600;
+  font-weight: 500;
   color: var(--charcoal);
   margin-bottom: 6px;
+}
+.q label.qlabel strong {
+  font-weight: 700;
+  color: #000;
 }
 .q .help {
   font-size: 0.82rem;
   color: var(--muted);
   margin-bottom: 8px;
+}
+
+/* A question revealed by the one above it (showIf) reads as a detail of that
+   answer, not a new question — tighten the gap and indent it under its parent. */
+.q.q-has-followup {
+  padding-bottom: 8px;
+  border-bottom: none;
+}
+.q.q-followup {
+  padding-top: 8px;
+  padding-left: 14px;
+  border-left: 2px solid var(--line);
 }
 
 input[type="text"],

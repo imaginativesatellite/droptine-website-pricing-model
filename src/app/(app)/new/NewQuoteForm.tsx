@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
-import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
+import { QUESTIONNAIRE, isFollowUp, splitLabel, type Question, type ShowIf } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
 import { createQuote } from "./actions";
@@ -72,12 +72,15 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
       <div className="card">
         {questions.map((q, i) => {
           const showHeader = q.section && q.section !== questions[i - 1]?.section;
+          const followUp = isFollowUp(q, questions[i - 1]);
+          const hasFollowUp = Boolean(questions[i + 1] && isFollowUp(questions[i + 1], q));
+          const qClass = ["q", followUp && "q-followup", hasFollowUp && "q-has-followup"].filter(Boolean).join(" ");
           return (
             <Fragment key={q.id}>
               {showHeader && <h3 className="section-head">{q.section}</h3>}
-              <div className="q">
+              <div className={qClass}>
                 <label className="qlabel" htmlFor={q.id}>
-                  {q.label}
+                  {splitLabel(q).map((p, idx) => (p.bold ? <strong key={idx}>{p.text}</strong> : p.text))}
                   {q.id !== "additionalFunctionality" && <span className="req">*</span>}
                 </label>
                 {q.help && <div className="help">{q.help}</div>}

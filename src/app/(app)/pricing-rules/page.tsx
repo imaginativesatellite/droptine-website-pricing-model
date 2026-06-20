@@ -121,7 +121,7 @@ export default async function PricingRulesPage() {
           <li>Animations → &ldquo;entrance animations&rdquo; or &ldquo;entrance &amp; interactive animations&rdquo;, only if selected</li>
           <li>MLS/IDX syncing → &ldquo;live MLS/IDX real-estate syncing&rdquo;</li>
           <li>Structure &amp; content provided by Droptine → one phrase, only if selected</li>
-          <li>Custom functionality → &ldquo;custom functionality (their answer)&rdquo;, only if answered</li>
+          <li>Custom functionality → &ldquo;custom functionality: their answer&rdquo;, only if answered</li>
         </ul>
         <p className="help" style={{ marginBottom: 10 }}>
           The existing-website question and its URL are context only — they describe a site being

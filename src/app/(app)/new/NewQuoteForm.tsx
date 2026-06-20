@@ -57,8 +57,19 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
     });
   };
 
+  const clearAll = () => {
+    setAnswers({});
+    setError(null);
+    try { localStorage.removeItem(DRAFT_KEY); } catch {}
+  };
+
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
+      <div style={{ textAlign: "right", marginBottom: 8 }}>
+        <button type="button" className="clear-all-link" onClick={clearAll}>
+          Clear all
+        </button>
+      </div>
       <div className="card qform">
         {questions.map((q, i) => {
           const showHeader = q.section && q.section !== questions[i - 1]?.section;

@@ -172,15 +172,18 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
       return (
         <textarea id={q.id} placeholder={q.placeholder} value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value)} />
       );
-    default:
+    default: {
+      const numeric = "numeric" in q && q.numeric;
       return (
         <input
           id={q.id}
           type={q.type}
+          inputMode={numeric ? "numeric" : undefined}
           placeholder={q.placeholder}
           value={(answers[q.id] as string) ?? ""}
-          onChange={(e) => set(q.id, e.target.value)}
+          onChange={(e) => set(q.id, numeric ? e.target.value.replace(/[^0-9]/g, "") : e.target.value)}
         />
       );
+    }
   }
 }

@@ -88,7 +88,7 @@ export const PRICING_RULES = {
 
 export type PricingAnswers = {
   pageTier?: keyof typeof PRICING_RULES.pageBase;
-  pageCountExact?: string; // free-text rough count, only asked when pageTier === "30+"
+  pageCountExact?: string; // exact count, only asked when pageTier === "30+"
 
   ecommerce?: boolean;
   ecommerceItems?: string; // tier key, or "150+"
@@ -154,7 +154,8 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   } else {
     const tier = answers.pageTier ?? "5-9";
     const baseAmt = R.pageBase[tier] ?? R.base;
-    lineItems.push({ label: `Website (${tier} pages)`, amount: baseAmt });
+    const pageLabel = tier === "30+" && answers.pageCountExact?.trim() ? answers.pageCountExact.trim() : tier;
+    lineItems.push({ label: `Website (${pageLabel} pages)`, amount: baseAmt });
   }
 
   // E-commerce store
@@ -178,7 +179,7 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
 
   // Pedigree pages
   if (answers.pedigreePages) {
-    lineItems.push({ label: "Pedigree / bloodline page", amount: R.listingPageFee });
+    lineItems.push({ label: "Pedigree page", amount: R.listingPageFee });
     if (answers.pedigreeIndividualPages && answers.pedigreeCount) {
       const add = R.individualPageTiers[answers.pedigreeCount] ?? 0;
       if (add > 0) lineItems.push({ label: `Individual pedigree pages (${answers.pedigreeCount})`, amount: add });

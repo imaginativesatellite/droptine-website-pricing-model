@@ -111,17 +111,17 @@ export default async function PricingRulesPage() {
           <strong>Scope phrases, included only when their trigger is met:</strong>
         </p>
         <ul style={{ marginLeft: 18, fontSize: "0.92rem", marginBottom: 14 }}>
-          <li>Not e-commerce → &ldquo;a [page tier]-page website&rdquo; (uses the rough page count instead of &ldquo;30+&rdquo; when that follow-up was answered)</li>
+          <li>Not e-commerce → &ldquo;a [page tier]-page website&rdquo; (uses the exact page count typed in instead of the literal &ldquo;30+&rdquo; when that follow-up was answered)</li>
           <li>E-commerce → &ldquo;an online store[ on Shopify] ([item count] items)&rdquo;</li>
           <li>Animals page → individual animal pages (with count) if each animal gets its own page, otherwise a single animal listing page</li>
-          <li>Pedigree page → individual pedigree/bloodline pages (with count) if each gets its own page, otherwise a single pedigree/bloodline page</li>
+          <li>Pedigree page → individual pedigree pages (with count) if each gets its own page, otherwise a single pedigree page</li>
           <li>Real-estate package → &ldquo;a real-estate package (property listings, agent logins, interactive property map)&rdquo;</li>
           <li>Blog, news, events → one phrase each, only if selected</li>
           <li>Social media feed integration → one phrase, only if selected</li>
           <li>Animations → &ldquo;entrance animations&rdquo; or &ldquo;entrance &amp; interactive animations&rdquo;, only if selected</li>
           <li>MLS/IDX syncing → &ldquo;live MLS/IDX real-estate syncing&rdquo;</li>
           <li>Structure &amp; content provided by Droptine → one phrase, only if selected</li>
-          <li>Custom functionality free text → included verbatim as its own scope phrase, only if answered</li>
+          <li>Custom functionality → &ldquo;custom functionality (their answer)&rdquo;, only if answered</li>
         </ul>
         <p className="help" style={{ marginBottom: 10 }}>
           The existing-website question and its URL are context only — they describe a site being
@@ -155,16 +155,16 @@ export default async function PricingRulesPage() {
         <div style={{ fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: 12 }}>
           <div>
             <strong>E-commerce (monthly):</strong> {ECOMMERCE_MONTHLY_DISCLAIMER}
-            <div className="help" style={{ marginTop: 2 }}>Trigger: the site includes e-commerce.</div>
+            <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: the site includes e-commerce.</div>
           </div>
           <div>
             <strong>MLS/IDX (monthly):</strong> {IDX_MONTHLY_DISCLAIMER}
-            <div className="help" style={{ marginTop: 2 }}>Trigger: MLS/IDX syncing is selected.</div>
+            <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: MLS/IDX syncing is selected.</div>
           </div>
           <div>
             <strong>Custom disclaimer:</strong> A free-text note an admin can add when approving or
             editing a quote, placed on either the website-price or monthly section.
-            <div className="help" style={{ marginTop: 2 }}>Trigger: an admin adds one to the quote.</div>
+            <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: an admin adds one to the quote.</div>
           </div>
         </div>
       </Card>

@@ -25,7 +25,7 @@ type Base = {
 };
 
 export type Question =
-  | (Base & { type: "text" | "email" | "tel" | "url"; placeholder?: string; required?: boolean })
+  | (Base & { type: "text" | "email" | "tel" | "url"; placeholder?: string; required?: boolean; numeric?: boolean })
   | (Base & { type: "longtext"; placeholder?: string })
   | (Base & { type: "boolean" })
   | (Base & { type: "single" | "multi"; options: { value: string; label: string; help?: string }[] });
@@ -150,7 +150,8 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "pageCountExact",
     type: "text",
-    label: "Roughly how many pages will the website need?",
+    numeric: true,
+    label: "How many pages will the website need?",
     emphasize: "how many",
     placeholder: "e.g. 35",
     group: "scope",

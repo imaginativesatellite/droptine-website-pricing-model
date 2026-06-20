@@ -7,7 +7,7 @@ export function describeScope(answers: PricingAnswers): string[] {
   if (!answers.ecommerce) {
     const pages =
       answers.pageTier === "30+" && answers.pageCountExact?.trim()
-        ? `~${answers.pageCountExact.trim()}`
+        ? answers.pageCountExact.trim()
         : answers.pageTier ?? "5-9";
     items.push(`a ${pages}-page website`);
   }
@@ -25,8 +25,8 @@ export function describeScope(answers: PricingAnswers): string[] {
   if (answers.pedigreePages)
     items.push(
       answers.pedigreeIndividualPages
-        ? `individual pedigree/bloodline pages (${answers.pedigreeCount ?? ""})`
-        : "a pedigree/bloodline page",
+        ? `individual pedigree pages (${answers.pedigreeCount ?? ""})`
+        : "a pedigree page",
     );
   if (answers.realEstate)
     items.push("a real-estate package (property listings, agent logins, interactive property map)");
@@ -38,7 +38,7 @@ export function describeScope(answers: PricingAnswers): string[] {
   if (answers.animations === "entrance-interactive") items.push("entrance & interactive animations");
   if (answers.mlsIdx) items.push("live MLS/IDX real-estate syncing");
   if (answers.contentProvided) items.push("page structure & content organized and provided by Droptine");
-  if (answers.additionalFunctionality?.trim()) items.push(`custom functionality: ${answers.additionalFunctionality.trim()}`);
+  if (answers.additionalFunctionality?.trim()) items.push(`custom functionality (${answers.additionalFunctionality.trim()})`);
   return items;
 }
 
@@ -150,7 +150,7 @@ export async function recommendCustomPrice(input: {
           `Project: ${input.proposalName}\n` +
           `Standard line items:\n${itemized}\n\n` +
           `Why it's custom: ${input.customReasons.join("; ") || "n/a"}\n` +
-          (input.pageCountExact ? `Approx. page count requested: ${input.pageCountExact}\n` : "") +
+          (input.pageCountExact ? `Page count requested: ${input.pageCountExact}\n` : "") +
           (input.additionalFunctionality ? `Complex / additional functionality requested:\n${input.additionalFunctionality}\n` : "") +
           `\nRecommend the one-time price and explain why.`,
       },

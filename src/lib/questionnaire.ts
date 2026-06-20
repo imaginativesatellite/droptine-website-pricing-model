@@ -124,6 +124,7 @@ export const QUESTIONNAIRE: Question[] = [
   { id: "blog", type: "boolean", label: "Will the website have a blog?", group: "scope", section: "Content" },
   { id: "news", type: "boolean", label: "Will the website have a news section?", group: "scope", section: "Content" },
   { id: "events", type: "boolean", label: "Will the website have an events page?", group: "scope", section: "Content" },
+  { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", group: "scope", section: "Content" },
 
   // --- Add-ons ---
   {
@@ -147,10 +148,9 @@ export const QUESTIONNAIRE: Question[] = [
     group: "scope",
     section: "Add-ons",
   },
-  { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", group: "scope", section: "Add-ons" },
 
-  // --- Complex / custom ---
-  { id: "mlsIdx", type: "boolean", label: "Will the website have live MLS/IDX real-estate syncing?", group: "scope", section: "Complex / custom" },
+  // --- Custom ---
+  { id: "mlsIdx", type: "boolean", label: "Will the website have live MLS/IDX real-estate syncing?", group: "scope", section: "Custom" },
   {
     id: "additionalFunctionality",
     type: "longtext",

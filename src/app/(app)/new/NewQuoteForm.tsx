@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useTransition } from "react";
+import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
@@ -70,26 +70,32 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
       <div className="card">
-        {questions.map((q) => (
-          <div className="q" key={q.id}>
-            <label className="qlabel" htmlFor={q.id}>
-              {q.label}
-              {q.id !== "additionalFunctionality" && <span className="req">*</span>}
-            </label>
-            {q.help && <div className="help">{q.help}</div>}
-            {q.id === "proposalName" ? (
-              <ClientNameInput
-                id={q.id}
-                value={String(answers[q.id] ?? "")}
-                placeholder={(q as { placeholder?: string }).placeholder}
-                suggestions={clientNames}
-                onChange={(v) => set(q.id, v)}
-              />
-            ) : (
-              renderInput(q, answers, set)
-            )}
-          </div>
-        ))}
+        {questions.map((q, i) => {
+          const showHeader = q.section && q.section !== questions[i - 1]?.section;
+          return (
+            <Fragment key={q.id}>
+              {showHeader && <h3 className="section-head">{q.section}</h3>}
+              <div className="q">
+                <label className="qlabel" htmlFor={q.id}>
+                  {q.label}
+                  {q.id !== "additionalFunctionality" && <span className="req">*</span>}
+                </label>
+                {q.help && <div className="help">{q.help}</div>}
+                {q.id === "proposalName" ? (
+                  <ClientNameInput
+                    id={q.id}
+                    value={String(answers[q.id] ?? "")}
+                    placeholder={(q as { placeholder?: string }).placeholder}
+                    suggestions={clientNames}
+                    onChange={(v) => set(q.id, v)}
+                  />
+                ) : (
+                  renderInput(q, answers, set)
+                )}
+              </div>
+            </Fragment>
+          );
+        })}
       </div>
 
       {error && (

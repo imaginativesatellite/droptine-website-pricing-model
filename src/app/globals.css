@@ -89,9 +89,24 @@ h1 {
   padding: 22px;
 }
 
-.q {
-  padding: 14px 0;
-  border-bottom: 1px solid var(--line);
+.section-head {
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: var(--muted);
+  margin: 26px 0 2px;
+  padding-top: 18px;
+  border-top: 1px solid var(--line);
+}
+.section-head:first-child {
+  margin-top: 6px;
+  padding-top: 0;
+  border-top: none;
+}
+/* The question right after a header shouldn't double up borders. */
+.section-head + .q {
+  border-top: none;
 }
 .q:last-child {
   border-bottom: none;

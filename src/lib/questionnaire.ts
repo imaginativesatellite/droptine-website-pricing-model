@@ -15,6 +15,8 @@ type Base = {
   label: string;
   help?: string;
   group: "client" | "scope";
+  // Visual section header this question sits under (rendered once per section).
+  section?: string;
   // A single condition, or an array of conditions that must ALL be true (AND).
   showIf?: ShowIf | ShowIf[];
 };
@@ -39,25 +41,27 @@ export const QUESTIONNAIRE: Question[] = [
   // The client the proposal will eventually go to (Droptine's end client).
   { id: "proposalName", type: "text", label: "Client Name", placeholder: "e.g. Hidden Valley Ranch", required: true, group: "client" },
 
-  // --- Scope ---
-  { id: "existingWebsite", type: "boolean", label: "Does the client have an existing website?", group: "scope" },
+  // --- Existing site ---
+  { id: "existingWebsite", type: "boolean", label: "Does the client already have a website?", group: "scope", section: "Existing site" },
   {
     id: "existingWebsiteUrl",
     type: "url",
     label: "Existing website URL",
     placeholder: "https://…",
     group: "scope",
+    section: "Existing site",
     showIf: { field: "existingWebsite", equals: true },
   },
 
   // --- E-commerce (asked before page count: e-commerce sites are priced by
   //     store cost, not by number of pages) ---
-  { id: "ecommerce", type: "boolean", label: "Does the site need an online store / e-commerce?", group: "scope" },
+  { id: "ecommerce", type: "boolean", label: "Will the website have an online store / e-commerce?", group: "scope", section: "E-commerce" },
   {
     id: "ecommerceItems",
     type: "single",
-    label: "How many items will be sold?",
+    label: "How many items will the store sell?",
     group: "scope",
+    section: "E-commerce",
     showIf: { field: "ecommerce", equals: true },
     options: [
       { value: "1-25", label: "1–25 items" },
@@ -72,8 +76,9 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "ecommerceShopify",
     type: "boolean",
-    label: "Does the store need to be built on Shopify?",
+    label: "Will the store be built on Shopify?",
     group: "scope",
+    section: "E-commerce",
     showIf: { field: "ecommerce", equals: true },
   },
 
@@ -81,9 +86,10 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "pageTier",
     type: "single",
-    label: "How many pages?",
+    label: "How many pages will the website have?",
     help: "Only count main pages — not their individual dynamic sub-pages (e.g. animals, pedigree, news, blog, events), and not legal pages (e.g. privacy policy, terms & conditions).",
     group: "scope",
+    section: "Pages",
     showIf: { field: "ecommerce", equals: false },
     options: [
       { value: "1-4", label: "1–4 pages" },
@@ -98,59 +104,59 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "pageCountExact",
     type: "text",
-    label: "Roughly how many pages do they need?",
+    label: "Roughly how many pages will the website need?",
     placeholder: "e.g. 35",
     group: "scope",
+    section: "Pages",
     showIf: { field: "pageTier", equals: "30+" },
   },
 
-  // --- Animals ---
-  { id: "animalPages", type: "boolean", label: "Do they need animals listed (an animals page)?", group: "scope" },
-  { id: "animalIndividualPages", type: "boolean", label: "Will the animals need individual pages?", group: "scope", showIf: { field: "animalPages", equals: true } },
-  { id: "animalCount", type: "single", label: "How many animals?", group: "scope", showIf: { field: "animalIndividualPages", equals: true }, options: COUNT_OPTIONS },
+  // --- Animals & pedigrees ---
+  { id: "animalPages", type: "boolean", label: "Will the website have an animals page?", group: "scope", section: "Animals & pedigrees" },
+  { id: "animalIndividualPages", type: "boolean", label: "Will each animal have its own page?", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalPages", equals: true } },
+  { id: "animalCount", type: "single", label: "How many animals will the website list?", group: "scope", section: "Animals & pedigrees", showIf: { field: "animalIndividualPages", equals: true }, options: COUNT_OPTIONS },
 
-  // --- Pedigrees ---
-  { id: "pedigreePages", type: "boolean", label: "Do they need pedigree / bloodline pages?", group: "scope" },
-  { id: "pedigreeIndividualPages", type: "boolean", label: "Will the pedigrees need individual pages?", group: "scope", showIf: { field: "pedigreePages", equals: true } },
-  { id: "pedigreeCount", type: "single", label: "How many pedigrees?", group: "scope", showIf: { field: "pedigreeIndividualPages", equals: true }, options: COUNT_OPTIONS },
-
-  // --- Real estate ---
-  {
-    id: "realEstate",
-    type: "boolean",
-    label: "Real-estate package?",
-    help: "Property/land listings + team/agent logins + interactive property map.",
-    group: "scope",
-  },
+  { id: "pedigreePages", type: "boolean", label: "Will the website have pedigree / bloodline pages?", group: "scope", section: "Animals & pedigrees" },
+  { id: "pedigreeIndividualPages", type: "boolean", label: "Will each pedigree have its own page?", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreePages", equals: true } },
+  { id: "pedigreeCount", type: "single", label: "How many pedigrees will the website list?", group: "scope", section: "Animals & pedigrees", showIf: { field: "pedigreeIndividualPages", equals: true }, options: COUNT_OPTIONS },
 
   // --- Content ---
-  { id: "blog", type: "boolean", label: "Blog?", group: "scope" },
-  { id: "news", type: "boolean", label: "News?", group: "scope" },
-  { id: "events", type: "boolean", label: "Events?", group: "scope" },
+  { id: "blog", type: "boolean", label: "Will the website have a blog?", group: "scope", section: "Content" },
+  { id: "news", type: "boolean", label: "Will the website have a news section?", group: "scope", section: "Content" },
+  { id: "events", type: "boolean", label: "Will the website have an events page?", group: "scope", section: "Content" },
 
+  // --- Add-ons ---
   {
     id: "animations",
     type: "single",
-    label: "Do they want animations?",
+    label: "Will the website have animations?",
     group: "scope",
+    section: "Add-ons",
     options: [
       { value: "none", label: "None" },
       { value: "entrance", label: "Entrance animations only" },
       { value: "entrance-interactive", label: "Entrance & interactive animations" },
     ],
   },
-
-  { id: "contentProvided", type: "boolean", label: "Will the page structure and content be organized and provided by Droptine?", group: "scope" },
-
-  { id: "socialFeed", type: "boolean", label: "Social media feed integration?", group: "scope" },
+  { id: "socialFeed", type: "boolean", label: "Will the website have social media feed integration?", group: "scope", section: "Add-ons" },
+  {
+    id: "realEstate",
+    type: "boolean",
+    label: "Will the website have the real-estate package?",
+    help: "Property/land listings + team/agent logins + interactive property map.",
+    group: "scope",
+    section: "Add-ons",
+  },
+  { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", group: "scope", section: "Add-ons" },
 
   // --- Complex / custom ---
-  { id: "mlsIdx", type: "boolean", label: "Does it need live MLS/IDX real-estate syncing?", group: "scope" },
+  { id: "mlsIdx", type: "boolean", label: "Will the website have live MLS/IDX real-estate syncing?", group: "scope", section: "Complex / custom" },
   {
     id: "additionalFunctionality",
     type: "longtext",
-    label: "Any other / complex functionality requested?",
+    label: "Will the website need any other / complex functionality?",
     placeholder: "Describe anything beyond the options above. Anything here routes the request to a custom quote.",
     group: "scope",
+    section: "Complex / custom",
   },
 ];

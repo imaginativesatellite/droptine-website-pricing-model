@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { QUESTIONNAIRE, type Question, type ShowIf } from "@/lib/questionnaire";
 import { computeQuote, type PricingAnswers } from "@/lib/pricing";
 import BrandSelect from "@/components/BrandSelect";
@@ -44,15 +44,21 @@ export default function PricingPreview() {
       <div className="grid">
         {/* Questions */}
         <div className="card">
-          {scopeQuestions.map((q) => (
-            <div className="q" key={q.id}>
-              <label className="qlabel" htmlFor={q.id}>
-                {q.label}
-              </label>
-              {q.help && <div className="help">{q.help}</div>}
-              {renderInput(q, answers, set)}
-            </div>
-          ))}
+          {scopeQuestions.map((q, i) => {
+            const showHeader = q.section && q.section !== scopeQuestions[i - 1]?.section;
+            return (
+              <Fragment key={q.id}>
+                {showHeader && <h3 className="section-head">{q.section}</h3>}
+                <div className="q">
+                  <label className="qlabel" htmlFor={q.id}>
+                    {q.label}
+                  </label>
+                  {q.help && <div className="help">{q.help}</div>}
+                  {renderInput(q, answers, set)}
+                </div>
+              </Fragment>
+            );
+          })}
         </div>
 
         {/* Live summary */}

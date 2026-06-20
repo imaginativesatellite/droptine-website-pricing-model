@@ -102,6 +102,47 @@ export default async function PricingRulesPage() {
         </ul>
       </Card>
 
+      <Card title="Scope summary paragraph">
+        <p className="help" style={{ marginBottom: 10 }}>
+          The plain-English &ldquo;what we&rsquo;ll build&rdquo; paragraph on every proposal. It&rsquo;s
+          always built from the answers — never from the price, and the price is never built from it.
+        </p>
+        <p style={{ fontSize: "0.92rem", marginBottom: 6 }}>
+          <strong>Scope phrases, included only when their trigger is met:</strong>
+        </p>
+        <ul style={{ marginLeft: 18, fontSize: "0.92rem", marginBottom: 14 }}>
+          <li>Not e-commerce → &ldquo;a [page tier]-page website&rdquo;</li>
+          <li>E-commerce → &ldquo;an online store[ on Shopify] ([item count] items)&rdquo;</li>
+          <li>Animals page → individual animal pages (with count) if each animal gets its own page, otherwise a single animal listing page</li>
+          <li>Pedigree page → individual pedigree/bloodline pages (with count) if each gets its own page, otherwise a single pedigree/bloodline page</li>
+          <li>Real-estate package → &ldquo;a real-estate package (property listings, agent logins, interactive property map)&rdquo;</li>
+          <li>Blog, news, events → one phrase each, only if selected</li>
+          <li>Animations → &ldquo;entrance animations&rdquo; or &ldquo;entrance &amp; interactive animations&rdquo;, only if selected</li>
+        </ul>
+        <p className="help" style={{ marginBottom: 10 }}>
+          Social-feed integration, MLS/IDX syncing, content-provided-by-Droptine, and the free-text
+          custom-functionality answer affect price but are not currently mentioned in this paragraph.
+        </p>
+        <p style={{ fontSize: "0.92rem", marginBottom: 6 }}>
+          <strong>Two ways that list becomes a paragraph:</strong>
+        </p>
+        <div style={{ fontSize: "0.9rem", display: "flex", flexDirection: "column", gap: 12 }}>
+          <div>
+            <strong>Default template (no AI, no cost):</strong> one fixed sentence introducing Luna
+            Creative and the standard feature set, plus a &ldquo;This includes &hellip;&rdquo; sentence
+            listing the scope phrases above, comma-separated.
+            <div className="help" style={{ marginTop: 2 }}>Used whenever AI scope-writing is off.</div>
+          </div>
+          <div>
+            <strong>AI-drafted:</strong> Claude is given the same scope list plus the client name and
+            industry, and writes 2&ndash;3 short paragraphs. It&rsquo;s explicitly instructed to never
+            mention prices, hours, or dollar amounts. If the call fails or returns nothing, the default
+            template above is used instead.
+            <div className="help" style={{ marginTop: 2 }}>Trigger: ENABLE_AI=true and an Anthropic API key are both set.</div>
+          </div>
+        </div>
+      </Card>
+
       <Card title="Conditional disclaimers (only shown when triggered)">
         <p className="help" style={{ marginBottom: 12 }}>
           Standard features, lead time, the validity notice, and the general terms appear on every

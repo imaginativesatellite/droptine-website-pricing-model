@@ -203,8 +203,8 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "additionalFunctionality",
     type: "longtext",
-    label: "Will the website need any other functionality?",
-    emphasize: "other",
+    label: "Will the website need any custom functionality?",
+    emphasize: "custom",
     placeholder: "Describe anything beyond the options above. Anything here routes the request to a custom quote.",
     group: "scope",
     section: "Custom",

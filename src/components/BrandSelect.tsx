@@ -32,6 +32,18 @@ export default function BrandSelect({
 
   return (
     <div className="bs" ref={ref}>
+      {/* Touch devices get the OS's own picker instead of the custom list below. */}
+      <select
+        className="bs-native"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        aria-label={placeholder}
+      >
+        <option value="" disabled hidden>{placeholder}</option>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>{o.label}</option>
+        ))}
+      </select>
       <button type="button" id={id} className="bs-trigger" onClick={() => setOpen((o) => !o)} aria-haspopup="listbox" aria-expanded={open}>
         <span className={selected ? "" : "bs-placeholder"}>{selected ? selected.label : placeholder}</span>
         <span className="bs-chev" aria-hidden>

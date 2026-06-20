@@ -319,7 +319,9 @@ select:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
   z-index: 30;
-  max-height: 260px;
+  /* Tall enough to show every current option list (up to 7) without scrolling,
+     but capped so it can't run off a short viewport. */
+  max-height: min(340px, 70vh);
   overflow: auto;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
   padding: 4px;
@@ -337,6 +339,34 @@ select:focus {
   background: rgba(232, 148, 34, 0.12);
   color: var(--gold-dark);
   font-weight: 600;
+}
+
+/* Hidden by default; swapped in for the custom dropdown on touch devices so
+   they get the OS's own picker instead of the in-page list. */
+.bs-native {
+  display: none;
+}
+@media (hover: none) and (pointer: coarse) {
+  .bs-trigger,
+  .bs-list {
+    display: none;
+  }
+  .bs-native {
+    display: block;
+    width: 100%;
+    padding: 10px 14px 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    font: inherit;
+    font-size: 0.95rem;
+    color: var(--ink);
+  }
+  .bs-native:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 3px rgba(232, 148, 34, 0.15);
+  }
 }
 
 /* Full-width autocomplete dropdown (client name) */

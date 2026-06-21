@@ -4,7 +4,7 @@
  * Page count sets the base build price directly. Round UP to the nearest $250,
  * clamp to $4,000–$15,000. Some selections route to a custom quote.
  *
- * Pricing is fully deterministic here — the Anthropic model only drafts prose.
+ * Pricing is fully deterministic here - the Anthropic model only drafts prose.
  * This config is data-driven so it can later be edited from an admin UI.
  */
 
@@ -13,7 +13,7 @@ export const PRICING_RULES = {
   // not page count).
   base: 5000,
 
-  // Hard guardrails — every computed price is clamped into this band.
+  // Hard guardrails - every computed price is clamped into this band.
   min: 4000,
   // Lower floor when Droptine supplies the page structure & content.
   minContentProvided: 3500,
@@ -232,7 +232,7 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
 
 /** Admin-controlled global nudge on demand (busy → raise prices, slow → lower
  *  them). Applied after computeQuote, as a line item appended to the
- *  internal-only breakdown — never shown to the member (see ProposalView /
+ *  internal-only breakdown - never shown to the member (see ProposalView /
  *  pdf.tsx, which only render subtotal/discount/total, not lineItems). */
 export function applyDemandAdjustment(result: PricingResult, pct: number): PricingResult {
   if (!pct) return result;

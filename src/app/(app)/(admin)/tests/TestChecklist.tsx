@@ -7,7 +7,7 @@ type Section = { title: string; items: Item[] };
 
 const STORAGE_KEY = "droptine-test-checklist";
 
-// Each item has a STABLE id — that's the key the checkmark is saved under, so
+// Each item has a STABLE id - that's the key the checkmark is saved under, so
 // reordering or rewording an item won't lose a previously-recorded check.
 const SECTIONS: Section[] = [
   {
@@ -43,14 +43,14 @@ const SECTIONS: Section[] = [
         id: "auth-guard",
         title: "Protected pages are guarded",
         steps: [
-          "While logged out, visit /dashboard directly — you should be redirected to /login.",
-          "As a member, visit /users and /tests directly — you should be redirected to /dashboard.",
+          "While logged out, visit /dashboard directly - you should be redirected to /login.",
+          "As a member, visit /users and /tests directly - you should be redirected to /dashboard.",
         ],
       },
     ],
   },
   {
-    title: "New quote — standard proposal",
+    title: "New quote - standard proposal",
     items: [
       {
         id: "new-generate",
@@ -197,7 +197,7 @@ const SECTIONS: Section[] = [
         steps: [
           "As the creating member, open an approved/proposal quote that has a client email on file.",
           "Click Sign Proposal.",
-          "Confirm status shows 'Sent — awaiting signatures' and the client receives the signing email.",
+          "Confirm status shows 'Sent - awaiting signatures' and the client receives the signing email.",
         ],
       },
       {
@@ -308,8 +308,8 @@ const SECTIONS: Section[] = [
         title: "Reset password & delete safeguards",
         steps: [
           "Reset a user's password and confirm they can log in with it.",
-          "Try deleting a user who has quotes/clients — confirm it's blocked with a clear message.",
-          "Delete a user with no history — confirm it succeeds.",
+          "Try deleting a user who has quotes/clients - confirm it's blocked with a clear message.",
+          "Delete a user with no history - confirm it succeeds.",
         ],
       },
     ],

@@ -17,7 +17,7 @@ import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
 
 function fmt(v: unknown): string {
-  if (v === undefined || v === null || v === "") return "—";
+  if (v === undefined || v === null || v === "") return "-";
   if (v === true) return "Yes";
   if (v === false) return "No";
   return String(v);
@@ -157,7 +157,7 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
   revalidatePath(`/quote/${quoteId}`);
 }
 
-/** Admin: reactivate an expired quote — reset the 60-day window and refresh
+/** Admin: reactivate an expired quote - reset the 60-day window and refresh
  *  the computed pricing to the current model (override, if any, is kept). */
 export async function reactivateQuote(quoteId: string): Promise<void> {
   const admin = await requireAdmin();
@@ -291,7 +291,7 @@ export async function deleteQuote(quoteId: string): Promise<void> {
 }
 
 /** Renders the proposal PDF, creates the two-recipient Documenso envelope,
- *  and saves the resulting tokens/status onto the quote — shared by the
+ *  and saves the resulting tokens/status onto the quote - shared by the
  *  admin-driven send (custom email entry) and the member one-click request
  *  (uses the client's email already on file). */
 async function dispatchSignatureEnvelope(
@@ -301,7 +301,7 @@ async function dispatchSignatureEnvelope(
 ): Promise<void> {
   const pdf = await renderProposalPdf(buildProposalData(quote));
   const { envelopeId, clientToken, companyToken, raw } = await sendEnvelopeForSignature({
-    title: `${quote.proposalName} — Proposal`,
+    title: `${quote.proposalName} - Proposal`,
     pdf,
     clientEmail,
     clientName: signerName ?? quote.client.name,
@@ -327,12 +327,12 @@ async function dispatchSignatureEnvelope(
 
 /** Admin: send the proposal out for e-signature via Documenso. Saves the
  *  client's email onto the Client record (if new/changed) and creates a
- *  two-recipient envelope — the client signs first, then any admin can
+ *  two-recipient envelope - the client signs first, then any admin can
  *  complete the shared company signature (see confirmCompanySignature). */
 export async function sendForSignature(quoteId: string, formData: FormData): Promise<void> {
   const admin = await requireAdmin();
   if (!documensoEnabled()) {
-    throw new Error("Documenso isn't configured — set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment.");
+    throw new Error("Documenso isn't configured - set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment.");
   }
 
   const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { client: true, createdBy: true } });
@@ -353,18 +353,18 @@ export async function sendForSignature(quoteId: string, formData: FormData): Pro
 }
 
 /** Member (creator) or admin: one-click request to accept/sign the proposal.
- *  The signer is the member the proposal was prepared for (Droptine) — i.e. the
- *  quote's creator — NOT the member's own downstream client. We use the
+ *  The signer is the member the proposal was prepared for (Droptine) - i.e. the
+ *  quote's creator - NOT the member's own downstream client. We use the
  *  creator's account email, so there's never anything for an admin to "add."
  *  Logged immediately, but admins aren't emailed until the proposal is actually
- *  signed (see the Documenso webhook handler) — nothing for them to do until then. */
+ *  signed (see the Documenso webhook handler) - nothing for them to do until then. */
 export async function requestSignature(quoteId: string): Promise<void> {
   const user = await requireUser();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { client: true, createdBy: true } });
   if (!quote) throw new Error("Quote not found.");
   if (user.role !== "ADMIN" && quote.createdById !== user.id) throw new Error("Not allowed.");
   if (!documensoEnabled()) {
-    throw new Error("Documenso isn't configured — set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment.");
+    throw new Error("Documenso isn't configured - set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment.");
   }
   if (quote.status === "CUSTOM_PENDING") throw new Error("Approve this quote before sending it for signature.");
 
@@ -378,7 +378,7 @@ export async function requestSignature(quoteId: string): Promise<void> {
 }
 
 /** Admin: record which admin completed the shared "Luna Creative" signature.
- *  Documenso only ever sees one shared recipient — this captures *which*
+ *  Documenso only ever sees one shared recipient - this captures *which*
  *  logged-in admin clicked through, before they sign in the embedded iframe. */
 export async function confirmCompanySignature(quoteId: string): Promise<void> {
   const admin = await requireAdmin();
@@ -404,7 +404,7 @@ export async function resendProposalEmail(quoteId: string): Promise<void> {
     include: { createdBy: true, client: true },
   });
   if (!quote) throw new Error("Quote not found.");
-  if (quote.status === "CUSTOM_PENDING") throw new Error("No proposal to send yet — approve it first.");
+  if (quote.status === "CUSTOM_PENDING") throw new Error("No proposal to send yet - approve it first.");
 
   try {
     const pdf = await renderProposalPdf(buildProposalData(quote));

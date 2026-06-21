@@ -45,7 +45,7 @@ npm run dev
 
 ## Getting the secrets (one-time)
 
-### 1. Anthropic API key — new vs. reuse?
+### 1. Anthropic API key - new vs. reuse?
 **Recommendation: create a NEW key dedicated to this project.** A separate key lets
 you set its own spend limit, see this project's usage in isolation, and revoke/rotate
 it without breaking your other project. In the Anthropic Console → **API keys** →
@@ -57,10 +57,10 @@ it without breaking your other project. In the Anthropic Console → **API keys*
 2. In the dashboard, open **API Keys** → **Create API Key**.
 3. Name it "Droptine Pricing", permission **Full access** (or Sending access), and
    **Create**.
-4. Copy the key (starts with `re_`) — it's shown only once. Paste it into Railway as
+4. Copy the key (starts with `re_`) - it's shown only once. Paste it into Railway as
    `RESEND_API_KEY`. (Don't paste it in chat; add it directly in Railway → Variables.)
 
-### 3. Sending domain — `notifications.luna-creative.com`
+### 3. Sending domain - `notifications.luna-creative.com`
 This subdomain was used in another project, so it likely needs to be re-verified for
 **Resend** specifically (each email provider needs its own DNS records).
 1. In Resend → **Domains** → **Add Domain** → enter `notifications.luna-creative.com`.
@@ -92,7 +92,7 @@ openssl rand -base64 32   # paste output into AUTH_SECRET
 
 ## Email behavior (per spec)
 - **Proposal email → always the logged-in member** (PDF + code link).
-- **Admins (`ADMIN_EMAILS`) get an email on EVERY quote request** — proposal or custom.
+- **Admins (`ADMIN_EMAILS`) get an email on EVERY quote request** - proposal or custom.
 - **Custom-functionality requests** → no auto proposal; admins are notified to follow up.
 
 ## Admin

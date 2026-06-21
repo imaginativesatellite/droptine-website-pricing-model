@@ -14,7 +14,7 @@ if [ -n "$DATABASE_URL" ]; then
   echo "Seeding admin (if needed)..."
   npx tsx prisma/seed.ts || echo "WARN: seed step skipped/failed; continuing."
 else
-  echo "No DATABASE_URL set — skipping migrations (preview-only mode)."
+  echo "No DATABASE_URL set - skipping migrations (preview-only mode)."
 fi
 
 exec npx next start -p "${PORT:-3000}"

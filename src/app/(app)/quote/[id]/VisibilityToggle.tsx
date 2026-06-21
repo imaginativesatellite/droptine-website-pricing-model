@@ -25,7 +25,7 @@ export default function VisibilityToggle({
         await setShared(quoteId, nextShared);
       } catch (e) {
         setOptimisticShared(!nextShared);
-        setError(e instanceof Error ? e.message : "Couldn't update visibility — try again.");
+        setError(e instanceof Error ? e.message : "Couldn't update visibility - try again.");
       }
     });
   };

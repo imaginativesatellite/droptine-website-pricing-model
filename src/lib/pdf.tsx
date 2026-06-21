@@ -64,7 +64,7 @@ const s = StyleSheet.create({
 
   footer: { position: "absolute", bottom: 24, left: 48, right: 48, fontSize: 7, color: MUTED, textAlign: "center", borderTopWidth: 1, borderTopColor: LINE, paddingTop: 7 },
 
-  // Dedicated Signatures page — no page padding, so percentage coordinates
+  // Dedicated Signatures page - no page padding, so percentage coordinates
   // map directly to the full LETTER page, matching the same percentages
   // Documenso uses to place its interactive fields (see signature-layout.ts).
   sigPage: { fontSize: 10, color: "#2b2b2b", fontFamily: "Helvetica" },
@@ -135,7 +135,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
 
   return (
     <Document>
-      {/* Page 1 — Proposal */}
+      {/* Page 1 - Proposal */}
       <Page size="LETTER" style={s.page}>
         <Header />
         <Text style={s.title}>Website Proposal</Text>
@@ -196,7 +196,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         <Footer code={d.code} />
       </Page>
 
-      {/* Page 2 — Monthly */}
+      {/* Page 2 - Monthly */}
       <Page size="LETTER" style={s.page}>
         <Header />
         <Text style={s.title}>Monthly Hosting, Security & Maintenance</Text>
@@ -224,7 +224,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         <Footer code={d.code} />
       </Page>
 
-      {/* Terms & Conditions — no brand header, so the signature stays with the text */}
+      {/* Terms & Conditions - no brand header, so the signature stays with the text */}
       <Page size="LETTER" style={s.page} wrap>
         <Text style={s.termsHeading}>Terms &amp; Conditions</Text>
 
@@ -247,7 +247,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         <Footer code={d.code} />
       </Page>
 
-      {/* Signatures — always the last page, however many physical pages the
+      {/* Signatures - always the last page, however many physical pages the
           sections above wrapped onto. Fixed layout so the boxes below line
           up exactly with the coordinate-based fields Documenso overlays on
           this same rendered PDF (see signature-layout.ts). */}
@@ -269,7 +269,7 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
             <Text style={s.sigCaption}>Date</Text>
           </View>
           <View style={sigBoxStyle(SIGNATURE_FIELDS.company.signature)}>
-            <Text style={s.sigCaption}>Company Signature — Luna Creative LLC</Text>
+            <Text style={s.sigCaption}>Company Signature - Luna Creative LLC</Text>
           </View>
           <View style={sigBoxStyle(SIGNATURE_FIELDS.company.date)}>
             <Text style={s.sigCaption}>Date</Text>

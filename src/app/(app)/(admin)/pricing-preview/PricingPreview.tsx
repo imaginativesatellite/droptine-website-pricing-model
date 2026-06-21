@@ -28,7 +28,7 @@ export default function PricingPreview() {
       <h1>Pricing Preview</h1>
       <p className="lede">
         Change the options on the left and watch the price update live. This is a sandbox to
-        validate the pricing model — it doesn&apos;t save anything.
+        validate the pricing model - it doesn&apos;t save anything.
       </p>
 
       <div className="grid">
@@ -98,7 +98,7 @@ export default function PricingPreview() {
 
                 <div className="q" style={{ marginTop: 18 }}>
                   <label className="qlabel" htmlFor="discount">
-                    Discount (admin) — preview
+                    Discount (admin) - preview
                   </label>
                   <div className="help">Shown to the client as a line item off the subtotal.</div>
                   <input

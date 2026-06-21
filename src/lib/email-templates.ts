@@ -6,7 +6,7 @@ import { prisma } from "./db";
  * The built-in defaults below are the source of truth for wording. Admins can
  * override any template's subject/body from the admin "Emails" tab; an override
  * is stored as an `EmailTemplate` row and takes precedence at send time. If no
- * override exists, the default here is used — so the app always sends sensible
+ * override exists, the default here is used - so the app always sends sensible
  * copy even with an empty table.
  *
  * Bodies are HTML with {{variable}} placeholders filled in at send time (see
@@ -18,6 +18,7 @@ export type TemplateKey =
   | "admin_proposal_generated"
   | "admin_custom_requested"
   | "client_signed"
+  | "proposal_fully_signed"
   | "approved_quote_to_requester";
 
 export type TemplateVar = { name: string; description: string };
@@ -99,6 +100,21 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
       `<p><a href="{{manageUrl}}">Complete the company signature →</a></p>`,
   },
   {
+    key: "proposal_fully_signed",
+    name: "Proposal fully signed (to both parties)",
+    description: "Sent to the member and Luna Creative admins once BOTH parties have signed and the proposal is complete. The signed PDF is attached when available.",
+    variables: [
+      { name: "proposalName", description: "The proposal / project name" },
+      { name: "memberName", description: "Name of the member the proposal was prepared for" },
+      { name: "proposalUrl", description: "Link to the proposal page" },
+    ],
+    subject: "Signed & complete: {{proposalName}}",
+    body:
+      `<p>The proposal for <strong>{{proposalName}}</strong> has been signed by both parties and is now complete.</p>` +
+      `<p>The fully signed copy is attached. You can also view it here: <a href="{{proposalUrl}}">{{proposalUrl}}</a></p>` +
+      `<p>- Luna Creative</p>`,
+  },
+  {
     key: "approved_quote_to_requester",
     name: "Custom quote approved (to member)",
     description: "Sent to the member after an admin approves their custom quote, with the PDF attached.",
@@ -112,12 +128,12 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
     ],
     subject: "Your Droptine quote is ready: {{proposalName}}",
     body:
-      `<p>Good news — your custom quote for <strong>{{proposalName}}</strong> has been approved.</p>` +
+      `<p>Good news - your custom quote for <strong>{{proposalName}}</strong> has been approved.</p>` +
       `<p>One-time build: <strong>{{total}}</strong> &middot; {{monthly}}/mo hosting &amp; maintenance.</p>` +
       `<p>The proposal is attached. You can also view it any time here: ` +
       `<a href="{{proposalUrl}}">{{proposalUrl}}</a> (access code <strong>{{code}}</strong>).</p>` +
       `<p>See all the quotes you've received: <a href="{{dashboardUrl}}">{{dashboardUrl}}</a></p>` +
-      `<p>— Droptine</p>`,
+      `<p>- Droptine</p>`,
   },
 ];
 
@@ -137,7 +153,7 @@ export async function resolveTemplate(key: TemplateKey): Promise<{ subject: stri
   try {
     override = await prisma.emailTemplate.findUnique({ where: { key }, select: { subject: true, body: true } });
   } catch {
-    // table may not exist yet (pre-migration) — fall back to defaults
+    // table may not exist yet (pre-migration) - fall back to defaults
   }
   return { subject: override?.subject ?? def.subject, body: override?.body ?? def.body };
 }

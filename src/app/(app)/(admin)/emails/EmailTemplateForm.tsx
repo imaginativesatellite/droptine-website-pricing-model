@@ -14,7 +14,7 @@ function previewFill(tpl: string, variables: { name: string }[]): string {
   });
 }
 
-/** Who each template is addressed to — for the preview's "To" line only. */
+/** Who each template is addressed to - for the preview's "To" line only. */
 function recipientHint(key: TemplateDef["key"]): string {
   switch (key) {
     case "proposal_to_member":
@@ -24,6 +24,8 @@ function recipientHint(key: TemplateDef["key"]): string {
     case "admin_custom_requested":
     case "client_signed":
       return "Luna Creative admins";
+    case "proposal_fully_signed":
+      return "Member + Luna Creative admins";
   }
 }
 
@@ -66,7 +68,7 @@ export default function EmailTemplateForm(props: Props) {
           Available variables (wrap in double braces, e.g. <code>{"{{proposalName}}"}</code>):
           <ul style={{ margin: "6px 0 0", paddingLeft: 18 }}>
             {variables.map((v) => (
-              <li key={v.name}><code>{`{{${v.name}}}`}</code> — {v.description}</li>
+              <li key={v.name}><code>{`{{${v.name}}}`}</code> - {v.description}</li>
             ))}
           </ul>
         </div>

@@ -115,7 +115,7 @@ export default async function PricingRulesPage() {
       <Card title="Scope summary paragraph">
         <p className="help" style={{ marginBottom: 10 }}>
           The plain-English &ldquo;what we&rsquo;ll build&rdquo; paragraph on every proposal. It&rsquo;s
-          always built from the answers — never from the price, and the price is never built from it.
+          always built from the answers - never from the price, and the price is never built from it.
         </p>
         <p style={{ fontSize: "0.92rem", marginBottom: 6 }}>
           <strong>Scope phrases, included only when their trigger is met:</strong>
@@ -134,8 +134,8 @@ export default async function PricingRulesPage() {
           <li>Custom functionality → &ldquo;custom functionality: their answer&rdquo;, only if answered</li>
         </ul>
         <p className="help" style={{ marginBottom: 10 }}>
-          The existing-website question and its URL are context only — they describe a site being
-          replaced, not something being built — so they&rsquo;re never part of this paragraph.
+          The existing-website question and its URL are context only - they describe a site being
+          replaced, not something being built - so they&rsquo;re never part of this paragraph.
         </p>
         <p style={{ fontSize: "0.92rem", marginBottom: 6 }}>
           <strong>Two ways that list becomes a paragraph:</strong>

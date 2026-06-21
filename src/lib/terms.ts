@@ -1,7 +1,7 @@
 /**
  * Platform-use terms a MEMBER must accept before using the questionnaire
  * tool. Separate from the client-facing proposal Terms & Conditions in
- * proposal-copy.ts — these govern the Droptine member's use of this
+ * proposal-copy.ts - these govern the Droptine member's use of this
  * internal platform, not the end client's relationship with Luna Creative.
  */
 

@@ -32,7 +32,7 @@ export type Question =
 
 // Whether a question should be shown given the current answers. A question is
 // visible only when every showIf condition is met AND the question that each
-// condition references is itself visible — so a deep follow-up (e.g. animal
+// condition references is itself visible - so a deep follow-up (e.g. animal
 // count) hides as soon as anything above it in the chain is switched off, even
 // if its own controlling answer is still set from before.
 export function isVisible(q: Question, answers: Record<string, unknown>): boolean {
@@ -62,7 +62,7 @@ export function splitLabel(q: Pick<Question, "label" | "emphasize">): { text: st
 }
 
 // True when `q` is gated by a showIf in the same section as the question before
-// it — i.e. it's a follow-up reveal, not an independent top-level question. Used
+// it - i.e. it's a follow-up reveal, not an independent top-level question. Used
 // to group follow-ups tightly with what triggered them instead of spacing every
 // question identically.
 export function isFollowUp(q: Question, prev: Question | undefined): boolean {
@@ -133,7 +133,7 @@ export const QUESTIONNAIRE: Question[] = [
     type: "single",
     label: "How many pages will the website have?",
     emphasize: "How many",
-    help: "Only count main pages — not their individual dynamic sub-pages (e.g. animals, pedigree, news, blog, events), and not legal pages (e.g. privacy policy, terms & conditions).",
+    help: "Only count main pages - not their individual dynamic sub-pages (e.g. animals, pedigree, news, blog, events), and not legal pages (e.g. privacy policy, terms & conditions).",
     group: "scope",
     section: "Pages",
     showIf: { field: "ecommerce", equals: false },
@@ -175,8 +175,8 @@ export const QUESTIONNAIRE: Question[] = [
 
   // Property/land listings + its follow-ups. MLS/IDX and team/agent logins are
   // sub-features, so they only surface once listings are selected (and are only
-  // priced then — see pricing.ts).
-  { id: "realEstate", type: "boolean", label: "Will the website need Property/land listings?", emphasize: "Property/land listings", group: "scope", section: "Content" },
+  // priced then - see pricing.ts).
+  { id: "realEstate", type: "boolean", label: "Will the website have Property/land listings?", emphasize: "Property/land listings", group: "scope", section: "Content" },
   {
     id: "mlsIdx",
     type: "boolean",
@@ -189,7 +189,7 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "teamLogins",
     type: "boolean",
-    label: "Will the website need team/agent logins?",
+    label: "Will the website have team/agent logins?",
     emphasize: "team/agent logins",
     group: "scope",
     section: "Content",
@@ -218,9 +218,9 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "additionalFunctionality",
     type: "longtext",
-    label: "What custom or advanced functionality should we plan for?",
+    label: "What custom or advanced functionality will the website have?",
     emphasize: "custom",
-    placeholder: "Describe any features beyond the options above — e.g. member logins, booking/reservations, herd-management tools, payment portals, API integrations. Leave blank if none. Anything here routes the request to a custom quote.",
+    placeholder: "Describe any features beyond the options above. Leave blank if none. Anything here routes the request to a custom quote.",
     group: "scope",
     section: "Custom",
   },

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/db";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
+import { downloadSignedPdf } from "@/lib/documenso";
 import { isExpired } from "@/lib/quote";
 
 export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
@@ -12,8 +13,15 @@ export async function GET(_req: Request, { params }: { params: Promise<{ code: s
     return new Response("Not found", { status: 404 });
   }
 
-  const pdf = await renderProposalPdf(buildProposalData(quote));
-  const filename = `${quote.proposalName.replace(/[^a-z0-9]+/gi, "-")}-proposal.pdf`;
+  // Once both parties have signed, hand back the fully signed copy rather than a
+  // fresh render. Falls back to the rendered proposal if it can't be retrieved.
+  const signed = quote.signatureStatus === "SIGNED" && quote.signatureEnvelopeId
+    ? await downloadSignedPdf(quote.signatureEnvelopeId)
+    : null;
+  const pdf = signed ?? (await renderProposalPdf(buildProposalData(quote)));
+  const filename = signed
+    ? `${quote.proposalName.replace(/[^a-z0-9]+/gi, "-")}-signed.pdf`
+    : `${quote.proposalName.replace(/[^a-z0-9]+/gi, "-")}-proposal.pdf`;
 
   return new Response(new Uint8Array(pdf), {
     headers: {

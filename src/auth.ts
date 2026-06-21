@@ -40,7 +40,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         const password = String(creds?.password ?? "");
         if (!email || !password) return null;
 
-        // Too many recent failures — reject without checking the password.
+        // Too many recent failures - reject without checking the password.
         if (lockedOut(email)) return null;
 
         const user = await prisma.user.findUnique({ where: { email } });

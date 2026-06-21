@@ -3,7 +3,7 @@ import { prisma } from "@/lib/db";
 
 /**
  * Pinned list of custom quotes awaiting admin approval. Rendered above the admin
- * tabs by the admin layout so it stays put no matter which tab is open — a
+ * tabs by the admin layout so it stays put no matter which tab is open - a
  * standing reminder of anything that needs a decision. Renders nothing when the
  * queue is empty. Styling mirrors the dashboard's "needs attention" rows.
  */

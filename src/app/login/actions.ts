@@ -17,7 +17,7 @@ export async function authenticate(
     if (error instanceof AuthError) {
       return "Invalid email or password.";
     }
-    // signIn throws a redirect on success — let it propagate.
+    // signIn throws a redirect on success - let it propagate.
     throw error;
   }
 }

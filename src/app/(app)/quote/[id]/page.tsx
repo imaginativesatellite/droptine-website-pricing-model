@@ -20,7 +20,7 @@ const statusPill = (status: string) => {
 };
 
 const signatureStatusLabel: Record<string, string> = {
-  SENT: "Sent — awaiting signatures",
+  SENT: "Sent - awaiting signatures",
   PARTIALLY_SIGNED: "Partially signed",
   SIGNED: "Fully signed",
   DECLINED: "Declined",
@@ -28,9 +28,9 @@ const signatureStatusLabel: Record<string, string> = {
 
 function describeActivity(e: { field: string; oldValue: string | null; newValue: string | null }): string {
   if (e.field === "email") return e.newValue ?? "Email sent";
-  if (e.field === "answers") return `Edited answers — ${e.newValue ?? ""}`;
-  if (e.field === "status") return `Status: ${e.oldValue ?? "—"} → ${e.newValue ?? "—"}`;
-  return `${e.field}: ${e.oldValue ?? "—"} → ${e.newValue ?? "—"}`;
+  if (e.field === "answers") return `Edited answers - ${e.newValue ?? ""}`;
+  if (e.field === "status") return `Status: ${e.oldValue ?? "-"} → ${e.newValue ?? "-"}`;
+  return `${e.field}: ${e.oldValue ?? "-"} → ${e.newValue ?? "-"}`;
 }
 
 const sublabel = { fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 10 };
@@ -72,7 +72,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   const extraFunctionality = typeof ans.additionalFunctionality === "string" ? ans.additionalFunctionality : "";
   const existingUrl = ans.existingWebsite === true && typeof ans.existingWebsiteUrl === "string" ? ans.existingWebsiteUrl : "";
   // Admin internal breakdown is always the deterministic engine result computed
-  // from the saved answers — even for custom/override quotes, where the
+  // from the saved answers - even for custom/override quotes, where the
   // member-facing view collapses to a single "Website build" line. This keeps
   // the standard breakdown visible and lets us show how much the custom price
   // added/removed over it.
@@ -114,7 +114,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
       {isPending ? (
         <div className="card" style={reorderAdminReview ? { order: 2, marginTop: 18 } : undefined}>
-          <h3 style={{ marginBottom: 8 }}>Custom quote — awaiting approval</h3>
+          <h3 style={{ marginBottom: 8 }}>Custom quote - awaiting approval</h3>
           <ul style={{ marginLeft: 18 }}>
             {quote!.customReasons.map((r, i) => <li key={i}>{r}</li>)}
           </ul>
@@ -128,7 +128,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         <div className="card" style={{ marginTop: 18 }}>
           <div style={{ fontWeight: 600, marginBottom: 10 }}>Accept proposal</div>
           {!documensoEnabled() ? (
-            <p className="help">E-signature isn&apos;t set up yet — ask an admin to enable it.</p>
+            <p className="help">E-signature isn&apos;t set up yet - ask an admin to enable it.</p>
           ) : (
             <>
               {quote!.signatureStatus && (
@@ -166,7 +166,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* Breakdown — always the deterministic engine result, so the standard
+          {/* Breakdown - always the deterministic engine result, so the standard
               build cost stays visible even on custom/override quotes. */}
           <div style={expired ? section : { marginTop: 16 }}>
             <div style={sublabel}>{isPending ? "Selection summary (suggested)" : "Internal breakdown"}</div>
@@ -181,7 +181,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                   <td className="amt">{money(quote!.computedTotal)}</td>
                 </tr>
                 {/* On a custom/override quote, show how much the custom price moved
-                    off the standard — positive = added, negative = removed. */}
+                    off the standard - positive = added, negative = removed. */}
                 {isCustomPricing && quote!.overrideTotal != null && (
                   <tr style={{ color: customDelta < 0 ? "var(--good)" : "var(--ink)" }}>
                     <td>Custom functionality adjustment</td>
@@ -217,19 +217,19 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                 </form>
                 {quote!.emailStatus && (
                   <span className="help" style={{ color: quote!.emailStatus === "FAILED" ? "#b3261e" : "var(--muted)" }}>
-                    Email: <strong>{quote!.emailStatus}</strong>{quote!.emailError ? ` — ${quote!.emailError}` : ""}
+                    Email: <strong>{quote!.emailStatus}</strong>{quote!.emailError ? ` - ${quote!.emailError}` : ""}
                   </span>
                 )}
               </div>
             )}
           </div>
 
-          {/* E-signature (Documenso) — available once there's a proposal to sign */}
+          {/* E-signature (Documenso) - available once there's a proposal to sign */}
           {!isPending && (
             <div style={section}>
               <div style={sublabel}>E-signature</div>
               {!documensoEnabled() ? (
-                <p className="help">Documenso isn&apos;t configured — set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment to enable this.</p>
+                <p className="help">Documenso isn&apos;t configured - set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment to enable this.</p>
               ) : (
                 <>
                   {quote!.signatureStatus && (
@@ -252,7 +252,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                     </p>
                   ) : quote!.companySignedById ? (
                     <p className="help" style={{ margin: "0 0 10px" }}>
-                      {quote!.companySignedByName} started the company signature below — waiting on Documenso to confirm completion.
+                      {quote!.companySignedByName} started the company signature below - waiting on Documenso to confirm completion.
                     </p>
                   ) : (
                     <div style={{ marginBottom: 10 }} />
@@ -288,7 +288,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* Request details + AI recommendation — custom quotes only */}
+          {/* Request details + AI recommendation - custom quotes only */}
           {isPending && (extraFunctionality || exactPages || existingUrl) && (
             <div style={section}>
               <div style={sublabel}>Request details</div>
@@ -311,7 +311,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* Approve — custom quotes only (editing is hidden until approved) */}
+          {/* Approve - custom quotes only (editing is hidden until approved) */}
           {isPending && (
             <div style={section}>
               <div style={sublabel}>Approve custom quote</div>
@@ -341,7 +341,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* Edit — available once it's no longer a pending custom quote */}
+          {/* Edit - available once it's no longer a pending custom quote */}
           {!isPending && (
             <div style={section}>
               <div style={sublabel}>Edit</div>
@@ -365,12 +365,12 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                 <div style={field}>
                   <label className="qlabel" htmlFor="actualCharged">Actual charged ($)</label>
                   <input id="actualCharged" name="actualCharged" type="text" inputMode="numeric" defaultValue={quote!.actualCharged ?? ""} />
-                  <div className="help" style={{ marginTop: 4 }}>What the client was actually billed — for quoted-vs-actual reporting.</div>
+                  <div className="help" style={{ marginTop: 4 }}>What the client was actually billed - for quoted-vs-actual reporting.</div>
                 </div>
                 <div style={field}>
                   <label className="qlabel" htmlFor="priceReason">Reason for price adjustment (optional)</label>
                   <input id="priceReason" name="priceReason" type="text" defaultValue={quote!.priceReason ?? ""} />
-                  <div className="help" style={{ marginTop: 4 }}>Internal note on why this was charged more or less — feeds future AI pricing review.</div>
+                  <div className="help" style={{ marginTop: 4 }}>Internal note on why this was charged more or less - feeds future AI pricing review.</div>
                 </div>
                 <div style={field}>
                   <label className="qlabel" htmlFor="leadDaysOverride">Turnaround (business days)</label>
@@ -414,7 +414,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             </div>
           </details>
 
-          {/* Danger zone — destructive, kept apart from routine controls */}
+          {/* Danger zone - destructive, kept apart from routine controls */}
           <div style={dangerZone}>
             <div style={{ ...sublabel, color: "#b3261e", marginBottom: 6 }}>Danger zone</div>
             <p className="help" style={{ marginTop: 0, marginBottom: 10 }}>
@@ -425,7 +425,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         </div>
       )}
 
-      {/* Visibility — collapsed by default and kept last, mirroring the activity
+      {/* Visibility - collapsed by default and kept last, mirroring the activity
           log. The toggle/design is unchanged; only its container is collapsible. */}
       {(isAdmin || isCreator) && (
         <details className="card" style={{ marginTop: 18, ...(reorderAdminReview ? { order: 99 } : {}) }}>

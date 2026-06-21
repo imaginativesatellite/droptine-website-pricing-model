@@ -46,7 +46,7 @@ export function describeScope(answers: PricingAnswers): string[] {
  * Drafts the human-readable scope summary for a proposal.
  *
  * The Anthropic model writes prose ONLY. It is never given authority over the
- * price — the total is computed deterministically in src/lib/pricing.ts.
+ * price - the total is computed deterministically in src/lib/pricing.ts.
  */
 export async function generateScopeSummary(input: {
   proposalName: string;
@@ -118,7 +118,7 @@ export type CustomRecommendation = {
 
 /**
  * Admin tool: recommend a one-time price, turnaround, monthly cost, reasoning,
- * and a proposed scope for a custom quote — considering the standard breakdown
+ * and a proposed scope for a custom quote - considering the standard breakdown
  * plus the complex functionality requested. Each value is returned separately so
  * the UI can copy it into the matching field. The model may keep the standard
  * price/turnaround/monthly unchanged. Gated behind ENABLE_AI_PRICING.
@@ -148,7 +148,7 @@ export async function recommendCustomPrice(input: {
   const itemized = input.lineItems.map((li) => `- ${li.label}: $${li.amount}`).join("\n") || "(none priced)";
   // The deterministic "standard" scope prose. We hand this to the model and ask
   // it to keep this language intact, only layering technical detail for the
-  // complex functionality on top — so the proposed scope doesn't drift.
+  // complex functionality on top - so the proposed scope doesn't drift.
   const standardScope = input.answers
     ? defaultSummary({ proposalName: input.proposalName, answers: input.answers })
     : "";
@@ -161,7 +161,7 @@ export async function recommendCustomPrice(input: {
       "The standard calculator runs $4,000–$15,000; genuinely complex builds can exceed $15,000. " +
       "You are given the STANDARD deterministic price, turnaround (business days), and monthly hosting cost. " +
       "Recommend a one-time build PRICE, a TURNAROUND in business days, and a MONTHLY cost. You may keep any of " +
-      "the standard values unchanged if the complex functionality doesn't warrant a change — only move a value " +
+      "the standard values unchanged if the complex functionality doesn't warrant a change - only move a value " +
       "when the extra build effort, risk, or ongoing maintenance justifies it. " +
       "Reply in EXACTLY this format, each on its own line, then the SCOPE block last:\n" +
       "PRICE: <whole dollars, digits only>\n" +
@@ -169,9 +169,9 @@ export async function recommendCustomPrice(input: {
       "MONTHLY: <whole dollars, digits only>\n" +
       "REASONING: <2–4 sentences justifying any changes from the standard values>\n" +
       "SCOPE:\n<client-facing scope summary>\n" +
-      "For SCOPE, begin from the STANDARD SCOPE provided and keep that standard language intact — do NOT rewrite " +
+      "For SCOPE, begin from the STANDARD SCOPE provided and keep that standard language intact - do NOT rewrite " +
       "or restyle it unless strictly necessary. Then add the requested complex/custom functionality, described " +
-      "in precise technical terms (name the actual mechanisms — e.g. authenticated member portal, headless " +
+      "in precise technical terms (name the actual mechanisms - e.g. authenticated member portal, headless " +
       "CMS collections, Stripe checkout, third-party API integration, booking/reservation engine). " +
       "Never mention prices, hours, or dollar amounts inside the SCOPE section.",
     messages: [

@@ -32,7 +32,7 @@ type SendArgs = {
 
 async function send({ to, subject, html, attachments }: SendArgs) {
   if (!resend) {
-    console.warn("[email] RESEND_API_KEY not set — skipping send:", subject);
+    console.warn("[email] RESEND_API_KEY not set - skipping send:", subject);
     return;
   }
   await resend.emails.send({
@@ -44,7 +44,7 @@ async function send({ to, subject, html, attachments }: SendArgs) {
   });
 }
 
-/** Proposal email — always goes to the logged-in member. */
+/** Proposal email - always goes to the logged-in member. */
 export async function sendProposalToMember(args: {
   memberEmail: string;
   proposalName: string;
@@ -103,7 +103,7 @@ export async function notifyAdmins(args: {
   await send({ to, subject, html });
 }
 
-/** Notify admins once the client has signed — the moment an admin actually
+/** Notify admins once the client has signed - the moment an admin actually
  *  needs to step in and complete the company signature. Held back until then
  *  rather than firing the moment a member requests it, so admins aren't pinged
  *  before there's anything for them to do. */
@@ -129,8 +129,35 @@ export async function notifyClientSigned(args: {
   await send({ to, subject, html });
 }
 
+/** Once BOTH parties have signed, tell everyone the proposal is complete: the
+ *  member it was prepared for and the Luna Creative admins. The fully signed PDF
+ *  is attached when it could be retrieved. */
+export async function notifyFullySigned(args: {
+  proposalName: string;
+  memberName: string;
+  memberEmail: string;
+  proposalUrl: string;
+  pdf?: Buffer;
+}) {
+  const to = Array.from(new Set([args.memberEmail, ...adminEmails()].filter(Boolean)));
+  if (to.length === 0) return;
+
+  const name = esc(args.proposalName);
+  const { subject, html } = await renderEmail("proposal_fully_signed", {
+    proposalName: name,
+    memberName: esc(args.memberName),
+    proposalUrl: args.proposalUrl,
+  });
+  await send({
+    to,
+    subject,
+    html,
+    attachments: args.pdf ? [{ filename: `${name}-signed.pdf`, content: args.pdf }] : undefined,
+  });
+}
+
 /**
- * After an admin approves a custom quote — emailed to the requester (Droptine
+ * After an admin approves a custom quote - emailed to the requester (Droptine
  * member), Droptine-branded, with the PDF attached and a link to their quotes.
  */
 export async function sendApprovedQuoteToRequester(args: {

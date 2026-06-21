@@ -6,20 +6,20 @@
  *
  * Two recipients sign sequentially per quote: the client, then a shared
  * "company" identity (DOCUMENSO_COMPANY_EMAIL/NAME) that any logged-in admin
- * can complete — see confirmCompanySignature in quote/[id]/actions.ts for how
+ * can complete - see confirmCompanySignature in quote/[id]/actions.ts for how
  * we record *which* admin actually did it (Documenso only sees the one shared
  * recipient, not our app's individual admin accounts).
  *
  * We embed signing by iframing each recipient's own signing-page URL
  * (`/sign/{token}`, the same page Documenso would otherwise email them a link
  * to) rather than using Documenso's official embed npm packages or `/embed/`
- * routes — those are a separately-licensed product feature on top of the
+ * routes - those are a separately-licensed product feature on top of the
  * AGPL core, and bundling that SDK into a closed-source app raises the kind
  * of "combined work" question the AGPL is built around. A plain iframe at a
  * normal page URL on our own self-hosted instance avoids that question.
  *
  * Field placement is coordinate-based against a dedicated "Signatures" page
- * we always render last — see lib/signature-layout.ts. Earlier sections
+ * we always render last - see lib/signature-layout.ts. Earlier sections
  * (Terms especially) can wrap onto extra physical pages depending on
  * content length, so we count the actual pages in the rendered PDF rather
  * than assuming a fixed page number, and place fields on whatever page
@@ -45,7 +45,7 @@ export function companyEmail(): string {
   return COMPANY_EMAIL;
 }
 
-/** The recipient's own signing page on our instance — embedded via iframe. */
+/** The recipient's own signing page on our instance - embedded via iframe. */
 export function documensoSignUrl(token: string): string {
   return `${API_URL}/sign/${token}`;
 }
@@ -67,7 +67,7 @@ function field(type: "SIGNATURE" | "DATE", page: number, box: { positionX: numbe
   return { type, page, positionX: box.positionX, positionY: box.positionY, width: box.width, height: box.height };
 }
 
-/** Last page of the rendered PDF — the Signatures page always renders last
+/** Last page of the rendered PDF - the Signatures page always renders last
  *  in lib/pdf.tsx, but earlier sections can wrap onto extra pages first. */
 async function lastPageNumber(pdf: Buffer): Promise<number> {
   const doc = await PDFDocument.load(pdf);
@@ -76,6 +76,29 @@ async function lastPageNumber(pdf: Buffer): Promise<number> {
 
 function tokenFor(recipients: DocumensoRecipient[] | undefined, email: string): string | null {
   return recipients?.find((r) => r.email.toLowerCase() === email.toLowerCase())?.token ?? null;
+}
+
+/** Best-effort fetch of the completed (signed) document for an envelope, so a
+ *  download after both parties sign returns the signed copy rather than a fresh
+ *  render. Returns null if it can't be retrieved (endpoint shape is best-effort,
+ *  like the rest of this integration - the caller falls back to the rendered
+ *  PDF). */
+export async function downloadSignedPdf(envelopeId: string): Promise<Buffer | null> {
+  if (!documensoEnabled()) return null;
+  try {
+    // v2 returns a (usually presigned) download URL for the envelope's document.
+    const res = await call<{ downloadUrl?: string; url?: string }>(
+      `/api/v2/envelope/download?envelopeId=${encodeURIComponent(envelopeId)}`,
+      { method: "GET" },
+    );
+    const url = res?.downloadUrl ?? res?.url;
+    if (!url) return null;
+    const fileRes = await fetch(url);
+    if (!fileRes.ok) return null;
+    return Buffer.from(await fileRes.arrayBuffer());
+  } catch {
+    return null;
+  }
 }
 
 /** Creates a two-recipient envelope (client, then the shared company

@@ -3,7 +3,7 @@ import { getEffectiveTemplates } from "@/lib/email-templates";
 import EmailTemplateForm from "./EmailTemplateForm";
 
 /**
- * Admin "Emails" tab — every transactional email the app sends, with its
+ * Admin "Emails" tab - every transactional email the app sends, with its
  * subject and body editable in one place. Edits are stored as overrides; the
  * built-in defaults stay as a fallback and can be restored per template.
  */

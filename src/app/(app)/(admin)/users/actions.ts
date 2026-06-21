@@ -39,7 +39,7 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   await prisma.user.create({ data: { name, email, phone: phone || null, role, passwordHash } });
 
   revalidatePath("/users");
-  return { ok: true, message: `Created ${email}. Share the temporary password — they can change it under Account.` };
+  return { ok: true, message: `Created ${email}. Share the temporary password - they can change it under Account.` };
 }
 
 /** Admin: edit a user's name, email, phone, and role. */

@@ -15,6 +15,7 @@ export type QuoteItem = {
   shared: boolean;
   expired: boolean;
   signed: boolean;
+  awaitingCountersign: boolean;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -42,6 +43,7 @@ function badges(q: QuoteItem) {
   return (
     <>
       {q.signed && <span className="pill signed">Signed</span>}
+      {!q.signed && q.awaitingCountersign && <span className="pill awaiting">Awaiting Luna signature</span>}
       {q.expired && <span className="pill expired">Expired</span>}
       {!q.shared && <PrivateBadge />}
       {pill(q.status)}
@@ -58,12 +60,12 @@ function Row({ q, attention, locked }: { q: QuoteItem; attention?: boolean; lock
       </div>
       <div className="right">
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{badges(q)}</div>
-        <div className="price">{q.price == null ? "—" : money(q.price)}</div>
+        <div className="price">{q.price == null ? "-" : money(q.price)}</div>
       </div>
     </>
   );
   if (locked) return <div className="qrow" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
-  const cls = `qrow${attention ? " attention" : q.signed ? " signed" : ""}`;
+  const cls = `qrow${attention ? " attention" : q.signed ? " signed" : q.awaitingCountersign ? " awaiting" : ""}`;
   return <Link href={`/quote/${q.id}`} className={cls}>{inner}</Link>;
 }
 
@@ -72,12 +74,12 @@ function Tile({ q, attention, locked }: { q: QuoteItem; attention?: boolean; loc
     <>
       <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{badges(q)}</div>
       <div className="name">{q.name}</div>
-      <div className="price">{q.price == null ? "—" : money(q.price)}</div>
+      <div className="price">{q.price == null ? "-" : money(q.price)}</div>
       <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
     </>
   );
   if (locked) return <div className="qtile" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
-  const cls = `qtile${attention ? " attention" : q.signed ? " signed" : ""}`;
+  const cls = `qtile${attention ? " attention" : q.signed ? " signed" : q.awaitingCountersign ? " awaiting" : ""}`;
   return <Link href={`/quote/${q.id}`} className={cls}>{inner}</Link>;
 }
 

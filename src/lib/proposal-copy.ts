@@ -37,7 +37,7 @@ export const ECOMMERCE_MONTHLY_DISCLAIMER =
 export const IDX_MONTHLY_DISCLAIMER =
   "3rd Party IDX Integration fees to be paid directly by client (avg. range: $99-$399/month).";
 
-/** Terms & Conditions — fixed text, identical on every proposal. */
+/** Terms & Conditions - fixed text, identical on every proposal. */
 export const TERMS_INTRO_BULLETS: string[] = [
   "Pricing is based on the scope of work and certain product/service information and materials being made available to Luna Creative for the purpose of completing this project. All images, captions and text are to be chosen and supplied by client in digital format.",
   "Unless specifically stated above, scope of work does not imply such services as copy-writing, copy-editing, photography, photo-editing, domain name registration, email hosting or web hosting. Client has the option of retaining Luna Creative for such services for an additional fee mutually agreed upon. Upon completion of the project, Designer will be available for updates, revisions and additions at the current rates.",

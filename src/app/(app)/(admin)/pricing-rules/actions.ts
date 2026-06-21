@@ -7,7 +7,7 @@ import { requireAdmin } from "@/lib/session";
 export type FormState = { ok: boolean; message: string } | undefined;
 
 /** Admin: set the global demand-adjustment percentage applied to every new
- *  or recomputed quote total. Never shown to members — see applyDemandAdjustment
+ *  or recomputed quote total. Never shown to members - see applyDemandAdjustment
  *  in src/lib/pricing.ts. */
 export async function saveDemandAdjustment(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireAdmin();

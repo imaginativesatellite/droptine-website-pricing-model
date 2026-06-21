@@ -43,6 +43,9 @@ export default async function Dashboard() {
       shared: q.shared,
       expired,
       signed: Boolean(q.clientSignedAt && q.companySignedAt),
+      // Member has accepted/signed, but Luna Creative's counter-signature is
+      // still outstanding - shown distinctly so it's clearly mid-flow.
+      awaitingCountersign: Boolean(q.clientSignedAt && !q.companySignedAt),
     };
   });
 

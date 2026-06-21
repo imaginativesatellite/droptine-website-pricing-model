@@ -138,7 +138,7 @@ h1 {
 }
 
 /* A question revealed by the one above it (showIf) reads as a detail of that
-   answer, not a new question — tighten the gap and indent it under its parent. */
+   answer, not a new question - tighten the gap and indent it under its parent. */
 .q.q-has-followup {
   padding-bottom: 8px;
   border-bottom: none;
@@ -151,7 +151,7 @@ h1 {
 
 /* In the questionnaire, a horizontal rule divides categories only (it comes
    from the section header's top border). Questions within a category are
-   separated by spacing alone — no per-question rule. */
+   separated by spacing alone - no per-question rule. */
 .card.qform .q {
   border-bottom: none;
 }
@@ -362,7 +362,7 @@ select:focus {
     width: 100%;
     /* Right padding leaves room for the chevron; background-color (not the
        `background` shorthand) so the chevron background-image from the base
-       `select` rule isn't wiped out — that's why the arrow went missing here. */
+       `select` rule isn't wiped out - that's why the arrow went missing here. */
     padding: 10px 38px 10px 12px;
     border: 1px solid var(--line);
     border-radius: 8px;
@@ -533,7 +533,7 @@ select:focus {
 .btn-gold:hover {
   background: var(--gold-dark);
 }
-/* Solid red — used everywhere a control deletes something for good. */
+/* Solid red - used everywhere a control deletes something for good. */
 .btn-danger {
   background: #b3261e;
   color: #fff;
@@ -546,7 +546,7 @@ select:focus {
   cursor: default;
 }
 
-/* Clear-all link above the new-quote form — a quiet outlined button, not a
+/* Clear-all link above the new-quote form - a quiet outlined button, not a
    bare text link (too cheap) and not a heavy filled button (too much
    emphasis for a destructive-but-low-stakes action). */
 .clear-all-link {
@@ -629,11 +629,21 @@ select:focus {
   color: #fff;
 }
 .appnav .brandlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
   font-weight: 800;
   color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   font-size: 1.05rem;
+}
+/* Brand mark sits a touch taller than the cap height so it reads above and
+   below the lettering; inherits the gold text color via fill: currentColor. */
+.appnav .brandmark {
+  width: 1.5em;
+  height: 1.5em;
+  flex: none;
 }
 .appnav .brandlink:hover {
   color: var(--gold);
@@ -803,7 +813,8 @@ select:focus {
 .pill.private  { background: #f0ede8; color: var(--muted); }
 .pill.expired  { background: #fdeaea; color: #b3261e; }
 .pill.signed   { background: #e3f6e9; color: #1b5e20; }
-/* Solid-gold pill — matches the "Preview · pricing only" badge so the pending
+.pill.awaiting { background: #fff7ec; color: var(--gold-dark); }
+/* Solid-gold pill - matches the "Preview · pricing only" badge so the pending
    status reads as an active, attention-worthy tag rather than a soft chip. */
 .pill.gold     { background: var(--gold); color: #fff; }
 
@@ -841,7 +852,7 @@ select:focus {
   background: #fff;
 }
 
-/* View toggle (list / tiles) — a sliding-pill segmented control. The active
+/* View toggle (list / tiles) - a sliding-pill segmented control. The active
    side reads as a raised white pill on a warm-grey track. Height matches the
    search input / New Quote button in the same row. */
 .viewtoggle {
@@ -898,6 +909,10 @@ select:focus {
   border-left: 4px solid var(--good);
   background: #f3fbf4;
 }
+.qtile.awaiting {
+  border-left: 4px solid var(--gold);
+  background: #fffaf2;
+}
 .qtile .name {
   font-weight: 600;
   font-size: 1.05rem;
@@ -944,7 +959,7 @@ select:focus {
   vertical-align: middle;
 }
 
-/* Secondary tab bar for the admin area. A filled, borderless pill bar —
+/* Secondary tab bar for the admin area. A filled, borderless pill bar -
    the active tab reads as a darker pressed-in pill rather than an
    underline. Never wraps; overflows into horizontal scroll instead. */
 /* Secondary nav for the admin area: a sliding-pill segmented control. The
@@ -1010,6 +1025,10 @@ select:focus {
 .qrow.signed {
   border-left: 4px solid var(--good);
   background: #f3fbf4;
+}
+.qrow.awaiting {
+  border-left: 4px solid var(--gold);
+  background: #fffaf2;
 }
 .qrow .main {
   flex: 1;
@@ -1079,8 +1098,8 @@ table.simple td.amt, table.simple th.amt { text-align: right; font-variant-numer
   gap: 18px;
   margin-bottom: 22px;
 }
-/* Platform terms sits below, full width, deliberately plain — no card
-   chrome — so it reads as reference text rather than an editable section. */
+/* Platform terms sits below, full width, deliberately plain - no card
+   chrome - so it reads as reference text rather than an editable section. */
 .account-terms {
   font-size: 0.85rem;
   color: var(--ink);

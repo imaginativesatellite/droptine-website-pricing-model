@@ -127,7 +127,7 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
 
       {error && (
         <p style={{ color: "#b3261e", fontSize: "0.9rem", marginTop: 12 }}>
-          {error} Your answers are saved on this device — just press the button again.
+          {error} Your answers are saved on this device - just press the button again.
         </p>
       )}
 

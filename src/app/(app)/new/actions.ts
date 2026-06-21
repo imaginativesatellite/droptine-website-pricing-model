@@ -45,7 +45,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
   const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
   const result = applyDemandAdjustment(computeQuote(pricing), settings?.adjustmentPct ?? 0);
 
-  // 1) Persist the quote first — it's the source of truth. If this fails we
+  // 1) Persist the quote first - it's the source of truth. If this fails we
   //    return an inline error so the user can retry without losing their answers.
   let quote;
   try {
@@ -79,7 +79,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
     });
   } catch (e) {
     console.error("createQuote: failed to save", e);
-    return { error: "Couldn't save the quote — check your connection and try again." };
+    return { error: "Couldn't save the quote - check your connection and try again." };
   }
 
   // 2) PDF + email are best-effort: a failure here never loses the saved quote.

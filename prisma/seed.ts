@@ -1,5 +1,5 @@
 /**
- * Seeds the first admin from SEED_ADMIN_* env vars — create-only.
+ * Seeds the first admin from SEED_ADMIN_* env vars - create-only.
  *
  * If the admin already exists it is left untouched, so passwords changed in-app
  * (or member accounts) survive redeploys. To force a password reset, delete the
@@ -17,13 +17,13 @@ async function main() {
   const password = process.env.SEED_ADMIN_PASSWORD;
 
   if (!password) {
-    console.log("SEED_ADMIN_PASSWORD not set — skipping admin seed.");
+    console.log("SEED_ADMIN_PASSWORD not set - skipping admin seed.");
     return;
   }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) {
-    console.log(`Admin ${email} already exists — leaving as-is.`);
+    console.log(`Admin ${email} already exists - leaving as-is.`);
     return;
   }
 

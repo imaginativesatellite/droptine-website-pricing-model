@@ -25,7 +25,7 @@ export default function DemandAdjustmentForm({ initialPct }: { initialPct: numbe
   return (
     <form action={action}>
       <p className="help" style={{ marginBottom: 12 }}>
-        Nudges every new or recomputed quote total by a percentage — for slow or busy stretches.
+        Nudges every new or recomputed quote total by a percentage - for slow or busy stretches.
         Visible to admins only; members never see why a price moved.
       </p>
 
@@ -77,7 +77,7 @@ export default function DemandAdjustmentForm({ initialPct }: { initialPct: numbe
           {preview.map((row) => (
             <tr key={row.level}>
               <td>{money(row.level)}</td>
-              <td className="amt">{row.amount === 0 ? "—" : `${row.amount > 0 ? "+" : ""}${money(row.amount)}`}</td>
+              <td className="amt">{row.amount === 0 ? "-" : `${row.amount > 0 ? "+" : ""}${money(row.amount)}`}</td>
               <td className="amt">{money(row.final)}</td>
             </tr>
           ))}

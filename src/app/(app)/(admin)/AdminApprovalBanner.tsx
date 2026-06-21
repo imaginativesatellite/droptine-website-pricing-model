@@ -19,7 +19,7 @@ export default async function AdminApprovalBanner() {
   return (
     <section style={{ marginBottom: 24 }}>
       <div className="section-label attention">
-        Awaiting approval
+        Needs attention
         <span className="count-badge">{pending.length}</span>
       </div>
       {pending.map((q) => (
@@ -32,7 +32,7 @@ export default async function AdminApprovalBanner() {
             </div>
           </div>
           <div className="right">
-            <span className="pill pending">Custom · pending</span>
+            <span className="pill pending">Pending approval</span>
           </div>
         </Link>
       ))}

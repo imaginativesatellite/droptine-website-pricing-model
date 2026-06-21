@@ -97,10 +97,13 @@ export async function notifyAdmins(args: {
   await send({ to, subject, html: body });
 }
 
-/** Notify admins when staff sends a proposal out for client signature. */
-export async function notifySignatureRequested(args: {
+/** Notify admins once the client has signed — the moment an admin actually
+ *  needs to step in and complete the company signature. Held back until then
+ *  rather than firing the moment staff requests it, so admins aren't pinged
+ *  before there's anything for them to do. */
+export async function notifyClientSigned(args: {
   proposalName: string;
-  staffName: string;
+  requestedByName: string;
   clientEmail: string;
   manageUrl: string;
 }) {
@@ -108,15 +111,15 @@ export async function notifySignatureRequested(args: {
   if (to.length === 0) return;
 
   const name = esc(args.proposalName);
-  const who = esc(args.staffName);
+  const who = esc(args.requestedByName);
   const clientEmail = esc(args.clientEmail);
 
   await send({
     to,
-    subject: `Signature requested: ${args.proposalName}`,
+    subject: `Client signed: ${args.proposalName}`,
     html:
-      `<p><strong>${who}</strong> sent the proposal for <strong>${name}</strong> to <strong>${clientEmail}</strong> for signature.</p>` +
-      `<p><a href="${args.manageUrl}">View in the app →</a></p>`,
+      `<p><strong>${clientEmail}</strong> signed the proposal for <strong>${name}</strong> (requested by ${who}).</p>` +
+      `<p><a href="${args.manageUrl}">Complete the company signature →</a></p>`,
   });
 }
 

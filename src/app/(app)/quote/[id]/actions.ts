@@ -10,7 +10,7 @@ import { generatePublicCode } from "@/lib/code";
 import { recommendCustomPrice as aiRecommendCustomPrice } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
-import { sendApprovedQuoteToRequester, sendProposalToStaff, notifySignatureRequested } from "@/lib/email";
+import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
 import { appUrl, proposalUrl, finalPrice } from "@/lib/quote";
 import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
 
@@ -329,8 +329,9 @@ export async function sendForSignature(quoteId: string, formData: FormData): Pro
 }
 
 /** Staff (creator) or admin: one-click signature request using the client's
- *  email already on file — no email prompt. Notifies admins and logs the
- *  request the same way the admin-driven send does. */
+ *  email already on file — no email prompt. Logged immediately, but admins
+ *  aren't emailed until the client actually signs (see the Documenso webhook
+ *  handler) — there's nothing for them to do until then. */
 export async function requestSignature(quoteId: string): Promise<void> {
   const user = await requireUser();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { client: true, createdBy: true } });
@@ -346,16 +347,6 @@ export async function requestSignature(quoteId: string): Promise<void> {
 
   await dispatchSignatureEnvelope(quote, email);
   await logEdit(quoteId, user.id, "signature", null, `${user.name} requested a signature from ${email}`);
-  try {
-    await notifySignatureRequested({
-      proposalName: quote.proposalName,
-      staffName: user.name ?? user.email ?? "A staff member",
-      clientEmail: email,
-      manageUrl: `${appUrl()}/quote/${quoteId}`,
-    });
-  } catch {
-    // Envelope already sent and logged — don't fail the request over a notification email.
-  }
 
   revalidatePath(`/quote/${quoteId}`);
 }

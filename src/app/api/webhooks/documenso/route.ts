@@ -1,6 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { companyEmail } from "@/lib/documenso";
+import { notifyClientSigned } from "@/lib/email";
+import { appUrl } from "@/lib/quote";
 
 /**
  * Documenso webhook receiver — updates Quote signature status as the client
@@ -47,7 +49,7 @@ export async function POST(req: Request) {
 
   const quote = await prisma.quote.findFirst({
     where: { signatureEnvelopeId: String(envelope.id) },
-    include: { client: true },
+    include: { client: true, createdBy: true },
   });
   if (!quote) return new Response("OK", { status: 200 });
 
@@ -68,6 +70,8 @@ export async function POST(req: Request) {
     ? "PARTIALLY_SIGNED"
     : "SENT";
 
+  const justSigned = !quote.clientSignedAt && clientSignedAt;
+
   await prisma.quote.update({
     where: { id: quote.id },
     data: {
@@ -77,6 +81,19 @@ export async function POST(req: Request) {
       signatureMeta: body as unknown as Prisma.InputJsonValue,
     },
   });
+
+  if (justSigned && quote.client.email) {
+    try {
+      await notifyClientSigned({
+        proposalName: quote.proposalName,
+        requestedByName: quote.createdBy.name ?? quote.createdBy.email,
+        clientEmail: quote.client.email,
+        manageUrl: `${appUrl()}/quote/${quote.id}`,
+      });
+    } catch {
+      // The signature state is already saved — don't let a notification failure affect the webhook ack.
+    }
+  }
 
   return new Response("OK", { status: 200 });
 }

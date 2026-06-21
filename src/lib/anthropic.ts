@@ -36,7 +36,7 @@ export function describeScope(answers: PricingAnswers): string[] {
   if (answers.socialFeed) items.push("social media feed integration");
   if (answers.animations === "entrance") items.push("entrance animations");
   if (answers.animations === "entrance-interactive") items.push("entrance & interactive animations");
-  if (answers.mlsIdx) items.push("live MLS/IDX real-estate syncing");
+  if (answers.realEstate && answers.mlsIdx) items.push("live MLS/IDX real-estate syncing");
   if (answers.contentProvided) items.push("page structure & content organized and provided by Droptine");
   if (answers.additionalFunctionality?.trim()) items.push(`custom functionality: ${answers.additionalFunctionality.trim()}`);
   return items;

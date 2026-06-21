@@ -198,9 +198,19 @@ export const QUESTIONNAIRE: Question[] = [
     group: "scope",
     section: "Add-ons",
   },
+  // MLS/IDX is a real-estate feature, so it only surfaces once the real-estate
+  // package is selected (and is only priced then — see pricing.ts).
+  {
+    id: "mlsIdx",
+    type: "boolean",
+    label: "Will the website have live MLS/IDX real-estate syncing?",
+    emphasize: "MLS/IDX",
+    group: "scope",
+    section: "Add-ons",
+    showIf: { field: "realEstate", equals: true },
+  },
 
   // --- Custom ---
-  { id: "mlsIdx", type: "boolean", label: "Will the website have live MLS/IDX real-estate syncing?", emphasize: "MLS/IDX", group: "scope", section: "Custom" },
   {
     id: "additionalFunctionality",
     type: "longtext",

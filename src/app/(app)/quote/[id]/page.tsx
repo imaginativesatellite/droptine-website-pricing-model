@@ -37,6 +37,9 @@ const sublabel = { fontSize: "0.72rem", color: "var(--muted)", textTransform: "u
 // Section divider + spacing for the admin card (one clean line between groups).
 const section = { marginTop: 22, paddingTop: 22, borderTop: "1px solid var(--line)" } as const;
 const field = { marginBottom: 14 } as const;
+// Destructive actions get their own clearly-separated, red-tinted group so
+// they read as deliberate, not part of the routine controls above.
+const dangerZone = { marginTop: 22, paddingTop: 18, borderTop: "1px solid var(--line)" } as const;
 
 export default async function QuoteDetail({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -175,7 +178,10 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                     <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
                   </>
                 )}
-                <tr><td><strong>{isPending ? "Suggested total" : "Total"}</strong></td><td className="amt"><strong>{money(finalPrice(quote!))}</strong></td></tr>
+                <tr>
+                  <td style={{ fontSize: "1.02rem", paddingTop: 10 }}><strong>{isPending ? "Suggested total" : "Total"}</strong></td>
+                  <td className="amt" style={{ fontSize: "1.05rem", paddingTop: 10 }}><strong>{money(finalPrice(quote!))}</strong></td>
+                </tr>
               </tbody>
             </table>
             {!isPending && (
@@ -365,20 +371,28 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
           )}
 
           {/* Activity log */}
-          <div style={section}>
-            <div style={sublabel}>Activity log</div>
-            <div className="help" style={{ padding: "3px 0" }}>
-              {new Date(quote!.createdAt).toLocaleString()} · Requested by {quote!.createdBy.email}
-            </div>
-            {[...quote!.edits].reverse().map((e) => (
-              <div key={e.id} className="help" style={{ padding: "3px 0" }}>
-                {new Date(e.createdAt).toLocaleString()} · {e.editedBy.email} · {describeActivity(e)}
+          <details style={section}>
+            <summary style={{ ...sublabel, marginBottom: 0, cursor: "pointer" }}>
+              Activity log ({quote!.edits.length + 1})
+            </summary>
+            <div style={{ marginTop: 10 }}>
+              <div className="help" style={{ padding: "3px 0" }}>
+                {new Date(quote!.createdAt).toLocaleString()} · Requested by {quote!.createdBy.email}
               </div>
-            ))}
-          </div>
+              {[...quote!.edits].reverse().map((e) => (
+                <div key={e.id} className="help" style={{ padding: "3px 0" }}>
+                  {new Date(e.createdAt).toLocaleString()} · {e.editedBy.email} · {describeActivity(e)}
+                </div>
+              ))}
+            </div>
+          </details>
 
-          {/* Danger */}
-          <div style={section}>
+          {/* Danger zone — destructive, kept apart from routine controls */}
+          <div style={dangerZone}>
+            <div style={{ ...sublabel, color: "#b3261e", marginBottom: 6 }}>Danger zone</div>
+            <p className="help" style={{ marginTop: 0, marginBottom: 10 }}>
+              Permanently deletes this proposal and its history. This can&apos;t be undone.
+            </p>
             <DeleteQuoteButton quoteId={quote!.id} />
           </div>
         </div>

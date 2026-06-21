@@ -205,7 +205,10 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
       });
   }
 
-  if (answers.mlsIdx)
+  // MLS/IDX is only offered with the real-estate package, so it's only charged
+  // when that package is selected (guards against a stale answer if real-estate
+  // is later turned off in the questionnaire).
+  if (answers.realEstate && answers.mlsIdx)
     lineItems.push({ label: "MLS/IDX integration", amount: R.mlsBuildAdd });
 
   if (answers.contentProvided)
@@ -215,7 +218,8 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   const sub = lineItems.reduce((sum, li) => sum + li.amount, 0);
   const total = clamp(roundUp(sub, R.roundUpTo), min, R.max);
 
-  const surcharge = answers.ecommerce || answers.realEstate || answers.mlsIdx ? R.monthlySurcharge : 0;
+  // Real-estate already covers the MLS/IDX case (MLS/IDX requires real-estate).
+  const surcharge = answers.ecommerce || answers.realEstate ? R.monthlySurcharge : 0;
   return { requiresCustomQuote: reasons.length > 0, reasons, total, monthly: R.monthlyBase + surcharge, lineItems };
 }
 

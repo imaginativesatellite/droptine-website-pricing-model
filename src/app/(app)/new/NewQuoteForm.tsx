@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
+import AutoGrowTextarea from "@/components/AutoGrowTextarea";
 import { VISIBILITY_TIP } from "@/lib/quote";
 import { createQuote } from "./actions";
 
@@ -171,7 +172,7 @@ function renderInput(q: Question, answers: Answers, set: (id: string, v: Answers
       );
     case "longtext":
       return (
-        <textarea id={q.id} placeholder={q.placeholder} value={(answers[q.id] as string) ?? ""} onChange={(e) => set(q.id, e.target.value)} />
+        <AutoGrowTextarea id={q.id} placeholder={q.placeholder} value={(answers[q.id] as string) ?? ""} onChange={(v) => set(q.id, v)} />
       );
     default: {
       const numeric = "numeric" in q && q.numeric;

@@ -85,7 +85,7 @@ export default async function PricingRulesPage() {
             ["Events", `+ ${money(R.contentPage)}`],
             ["Entrance animations", `+ ${money(R.animationTiers["entrance"])}`],
             ["Entrance & interactive animations", `+ ${money(R.animationTiers["entrance-interactive"])}`],
-            ["MLS/IDX syncing (one-time build)", `+ ${money(R.mlsBuildAdd)}`],
+            ["MLS/IDX syncing (one-time build; requires real-estate package)", `+ ${money(R.mlsBuildAdd)}`],
             ["Structure & content provided by Droptine", `− ${money(R.contentProvidedReduction)} (floor ${money(R.minContentProvided)})`],
           ]}
         />
@@ -170,9 +170,9 @@ export default async function PricingRulesPage() {
             <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: MLS/IDX syncing is selected.</div>
           </div>
           <div>
-            <strong>Custom disclaimer:</strong> A free-text note an admin can add when approving or
-            editing a quote, placed on either the website-price or monthly section.
-            <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: an admin adds one to the quote.</div>
+            <strong>Custom disclaimers:</strong> Up to three single-line notes an admin can add when
+            approving or editing a quote, each placed on either the website-price or monthly section.
+            <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: an admin adds one or more to the quote.</div>
           </div>
         </div>
       </Card>

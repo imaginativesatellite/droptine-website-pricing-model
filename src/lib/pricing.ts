@@ -236,8 +236,14 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
  *  pdf.tsx, which only render subtotal/discount/total, not lineItems). */
 export function applyDemandAdjustment(result: PricingResult, pct: number): PricingResult {
   if (!pct) return result;
-  const amount = Math.round((result.total * pct) / 100);
-  const total = Math.max(0, result.total + amount);
+  // The max is a hard guardrail (see PRICING_RULES), so a positive nudge can
+  // never push a price above it. A negative nudge intentionally lowers the
+  // price (slow season), so we only floor it at 0. The breakdown line records
+  // the ACTUAL delta applied after the cap, so the math always reconciles.
+  const target = result.total + Math.round((result.total * pct) / 100);
+  const total = clamp(target, 0, PRICING_RULES.max);
+  const amount = total - result.total;
+  if (amount === 0) return result;
   const label = `Demand adjustment (${pct > 0 ? "+" : ""}${pct}%)`;
   return { ...result, total, lineItems: [...result.lineItems, { label, amount }] };
 }

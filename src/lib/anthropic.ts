@@ -65,33 +65,40 @@ export async function generateScopeSummary(input: {
   const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
   const scope = describeScope(input.answers).join("; ") || "a standard website";
 
-  const msg = await client.messages.create({
-    model,
-    max_tokens: 500,
-    system:
-      "You write concise, professional website-proposal scope summaries for Luna Creative, " +
-      "a web design studio building Webflow sites for the ranch, hunting, and breeder community. " +
-      "Write 2-3 short paragraphs. Do NOT mention or invent any prices, hours, or dollar amounts. " +
-      "Be confident and benefit-focused, not salesy.",
-    messages: [
-      {
-        role: "user",
-        content:
-          `Project: ${input.proposalName}\n` +
-          `Industry: ${input.industry ?? "n/a"}\n` +
-          `Scope includes: ${scope}\n\n` +
-          "Write the scope summary describing what we'll build.",
-      },
-    ],
-  });
+  // AI is prose-only and must never break quote creation: any failure here
+  // (rate limit, timeout, network) falls back to the deterministic template.
+  try {
+    const msg = await client.messages.create({
+      model,
+      max_tokens: 500,
+      system:
+        "You write concise, professional website-proposal scope summaries for Luna Creative, " +
+        "a web design studio building Webflow sites for the ranch, hunting, and breeder community. " +
+        "Write 2-3 short paragraphs. Do NOT mention or invent any prices, hours, or dollar amounts. " +
+        "Be confident and benefit-focused, not salesy.",
+      messages: [
+        {
+          role: "user",
+          content:
+            `Project: ${input.proposalName}\n` +
+            `Industry: ${input.industry ?? "n/a"}\n` +
+            `Scope includes: ${scope}\n\n` +
+            "Write the scope summary describing what we'll build.",
+        },
+      ],
+    });
 
-  const text = msg.content
-    .filter((b): b is Anthropic.TextBlock => b.type === "text")
-    .map((b) => b.text)
-    .join("\n")
-    .trim();
+    const text = msg.content
+      .filter((b): b is Anthropic.TextBlock => b.type === "text")
+      .map((b) => b.text)
+      .join("\n")
+      .trim();
 
-  return text || defaultSummary(input);
+    return text || defaultSummary(input);
+  } catch (e) {
+    console.error("generateScopeSummary: AI call failed, using template", e);
+    return defaultSummary(input);
+  }
 }
 
 function defaultSummary(input: { proposalName: string; answers: PricingAnswers }): string {

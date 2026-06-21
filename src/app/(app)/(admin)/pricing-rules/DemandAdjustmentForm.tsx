@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { saveDemandAdjustment, type FormState } from "./actions";
+import { PRICING_RULES } from "@/lib/pricing";
 import BrandSelect from "@/components/BrandSelect";
 
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
@@ -14,10 +15,12 @@ export default function DemandAdjustmentForm({ initialPct }: { initialPct: numbe
 
   const pct = (Number(magnitude) || 0) * (direction === "decrease" ? -1 : 1);
 
+  // Mirrors applyDemandAdjustment: a positive nudge is capped at the hard max
+  // guardrail, so the shown adjustment is the ACTUAL delta after the cap.
   const preview = useMemo(
     () => PREVIEW_LEVELS.map((level) => {
-      const amount = Math.round((level * pct) / 100);
-      return { level, amount, final: Math.max(0, level + amount) };
+      const final = Math.min(PRICING_RULES.max, Math.max(0, level + Math.round((level * pct) / 100)));
+      return { level, amount: final - level, final };
     }),
     [pct],
   );
@@ -26,6 +29,7 @@ export default function DemandAdjustmentForm({ initialPct }: { initialPct: numbe
     <form action={action}>
       <p className="help" style={{ marginBottom: 12 }}>
         Nudges every new or recomputed quote total by a percentage - for slow or busy stretches.
+        An increase still can&apos;t push a total above the {money(PRICING_RULES.max)} cap.
         Visible to admins only; members never see why a price moved.
       </p>
 

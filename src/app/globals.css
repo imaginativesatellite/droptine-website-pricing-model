@@ -939,134 +939,41 @@ select:focus {
 /* Secondary tab bar for the admin area. A filled, borderless pill bar —
    the active tab reads as a darker pressed-in pill rather than an
    underline. Never wraps; overflows into horizontal scroll instead. */
+/* Secondary nav for the admin area: a sliding-pill segmented control. The
+   active tab reads as a raised white pill on a warm-grey track. It shrinks to
+   its content on wide screens and, when it can't fit, scrolls horizontally
+   (AdminTabs keeps the active tab centered) instead of wrapping. */
 .admin-tabs {
   display: flex;
   gap: 4px;
-  background: var(--line);
+  background: #e9e6e1;
   border-radius: 10px;
-  padding: 5px;
+  padding: 4px;
   margin-bottom: 24px;
+  width: max-content;
+  max-width: 100%;
   overflow-x: auto;
   flex-wrap: nowrap;
 }
 .admin-tabs a {
   flex: none;
-  padding: 9px 16px;
+  padding: 8px 16px;
   border-radius: 7px;
   color: var(--muted);
   font-weight: 600;
   font-size: 0.92rem;
   text-decoration: none;
   white-space: nowrap;
-  transition: background 0.15s ease, color 0.15s ease;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 .admin-tabs a:hover {
-  background: #d6d1c8;
   color: var(--charcoal);
 }
 .admin-tabs a.active,
 .admin-tabs a.active:hover {
-  background: #c7c0b3;
-  color: var(--charcoal);
-}
-
-/* ── TEMP: admin sub-menu style gallery (10 candidates) ────────────────────
-   Shared base, then one block per variant (.atg1 … .atg10). Once a style is
-   chosen, delete the gallery component, its render, and this whole section. */
-.atg {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  flex-wrap: nowrap;
-}
-.atg button {
-  flex: none;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 600;
-  font-size: 0.92rem;
-  white-space: nowrap;
-  background: none;
-  border: none;
-  color: var(--muted);
-  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-
-/* 1. Filled pill bar (the current admin-tabs look) */
-.atg1 { background: var(--line); border-radius: 10px; padding: 5px; }
-.atg1 button { padding: 9px 16px; border-radius: 7px; }
-.atg1 button:hover { background: #d6d1c8; color: var(--charcoal); }
-.atg1 button.active { background: #c7c0b3; color: var(--charcoal); }
-
-/* 2. Underline tabs on a baseline */
-.atg2 { gap: 6px; border-bottom: 1px solid var(--line); }
-.atg2 button { padding: 10px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
-.atg2 button:hover { color: var(--charcoal); }
-.atg2 button.active { color: var(--gold-dark); border-bottom-color: var(--gold); }
-
-/* 3. Folder tabs (active tab boxed, merges into the baseline) */
-.atg3 { gap: 4px; border-bottom: 1px solid var(--line); }
-.atg3 button { padding: 9px 16px; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; margin-bottom: -1px; }
-.atg3 button:hover { color: var(--charcoal); }
-.atg3 button.active { background: #fff; border-color: var(--line); color: var(--charcoal); }
-
-/* 4. Sliding-pill segmented (matches the dashboard view toggle) */
-.atg4 { background: #e9e6e1; border-radius: 10px; padding: 4px; width: max-content; }
-.atg4 button { padding: 8px 16px; border-radius: 7px; }
-.atg4 button.active { background: #fff; color: var(--charcoal); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
-
-/* 5. Light track, solid-gold active pill */
-.atg5 { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px; width: max-content; }
-.atg5 button { padding: 8px 16px; border-radius: 7px; }
-.atg5 button.active { background: var(--gold); color: #fff; }
-
-/* 6. Minimal text with a thick gold underline */
-.atg6 { gap: 22px; }
-.atg6 button { padding: 6px 0; border-bottom: 3px solid transparent; }
-.atg6 button:hover { color: var(--charcoal); }
-.atg6 button.active { color: var(--charcoal); border-bottom-color: var(--gold); }
-
-/* 7. Outlined active pill */
-.atg7 { gap: 8px; }
-.atg7 button { padding: 8px 16px; border: 1.5px solid transparent; border-radius: 999px; }
-.atg7 button:hover { color: var(--charcoal); }
-.atg7 button.active { border-color: var(--gold); color: var(--gold-dark); }
-
-/* 8. Boxed connected button group, gold-dark active */
-.atg8 { border: 1px solid var(--line); border-radius: 8px; background: #fff; width: max-content; }
-.atg8 button { padding: 9px 16px; }
-.atg8 button + button { border-left: 1px solid var(--line); }
-.atg8 button:first-child { border-radius: 7px 0 0 7px; }
-.atg8 button:last-child { border-radius: 0 7px 7px 0; }
-.atg8 button.active { background: var(--gold-dark); color: #fff; }
-
-/* 9. Dot indicator under the active label */
-.atg9 { gap: 20px; }
-.atg9 button { padding: 8px 4px; position: relative; }
-.atg9 button:hover { color: var(--charcoal); }
-.atg9 button.active { color: var(--charcoal); }
-.atg9 button.active::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  background: var(--gold);
-}
-
-/* 10. Raised folder tabs sitting on a baseline */
-.atg10 { gap: 4px; border-bottom: 2px solid var(--line); padding-top: 2px; }
-.atg10 button { padding: 10px 16px; border-radius: 8px 8px 0 0; }
-.atg10 button:hover { background: #efece7; color: var(--charcoal); }
-.atg10 button.active {
   background: #fff;
   color: var(--charcoal);
-  border-bottom: 2px solid var(--gold);
-  margin-bottom: -2px;
-  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
 
 /* Dashboard quote rows with hierarchy */

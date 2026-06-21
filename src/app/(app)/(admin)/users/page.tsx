@@ -2,7 +2,6 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
 import AddUserForm from "./AddUserForm";
 import EditUserForm from "./EditUserForm";
-import AdminTabsGallery from "../AdminTabsGallery";
 import { resetPassword, deleteUser } from "./actions";
 
 const dangerLabel = { fontSize: "0.7rem", color: "#b3261e", textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 8 };
@@ -65,8 +64,6 @@ export default async function UsersPage({
           )}
         </div>
       ))}
-
-      <AdminTabsGallery />
     </div>
   );
 }

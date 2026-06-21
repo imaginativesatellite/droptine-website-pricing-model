@@ -46,9 +46,38 @@ never add a pricing rule with no way to trigger it from the questionnaire.
     only on pending custom quotes.
   Both default off and both require `ANTHROPIC_API_KEY`.
 
-## Conventions
+## Git workflow (read this — it ends the recurring "Unverified" nag)
 - Commit and push directly to `main` — no PR workflow on this repo unless
   explicitly asked for one.
+- Sessions run on a harness branch (e.g. `claude/…`). After committing, push
+  **HEAD to both** so the branch's upstream never drifts behind `main`:
+  ```
+  git push origin HEAD:main          # the real target
+  git push origin HEAD               # keep the harness branch in sync
+  ```
+  If only `main` is pushed, the stop-hook (`stop-hook-git-check.sh`) compares
+  HEAD against the *harness* branch's upstream, sees the commits as "unpushed /
+  Unverified", and re-fires that warning every turn. Pushing to both makes
+  `origin/<harness-branch> == HEAD`, the comparison range is empty, and the
+  warning stops.
+- The "Unverified" / `%G? = N` part of that warning is a **false positive in
+  this container**: commits *are* SSH-signed with the correct committer
+  (`Claude <noreply@anthropic.com>`), but git can't verify them locally because
+  no `gpg.ssh.allowedSignersFile` is configured. GitHub verifies against the
+  registered key and shows them as Verified. **Do not** "fix" it with
+  `git commit --amend --reset-author` or a force-push to `main` — that rewrites
+  already-pushed history for no benefit.
+
+## UI conventions
+- **Dropdowns**: always use `src/components/BrandSelect.tsx`, never a raw
+  `<select>`. It carries a hidden native `<select name=…>` so it still submits
+  inside a plain/server-action form — pass `name` for those cases.
+- Brand palette lives as CSS custom properties at the top of
+  `src/app/globals.css` (`--charcoal`, `--ink`, `--gold`, `--gold-dark`,
+  `--bg`, `--card`, `--line`, `--muted`, `--good`). Reuse these instead of
+  hard-coding new colors.
+
+## Other conventions
 - Quotes expire 60 days after `validFrom`. Admins can reactivate an expired
   quote, which mints a fresh public link and refreshes pricing if the model
   changed since it was created.

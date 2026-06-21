@@ -24,9 +24,10 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
   }, [pathname]);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
-  // The admin section spans several routes that now live as tabs under Admin, so
-  // the top-level Admin link stays lit on any of them.
-  const ADMIN_SECTION = ["/admin", "/users", "/pricing-rules", "/tests", "/pricing-preview"];
+  // The admin section spans several routes that live as tabs under Admin, so
+  // the top-level Admin link stays lit on any of them. There's no standalone
+  // admin landing page — the link goes straight to the first tab, Users.
+  const ADMIN_SECTION = ["/users", "/pricing-rules", "/tests", "/pricing-preview", "/export"];
   const inAdminSection = ADMIN_SECTION.some((h) => isActive(h));
   const navLinks = (onClick?: () => void) => {
     const item = (href: string, label: string, active = isActive(href)) => (
@@ -38,8 +39,8 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
       <>
         {item("/dashboard", "Dashboard")}
         {item("/new", "New Quote")}
-        {/* Users / Pricing / Tests now live as tabs under Admin. */}
-        {isAdmin && item("/admin", "Admin", inAdminSection)}
+        {/* Users / Pricing / Tests / Export now live as tabs under Admin. */}
+        {isAdmin && item("/users", "Admin", inAdminSection)}
       </>
     );
   };

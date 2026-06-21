@@ -8,16 +8,18 @@ export default async function AccountPage() {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: sessionUser.id } });
 
   return (
-    <div className="container" style={{ maxWidth: 480 }}>
+    <div className="container">
       <h1>Account</h1>
       <p className="lede">Your contact details and password.</p>
 
-      <ProfileForm defaultName={user.name} defaultPhone={user.phone ?? ""} />
-      <PasswordForm />
+      <div className="account-grid">
+        <ProfileForm defaultName={user.name} defaultPhone={user.phone ?? ""} />
+        <PasswordForm />
+      </div>
 
       {user.role === "MEMBER" && user.termsAcceptedAt && (
-        <div className="card" style={{ marginTop: 20 }}>
-          <h3 style={{ marginBottom: 4 }}>Platform terms</h3>
+        <div className="account-terms">
+          <h3>Platform terms</h3>
           <p className="help" style={{ marginBottom: 10 }}>
             Accepted {user.termsAcceptedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
           </p>

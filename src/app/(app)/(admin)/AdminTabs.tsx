@@ -4,13 +4,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 // Secondary navigation for the admin area. Rendered by the admin layout so it
-// persists across every admin page and highlights the active section. Export is
-// a file download, not a tab, so it never shows an active state.
+// persists across every admin page and highlights the active section.
 const TABS: { href: string; label: string }[] = [
   { href: "/users", label: "Users" },
   { href: "/pricing-rules", label: "Pricing" },
   { href: "/tests", label: "Tests" },
   { href: "/pricing-preview", label: "Pricing preview" },
+  { href: "/export", label: "Export" },
 ];
 
 export default function AdminTabs() {
@@ -24,7 +24,6 @@ export default function AdminTabs() {
           {t.label}
         </Link>
       ))}
-      <a href="/api/export/quotes">Export</a>
     </div>
   );
 }

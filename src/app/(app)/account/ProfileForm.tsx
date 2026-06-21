@@ -13,12 +13,12 @@ export default function ProfileForm({
   const [state, action, pending] = useActionState<FormState, FormData>(updateProfile, undefined);
 
   return (
-    <form action={action} className="card" style={{ marginBottom: 18 }}>
+    <form action={action} className="card">
       <h3 style={{ marginBottom: 12 }}>Your details</h3>
       <p className="help" style={{ marginBottom: 12 }}>
         This name and phone appear on proposals as the contact (&ldquo;prepared by&rdquo;).
       </p>
-      <div className="q" style={{ paddingTop: 0 }}>
+      <div className="q" style={{ padding: "0 0 14px", borderBottom: "none" }}>
         <label className="qlabel" htmlFor="name">Name</label>
         <input id="name" name="name" type="text" defaultValue={defaultName} required />
       </div>

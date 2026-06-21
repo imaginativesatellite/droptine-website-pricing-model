@@ -20,7 +20,7 @@ html,
 body {
   background: var(--bg);
   color: var(--ink);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-family: "Google Sans Flex", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
 }
@@ -836,7 +836,6 @@ select:focus {
   display: inline-flex;
   border: 1px solid var(--line);
   border-radius: 8px;
-  overflow: hidden;
   flex: none;
   height: 42px;
 }
@@ -851,19 +850,27 @@ select:focus {
   justify-content: center;
   height: 100%;
 }
+/* Round to match the container's own corners instead of relying on
+   overflow: hidden to clip square buttons — that clipping is what was
+   swallowing the container's border right at the curve. */
+.viewtoggle button:first-child {
+  border-radius: 7px 0 0 7px;
+}
+.viewtoggle button:last-child {
+  border-radius: 0 7px 7px 0;
+}
 .viewtoggle button + button {
   border-left: 1px solid var(--line);
 }
 .viewtoggle button.on {
-  background: var(--charcoal);
+  background: var(--gold-dark);
   color: #fff;
 }
-/* The divider next to the selected (black) button blends into it instead of
-   showing a grey line against the black fill. The container keeps its own
-   grey border so the rounded corners stay outlined. */
+/* The divider next to the selected button blends into it instead of
+   showing a grey line against the fill. */
 .viewtoggle button.on,
 .viewtoggle button.on + button {
-  border-left-color: var(--charcoal);
+  border-left-color: var(--gold-dark);
 }
 
 /* Tile view */
@@ -940,29 +947,38 @@ select:focus {
   vertical-align: middle;
 }
 
-/* Secondary tab bar for the admin area */
+/* Secondary tab bar for the admin area. A filled, borderless pill bar —
+   the active tab reads as a darker pressed-in pill rather than an
+   underline. Never wraps; overflows into horizontal scroll instead. */
 .admin-tabs {
   display: flex;
-  gap: 26px;
-  border-bottom: 1px solid var(--line);
+  gap: 4px;
+  background: var(--line);
+  border-radius: 10px;
+  padding: 5px;
   margin-bottom: 24px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  flex-wrap: nowrap;
 }
 .admin-tabs a {
-  padding: 10px 2px;
-  margin-bottom: -1px;
-  border-bottom: 3px solid transparent;
+  flex: none;
+  padding: 9px 16px;
+  border-radius: 7px;
   color: var(--muted);
   font-weight: 600;
   font-size: 0.92rem;
   text-decoration: none;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .admin-tabs a:hover {
+  background: #d6d1c8;
   color: var(--charcoal);
 }
-.admin-tabs a.active {
+.admin-tabs a.active,
+.admin-tabs a.active:hover {
+  background: #c7c0b3;
   color: var(--charcoal);
-  border-bottom-color: var(--gold);
 }
 
 /* Dashboard quote rows with hierarchy */
@@ -1049,6 +1065,26 @@ table.simple td.amt, table.simple th.amt { text-align: right; font-variant-numer
 
 .form-2col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
+/* Account page: details + password side by side, always equal height
+   regardless of which one has more content (grid's default stretch). */
+.account-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+/* Platform terms sits below, full width, deliberately plain — no card
+   chrome — so it reads as reference text rather than an editable section. */
+.account-terms {
+  font-size: 0.85rem;
+  color: var(--ink);
+}
+.account-terms h3 {
+  font-size: 0.95rem;
+  color: var(--charcoal);
+  margin-bottom: 4px;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 860px) {
   .container { padding: 22px 16px 64px; }
@@ -1064,6 +1100,7 @@ table.simple td.amt, table.simple th.amt { text-align: right; font-variant-numer
 
   /* Stack 2-column forms */
   .form-2col { grid-template-columns: 1fr; }
+  .account-grid { grid-template-columns: 1fr; }
 
   /* Quote rows wrap so price/status don't get crushed */
   .quote-row { flex-wrap: wrap; }

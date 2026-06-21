@@ -9,11 +9,11 @@ export default function PasswordForm() {
   return (
     <form action={action} className="card">
       <h3 style={{ marginBottom: 12 }}>Change password</h3>
-      <div className="q" style={{ paddingTop: 0 }}>
+      <div className="q" style={{ padding: "0 0 14px", borderBottom: "none" }}>
         <label className="qlabel" htmlFor="current">Current password</label>
         <input id="current" name="current" type="password" required autoComplete="current-password" />
       </div>
-      <div className="q">
+      <div className="q" style={{ borderBottom: "none" }}>
         <label className="qlabel" htmlFor="next">New password</label>
         <input id="next" name="next" type="password" minLength={8} required autoComplete="new-password" />
       </div>

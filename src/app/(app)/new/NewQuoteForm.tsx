@@ -4,6 +4,7 @@ import { Fragment, useEffect, useRef, useState, useTransition } from "react";
 import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
+import { VISIBILITY_TIP } from "@/lib/quote";
 import { createQuote } from "./actions";
 
 const DRAFT_KEY = "droptine-quote-draft";
@@ -116,7 +117,7 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
           </span>
           <span>
             Private{" "}
-            <span className="tip" title="When on, only you and admins can see this quote. When off, it's visible to all staff.">ⓘ</span>
+            <span className="tip" title={VISIBILITY_TIP}>ⓘ</span>
           </span>
         </label>
       </div>

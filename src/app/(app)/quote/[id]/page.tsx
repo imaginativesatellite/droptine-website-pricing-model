@@ -110,7 +110,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
       {(isAdmin || isCreator) && (
         <div className="card" style={{ marginTop: 18 }}>
           <div style={{ fontWeight: 600, marginBottom: 10 }}>Visibility</div>
-          <VisibilityToggle quoteId={quote!.id} shared={quote!.shared} />
+          <VisibilityToggle quoteId={quote!.id} shared={quote!.shared} isCreator={isCreator} />
         </div>
       )}
 

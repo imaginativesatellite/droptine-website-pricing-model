@@ -24,7 +24,7 @@ export const PRICING_RULES = {
 
   // Flat managed hosting / security / maintenance.
   monthlyBase: 169,
-  // Added to the monthly for e-commerce / real-estate / MLS / complex sites.
+  // Added to the monthly for e-commerce / property-listings / MLS / complex sites.
   monthlySurcharge: 50,
 
   // Page count → absolute base build price (non-e-commerce sites).
@@ -65,9 +65,10 @@ export const PRICING_RULES = {
     // "60+" -> custom quote
   } as Record<string, number>,
 
-  // Bundled real-estate package: property listings + team/agent logins +
-  // interactive property/acreage map.
-  realEstatePackage: 2500,
+  // Property/land listings.
+  propertyListings: 1000,
+  // Team/agent logins (members-only area for a listing team).
+  teamLogins: 1500,
 
   // Standalone content sections, each.
   contentPage: 500, // blog / news / events (asked separately)
@@ -102,7 +103,8 @@ export type PricingAnswers = {
   pedigreeIndividualPages?: boolean;
   pedigreeCount?: string; // tier key, or "60+"
 
-  realEstate?: boolean;
+  realEstate?: boolean; // Property/land listings (+$1,000)
+  teamLogins?: boolean; // team/agent logins (+$1,500), only with listings
 
   blog?: boolean;
   news?: boolean;
@@ -187,7 +189,12 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   }
 
   if (answers.realEstate)
-    lineItems.push({ label: "Real-estate package (listings, agent logins, property map)", amount: R.realEstatePackage });
+    lineItems.push({ label: "Property/land listings", amount: R.propertyListings });
+  // Team/agent logins is a listings sub-feature, so it's only charged when
+  // listings are selected (guards against a stale answer if listings is later
+  // turned off in the questionnaire).
+  if (answers.realEstate && answers.teamLogins)
+    lineItems.push({ label: "Team/agent logins", amount: R.teamLogins });
 
   if (answers.blog) lineItems.push({ label: "Blog", amount: R.contentPage });
   if (answers.news) lineItems.push({ label: "News", amount: R.contentPage });
@@ -205,9 +212,9 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
       });
   }
 
-  // MLS/IDX is only offered with the real-estate package, so it's only charged
-  // when that package is selected (guards against a stale answer if real-estate
-  // is later turned off in the questionnaire).
+  // MLS/IDX is only offered with property/land listings, so it's only charged
+  // when listings are selected (guards against a stale answer if listings are
+  // later turned off in the questionnaire).
   if (answers.realEstate && answers.mlsIdx)
     lineItems.push({ label: "MLS/IDX integration", amount: R.mlsBuildAdd });
 
@@ -218,7 +225,7 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   const sub = lineItems.reduce((sum, li) => sum + li.amount, 0);
   const total = clamp(roundUp(sub, R.roundUpTo), min, R.max);
 
-  // Real-estate already covers the MLS/IDX case (MLS/IDX requires real-estate).
+  // Property listings already covers the MLS/IDX case (MLS/IDX requires listings).
   const surcharge = answers.ecommerce || answers.realEstate ? R.monthlySurcharge : 0;
   return { requiresCustomQuote: reasons.length > 0, reasons, total, monthly: R.monthlyBase + surcharge, lineItems };
 }

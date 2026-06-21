@@ -79,14 +79,15 @@ export default async function PricingRulesPage() {
       <Card title="Other add-ons">
         <Rows
           rows={[
-            ["Real-estate package (listings + agent logins + map)", `+ ${money(R.realEstatePackage)}`],
+            ["Property/land listings", `+ ${money(R.propertyListings)}`],
+            ["Team/agent logins (requires property listings)", `+ ${money(R.teamLogins)}`],
             ["Social media feed integration", `+ ${money(R.socialFeedFee)}`],
             ["Blog", `+ ${money(R.contentPage)}`],
             ["News", `+ ${money(R.contentPage)}`],
             ["Events", `+ ${money(R.contentPage)}`],
             ["Entrance animations", `+ ${money(R.animationTiers["entrance"])}`],
             ["Entrance & interactive animations", `+ ${money(R.animationTiers["entrance-interactive"])}`],
-            ["MLS/IDX syncing (one-time build; requires real-estate package)", `+ ${money(R.mlsBuildAdd)}`],
+            ["MLS/IDX syncing (one-time build; requires property listings)", `+ ${money(R.mlsBuildAdd)}`],
             ["Structure & content provided by Droptine", `− ${money(R.contentProvidedReduction)} (floor ${money(R.minContentProvided)})`],
           ]}
         />
@@ -96,7 +97,7 @@ export default async function PricingRulesPage() {
         <Rows
           rows={[
             ["Standard", `${money(R.monthlyBase)}/mo`],
-            ["E-commerce / real-estate / MLS / complex", `${money(R.monthlyBase + R.monthlySurcharge)}/mo`],
+            ["E-commerce / property listings / MLS / complex", `${money(R.monthlyBase + R.monthlySurcharge)}/mo`],
           ]}
         />
       </Card>
@@ -106,7 +107,7 @@ export default async function PricingRulesPage() {
           <li>30+ pages</li>
           <li>150+ store items</li>
           <li>60+ animals or pedigrees with individual pages</li>
-          <li>MLS/IDX adds $930 + the IDX disclaimer (not a custom quote)</li>
+          <li>MLS/IDX adds {money(R.mlsBuildAdd)} + the IDX disclaimer (not a custom quote)</li>
           <li>Any free-text in &ldquo;other / complex functionality&rdquo;</li>
         </ul>
       </Card>
@@ -124,7 +125,7 @@ export default async function PricingRulesPage() {
           <li>E-commerce → &ldquo;an online store[ on Shopify] ([item count] items)&rdquo;</li>
           <li>Animals page → individual animal pages (with count) if each animal gets its own page, otherwise a single animal listing page</li>
           <li>Pedigree page → individual pedigree pages (with count) if each gets its own page, otherwise a single pedigree page</li>
-          <li>Real-estate package → &ldquo;a real-estate package (property listings, agent logins, interactive property map)&rdquo;</li>
+          <li>Property/land listings → &ldquo;property/land listings&rdquo;; team/agent logins → &ldquo;team/agent logins&rdquo; (only if selected)</li>
           <li>Blog, news, events → one phrase each, only if selected</li>
           <li>Social media feed integration → one phrase, only if selected</li>
           <li>Animations → &ldquo;entrance animations&rdquo; or &ldquo;entrance &amp; interactive animations&rdquo;, only if selected</li>

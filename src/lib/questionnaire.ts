@@ -172,6 +172,30 @@ export const QUESTIONNAIRE: Question[] = [
   { id: "blog", type: "boolean", label: "Will the website have a blog?", emphasize: "blog", group: "scope", section: "Content" },
   { id: "news", type: "boolean", label: "Will the website have a news page?", emphasize: "news page", group: "scope", section: "Content" },
   { id: "events", type: "boolean", label: "Will the website have an events page?", emphasize: "events page", group: "scope", section: "Content" },
+
+  // Property/land listings + its follow-ups. MLS/IDX and team/agent logins are
+  // sub-features, so they only surface once listings are selected (and are only
+  // priced then — see pricing.ts).
+  { id: "realEstate", type: "boolean", label: "Will the website need Property/land listings?", emphasize: "Property/land listings", group: "scope", section: "Content" },
+  {
+    id: "mlsIdx",
+    type: "boolean",
+    label: "Will the website have live MLS/IDX real-estate syncing?",
+    emphasize: "MLS/IDX",
+    group: "scope",
+    section: "Content",
+    showIf: { field: "realEstate", equals: true },
+  },
+  {
+    id: "teamLogins",
+    type: "boolean",
+    label: "Will the website need team/agent logins?",
+    emphasize: "team/agent logins",
+    group: "scope",
+    section: "Content",
+    showIf: { field: "realEstate", equals: true },
+  },
+
   { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", emphasize: "provide the page structure", group: "scope", section: "Content" },
 
   // --- Add-ons ---
@@ -189,26 +213,6 @@ export const QUESTIONNAIRE: Question[] = [
     ],
   },
   { id: "socialFeed", type: "boolean", label: "Will the website have social media feed integration?", emphasize: "social media feed", group: "scope", section: "Add-ons" },
-  {
-    id: "realEstate",
-    type: "boolean",
-    label: "Will the website have the real-estate package?",
-    emphasize: "real-estate package",
-    help: "Property/land listings + team/agent logins + interactive property map.",
-    group: "scope",
-    section: "Add-ons",
-  },
-  // MLS/IDX is a real-estate feature, so it only surfaces once the real-estate
-  // package is selected (and is only priced then — see pricing.ts).
-  {
-    id: "mlsIdx",
-    type: "boolean",
-    label: "Will the website have live MLS/IDX real-estate syncing?",
-    emphasize: "MLS/IDX",
-    group: "scope",
-    section: "Add-ons",
-    showIf: { field: "realEstate", equals: true },
-  },
 
   // --- Custom ---
   {

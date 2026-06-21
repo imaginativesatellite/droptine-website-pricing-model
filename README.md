@@ -22,10 +22,11 @@ tuned against the historical sample. Page count sets the base directly (rounded
 5–9 = $5,000, 10–14 = $7,000, 15–19 = $8,000, 20–24 = $9,000, 25–29 = $10,000,
 30+ = custom. **E-commerce** sites are priced by store cost (not pages): $1k first
 25 items, +$250 per 25, +$1k if Shopify. **Animal & pedigree pages:** $250 listing
-fee each, +$500 per 10 for individual pages. **Real-estate bundle** +$2.5k.
+fee each, +$500 per 10 for individual pages. **Property/land listings** +$1k,
+**team/agent logins** +$1.5k (requires listings).
 **Social feed** +$100. **MLS** +$930 build & +$50/mo. **Blog/News/Events** +$500
 each. **Droptine-provided content** −$500 ($3,500 floor). Monthly $169, +$50 for
-e-commerce/real-estate/MLS/complex. 150+ store items, 60+ animals/pedigrees, 30+
+e-commerce/property-listings/MLS/complex. 150+ store items, 60+ animals/pedigrees, 30+
 pages, and any free-text custom request route to a **custom quote**. The
 questionnaire is in `src/lib/questionnaire.ts` (with conditional follow-ups).
 

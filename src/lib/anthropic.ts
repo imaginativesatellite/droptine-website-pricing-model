@@ -28,8 +28,8 @@ export function describeScope(answers: PricingAnswers): string[] {
         ? `individual pedigree pages (${answers.pedigreeCount ?? ""})`
         : "a pedigree page",
     );
-  if (answers.realEstate)
-    items.push("a real-estate package (property listings, agent logins, interactive property map)");
+  if (answers.realEstate) items.push("property/land listings");
+  if (answers.realEstate && answers.teamLogins) items.push("team/agent logins");
   if (answers.blog) items.push("a blog");
   if (answers.news) items.push("a news section");
   if (answers.events) items.push("an events page");
@@ -108,10 +108,20 @@ function defaultSummary(input: { proposalName: string; answers: PricingAnswers }
 // Re-export so callers can compute alongside prose if needed.
 export { computeQuote };
 
+export type CustomRecommendation = {
+  price?: number; // recommended one-time build price (whole USD)
+  leadDays?: number; // recommended turnaround (business days)
+  monthly?: number; // recommended monthly hosting & maintenance (whole USD)
+  reasoning: string;
+  scope: string;
+};
+
 /**
- * Admin tool: recommend a one-time price for a custom quote, with reasoning,
- * considering the standard breakdown plus the complex functionality requested.
- * Gated behind ENABLE_AI; returns an { error } when AI is off.
+ * Admin tool: recommend a one-time price, turnaround, monthly cost, reasoning,
+ * and a proposed scope for a custom quote — considering the standard breakdown
+ * plus the complex functionality requested. Each value is returned separately so
+ * the UI can copy it into the matching field. The model may keep the standard
+ * price/turnaround/monthly unchanged. Gated behind ENABLE_AI_PRICING.
  */
 export async function recommendCustomPrice(input: {
   proposalName: string;
@@ -120,9 +130,12 @@ export async function recommendCustomPrice(input: {
   additionalFunctionality?: string;
   pageCountExact?: string;
   answers?: PricingAnswers;
+  standardTotal: number;
+  standardMonthly: number;
+  standardLeadDays: number;
   min: number;
   max: number;
-}): Promise<{ reasoning: string; scope: string } | { error: string }> {
+}): Promise<CustomRecommendation | { error: string }> {
   const aiEnabled = process.env.ENABLE_AI_PRICING === "true";
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!aiEnabled || !apiKey) {
@@ -142,16 +155,21 @@ export async function recommendCustomPrice(input: {
 
   const msg = await client.messages.create({
     model,
-    max_tokens: 800,
+    max_tokens: 900,
     system:
       "You price custom Webflow website builds for Luna Creative (ranch / hunting / breeder clients). " +
       "The standard calculator runs $4,000–$15,000; genuinely complex builds can exceed $15,000. " +
-      "Given the standard line items plus the complex/extra functionality requested, recommend ONE one-time " +
-      "build price (whole US dollars) and justify it in 2–4 sentences. Start your reply with a line exactly " +
-      "like 'Recommended: $12,500' and then the reasoning. Weigh the extra build effort, risk, and ongoing " +
-      "maintenance of the complex functionality. " +
-      "After the reasoning, output a line containing exactly 'SCOPE:' on its own, then a client-facing scope " +
-      "summary. Begin from the STANDARD SCOPE provided and keep that standard language intact — do NOT rewrite " +
+      "You are given the STANDARD deterministic price, turnaround (business days), and monthly hosting cost. " +
+      "Recommend a one-time build PRICE, a TURNAROUND in business days, and a MONTHLY cost. You may keep any of " +
+      "the standard values unchanged if the complex functionality doesn't warrant a change — only move a value " +
+      "when the extra build effort, risk, or ongoing maintenance justifies it. " +
+      "Reply in EXACTLY this format, each on its own line, then the SCOPE block last:\n" +
+      "PRICE: <whole dollars, digits only>\n" +
+      "TURNAROUND: <business days, digits only>\n" +
+      "MONTHLY: <whole dollars, digits only>\n" +
+      "REASONING: <2–4 sentences justifying any changes from the standard values>\n" +
+      "SCOPE:\n<client-facing scope summary>\n" +
+      "For SCOPE, begin from the STANDARD SCOPE provided and keep that standard language intact — do NOT rewrite " +
       "or restyle it unless strictly necessary. Then add the requested complex/custom functionality, described " +
       "in precise technical terms (name the actual mechanisms — e.g. authenticated member portal, headless " +
       "CMS collections, Stripe checkout, third-party API integration, booking/reservation engine). " +
@@ -162,11 +180,14 @@ export async function recommendCustomPrice(input: {
         content:
           `Project: ${input.proposalName}\n` +
           `Standard line items:\n${itemized}\n\n` +
+          `STANDARD price: $${input.standardTotal}\n` +
+          `STANDARD turnaround: ${input.standardLeadDays} business days\n` +
+          `STANDARD monthly: $${input.standardMonthly}\n\n` +
           `Why it's custom: ${input.customReasons.join("; ") || "n/a"}\n` +
           (input.pageCountExact ? `Page count requested: ${input.pageCountExact}\n` : "") +
           (input.additionalFunctionality ? `Complex / additional functionality requested:\n${input.additionalFunctionality}\n` : "") +
           (standardScope ? `\nSTANDARD SCOPE (keep this language intact):\n${standardScope}\n` : "") +
-          `\nRecommend the one-time price, explain why, then provide the SCOPE.`,
+          `\nRecommend PRICE, TURNAROUND, MONTHLY, REASONING, then SCOPE.`,
       },
     ],
   });
@@ -177,12 +198,35 @@ export async function recommendCustomPrice(input: {
     .join("\n")
     .trim();
 
-  // Split the single reply into the pricing reasoning and the proposed scope.
-  const idx = text.search(/^\s*SCOPE:\s*$/im);
-  if (idx === -1) {
+  // Pull out the labelled single-line values.
+  const grab = (label: string): string => {
+    const m = text.match(new RegExp(`^\\s*${label}:\\s*(.+)$`, "im"));
+    return m ? m[1].trim() : "";
+  };
+  const toNum = (s: string): number | undefined => {
+    const m = s.match(/[\d,]+/);
+    if (!m) return undefined;
+    const n = parseInt(m[0].replace(/,/g, ""), 10);
+    return Number.isFinite(n) ? n : undefined;
+  };
+
+  const price = toNum(grab("PRICE"));
+  const leadDays = toNum(grab("TURNAROUND"));
+  const monthly = toNum(grab("MONTHLY"));
+
+  // REASONING runs from its label up to the SCOPE block; SCOPE is everything after.
+  const scopeIdx = text.search(/^\s*SCOPE:/im);
+  const reasoningIdx = text.search(/^\s*REASONING:/im);
+  let reasoning = "";
+  if (reasoningIdx !== -1) {
+    const end = scopeIdx !== -1 ? scopeIdx : text.length;
+    reasoning = text.slice(reasoningIdx, end).replace(/^\s*REASONING:\s*/i, "").trim();
+  }
+  const scope = scopeIdx !== -1 ? text.slice(scopeIdx).replace(/^\s*SCOPE:\s*/i, "").trim() : "";
+
+  // Fallback: if the model ignored the format entirely, surface the raw text.
+  if (!reasoning && price === undefined && !scope) {
     return { reasoning: text || "No recommendation returned.", scope: "" };
   }
-  const reasoning = text.slice(0, idx).trim();
-  const scope = text.slice(idx).replace(/^\s*SCOPE:\s*$/im, "").trim();
-  return { reasoning: reasoning || "No recommendation returned.", scope };
+  return { price, leadDays, monthly, reasoning: reasoning || "No recommendation returned.", scope };
 }

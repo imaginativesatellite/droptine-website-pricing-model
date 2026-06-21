@@ -5,9 +5,9 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/session";
-import { computeQuote, applyDemandAdjustment, PRICING_RULES, type PricingAnswers } from "@/lib/pricing";
+import { computeQuote, applyDemandAdjustment, leadTimeDays, PRICING_RULES, type PricingAnswers } from "@/lib/pricing";
 import { generatePublicCode } from "@/lib/code";
-import { recommendCustomPrice as aiRecommendCustomPrice } from "@/lib/anthropic";
+import { recommendCustomPrice as aiRecommendCustomPrice, type CustomRecommendation } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToMember } from "@/lib/email";
@@ -212,7 +212,7 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
 }
 
 /** Admin: AI recommendation of a custom-quote price + reasoning. */
-export async function recommendPriceAction(quoteId: string): Promise<{ reasoning: string; scope: string } | { error: string }> {
+export async function recommendPriceAction(quoteId: string): Promise<CustomRecommendation | { error: string }> {
   await requireAdmin();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
   if (!quote) return { error: "Quote not found." };
@@ -226,6 +226,9 @@ export async function recommendPriceAction(quoteId: string): Promise<{ reasoning
     additionalFunctionality: typeof answers.additionalFunctionality === "string" ? answers.additionalFunctionality : undefined,
     pageCountExact: typeof answers.pageCountExact === "string" ? answers.pageCountExact : undefined,
     answers: answers as unknown as PricingAnswers,
+    standardTotal: quote.computedTotal,
+    standardMonthly: quote.monthly,
+    standardLeadDays: quote.leadDaysOverride ?? leadTimeDays(quote.computedTotal),
     min: PRICING_RULES.min,
     max: PRICING_RULES.max,
   });

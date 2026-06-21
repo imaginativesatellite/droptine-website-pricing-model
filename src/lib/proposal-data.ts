@@ -46,7 +46,7 @@ export function buildProposalData(
     total: finalPrice(quote),
     monthly: quote.monthly,
     ecommerce: answers.ecommerce === true,
-    // MLS/IDX only applies (and shows its disclaimer) with the real-estate package.
+    // MLS/IDX only applies (and shows its disclaimer) with property/land listings.
     mlsIdx: answers.realEstate === true && answers.mlsIdx === true,
     disclaimers: asDisclaimers(quote.disclaimers),
   };

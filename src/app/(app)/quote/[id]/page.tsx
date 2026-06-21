@@ -3,8 +3,8 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
-import { money, subtotal, finalPrice, isExpired, asDisclaimers } from "@/lib/quote";
-import { leadTimeDays } from "@/lib/pricing";
+import { money, finalPrice, isExpired, asDisclaimers } from "@/lib/quote";
+import { leadTimeDays, computeQuote, type PricingAnswers } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
 import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, requestSignature, confirmCompanySignature } from "./actions";
 import { documensoEnabled, documensoSignUrl } from "@/lib/documenso";
@@ -71,6 +71,15 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   const exactPages = typeof ans.pageCountExact === "string" ? ans.pageCountExact : "";
   const extraFunctionality = typeof ans.additionalFunctionality === "string" ? ans.additionalFunctionality : "";
   const existingUrl = ans.existingWebsite === true && typeof ans.existingWebsiteUrl === "string" ? ans.existingWebsiteUrl : "";
+  // Admin internal breakdown is always the deterministic engine result computed
+  // from the saved answers — even for custom/override quotes, where the
+  // member-facing view collapses to a single "Website build" line. This keeps
+  // the standard breakdown visible and lets us show how much the custom price
+  // added/removed over it.
+  const computedBreakdown = computeQuote(ans as unknown as PricingAnswers);
+  const isCustomPricing = isPending || quote!.overrideTotal != null;
+  // How much the admin's custom price moved off the deterministic standard.
+  const customDelta = (quote!.overrideTotal ?? quote!.computedTotal) - quote!.computedTotal;
 
   // Members can't open an expired quote (no details, no price).
   if (!isAdmin && expired) {
@@ -115,13 +124,6 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         <ProposalView d={d} publicLink={isAdmin} />
       )}
 
-      {(isAdmin || isCreator) && (
-        <div className="card" style={{ marginTop: 18, ...(reorderAdminReview ? { order: 3 } : {}) }}>
-          <div style={{ fontWeight: 600, marginBottom: 10 }}>Visibility</div>
-          <VisibilityToggle quoteId={quote!.id} shared={quote!.shared} isCreator={isCreator} />
-        </div>
-      )}
-
       {!isAdmin && isCreator && !isPending && (
         <div className="card" style={{ marginTop: 18 }}>
           <div style={{ fontWeight: 600, marginBottom: 10 }}>Accept proposal</div>
@@ -164,26 +166,50 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             </div>
           )}
 
-          {/* Breakdown */}
+          {/* Breakdown — always the deterministic engine result, so the standard
+              build cost stays visible even on custom/override quotes. */}
           <div style={expired ? section : { marginTop: 16 }}>
             <div style={sublabel}>{isPending ? "Selection summary (suggested)" : "Internal breakdown"}</div>
             <table className="simple">
               <tbody>
-                {d.lineItems.map((li, i) => (
+                {computedBreakdown.lineItems.map((li, i) => (
                   <tr key={i}><td>{li.label}</td><td className="amt">{money(li.amount)}</td></tr>
                 ))}
+                {/* Standard, deterministic total from the pricing engine. */}
+                <tr>
+                  <td>{isCustomPricing ? "Standard total (computed)" : "Subtotal"}</td>
+                  <td className="amt">{money(quote!.computedTotal)}</td>
+                </tr>
+                {/* On a custom/override quote, show how much the custom price moved
+                    off the standard — positive = added, negative = removed. */}
+                {isCustomPricing && quote!.overrideTotal != null && (
+                  <tr style={{ color: customDelta < 0 ? "var(--good)" : "var(--ink)" }}>
+                    <td>Custom functionality adjustment</td>
+                    <td className="amt">
+                      {customDelta > 0 ? "+" : customDelta < 0 ? "−" : ""}{money(Math.abs(customDelta))}
+                    </td>
+                  </tr>
+                )}
                 {quote!.discount > 0 && (
-                  <>
-                    <tr><td>Subtotal</td><td className="amt">{money(subtotal(quote!))}</td></tr>
-                    <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
-                  </>
+                  <tr style={{ color: "var(--good)" }}><td>Discount</td><td className="amt">−{money(quote!.discount)}</td></tr>
                 )}
                 <tr>
-                  <td style={{ fontSize: "1.02rem", paddingTop: 10 }}><strong>{isPending ? "Suggested total" : "Total"}</strong></td>
+                  <td style={{ fontSize: "1.02rem", paddingTop: 10 }}>
+                    <strong>{isPending ? "Suggested total" : isCustomPricing ? "Custom quote price" : "Total"}</strong>
+                  </td>
                   <td className="amt" style={{ fontSize: "1.05rem", paddingTop: 10 }}><strong>{money(finalPrice(quote!))}</strong></td>
                 </tr>
               </tbody>
             </table>
+            {/* What pushed this into a custom quote. */}
+            {quote!.customReasons.length > 0 && (
+              <div style={{ marginTop: 12 }}>
+                <div style={sublabel}>What triggered the custom quote</div>
+                <ul style={{ margin: 0, paddingLeft: 18, fontSize: "0.9rem" }}>
+                  {quote!.customReasons.map((r, i) => <li key={i}>{r}</li>)}
+                </ul>
+              </div>
+            )}
             {!isPending && (
               <div style={{ display: "flex", gap: 10, marginTop: 14, flexWrap: "wrap", alignItems: "center" }}>
                 <form action={resendProposalEmail.bind(null, quote!.id)}>
@@ -276,9 +302,10 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
           {isPending && (
             <div style={section}>
-              <div style={sublabel}>AI price recommendation</div>
+              <div style={sublabel}>AI recommendation</div>
               <p className="help" style={{ marginBottom: 10 }}>
-                Suggests a one-time price (with reasoning) from the selections and the complex functionality requested.
+                Suggests a one-time price, turnaround, monthly cost, and a proposed scope from the
+                selections and the complex functionality requested. Copy any value into the fields below.
               </p>
               <AiRecommendation quoteId={quote!.id} />
             </div>
@@ -396,6 +423,17 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             <DeleteQuoteButton quoteId={quote!.id} />
           </div>
         </div>
+      )}
+
+      {/* Visibility — collapsed by default and kept last, mirroring the activity
+          log. The toggle/design is unchanged; only its container is collapsible. */}
+      {(isAdmin || isCreator) && (
+        <details className="card" style={{ marginTop: 18, ...(reorderAdminReview ? { order: 99 } : {}) }}>
+          <summary style={{ fontWeight: 600, cursor: "pointer" }}>Visibility</summary>
+          <div style={{ marginTop: 12 }}>
+            <VisibilityToggle quoteId={quote!.id} shared={quote!.shared} isCreator={isCreator} />
+          </div>
+        </details>
       )}
     </div>
   );

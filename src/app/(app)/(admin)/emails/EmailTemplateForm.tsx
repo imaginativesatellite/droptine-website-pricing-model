@@ -30,13 +30,14 @@ export default function EmailTemplateForm(props: Props) {
       <form action={saveTemplate}>
         <input type="hidden" name="key" value={key} />
 
-        <label className="qlabel" htmlFor={`subject-${key}`}>Subject</label>
+        <label className="qlabel" htmlFor={`subject-${key}`} style={{ display: "block", marginTop: 18 }}>Subject</label>
         <input
           id={`subject-${key}`}
+          type="text"
           name="subject"
           value={subject}
           onChange={(e) => setSubject(e.target.value)}
-          style={{ width: "100%", marginBottom: 14 }}
+          style={{ marginBottom: 14 }}
         />
 
         <label className="qlabel" htmlFor={`body-${key}`}>Body (HTML)</label>

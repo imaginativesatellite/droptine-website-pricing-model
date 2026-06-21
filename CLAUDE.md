@@ -1,7 +1,7 @@
 # Droptine Pricing Model — project context
 
 ## What this is
-Internal tool that turns a short staff questionnaire into a deterministic
+Internal tool that turns a short member questionnaire into a deterministic
 website-build price, a branded PDF, and a private code-protected proposal
 page. Complex/custom requests route to an admin-approved custom quote
 instead of an automatic price.
@@ -11,12 +11,14 @@ instead of an automatic price.
 - **Droptine** is Luna's reseller/partner — Droptine's team sells Luna's
   Webflow builds to their own ranch/hunting/breeder clients and uses this
   tool to generate those clients' proposals.
-- **STAFF** accounts = Droptine's team. They run the questionnaire and
+- **MEMBER** accounts = Droptine's team. They run the questionnaire and
   generate proposals day-to-day. They do not see pricing internals beyond
-  the breakdown on their own proposals.
+  the breakdown on their own proposals. (The role enum was renamed from
+  `STAFF` to `MEMBER` — see the migration that runs `ALTER TYPE "Role"
+  RENAME VALUE`.)
 - **ADMIN** accounts = Luna Creative. Admins approve custom quotes, can
   override any price, edit the pricing rules, and can see every quote
-  (including ones staff marked private).
+  (including ones a member marked private).
 
 ## Hard rule: a new/changed questionnaire question always touches 3 places
 Adding or changing a question is never just a `questionnaire.ts` edit.
@@ -50,6 +52,6 @@ never add a pricing rule with no way to trigger it from the questionnaire.
 - Quotes expire 60 days after `validFrom`. Admins can reactivate an expired
   quote, which mints a fresh public link and refreshes pricing if the model
   changed since it was created.
-- Visibility: staff-created quotes default to shared (visible to all staff +
+- Visibility: member-created quotes default to shared (visible to all members +
   admins); admin-created quotes default to private. Either role can toggle
   `shared` on a quote they can see.

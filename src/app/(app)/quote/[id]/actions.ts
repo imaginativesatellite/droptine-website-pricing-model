@@ -10,7 +10,7 @@ import { generatePublicCode } from "@/lib/code";
 import { recommendCustomPrice as aiRecommendCustomPrice } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
-import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
+import { sendApprovedQuoteToRequester, sendProposalToMember } from "@/lib/email";
 import { appUrl, proposalUrl, finalPrice } from "@/lib/quote";
 import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
 
@@ -173,8 +173,8 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
   if (updated.status !== "CUSTOM_PENDING") {
     try {
       const pdf = await renderProposalPdf(buildProposalData(updated));
-      await sendProposalToStaff({
-        staffEmail: updated.createdBy.email,
+      await sendProposalToMember({
+        memberEmail: updated.createdBy.email,
         proposalName: updated.proposalName,
         total: finalPrice(updated),
         monthly: updated.monthly,
@@ -212,7 +212,7 @@ export async function recommendPriceAction(quoteId: string): Promise<{ reasoning
   });
 }
 
-/** Creator or admin: toggle whether the quote is viewable by all staff. */
+/** Creator or admin: toggle whether the quote is viewable by all members. */
 export async function setShared(quoteId: string, shared: boolean): Promise<void> {
   const user = await requireUser();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId }, select: { createdById: true } });
@@ -269,7 +269,7 @@ export async function deleteQuote(quoteId: string): Promise<void> {
 
 /** Renders the proposal PDF, creates the two-recipient Documenso envelope,
  *  and saves the resulting tokens/status onto the quote — shared by the
- *  admin-driven send (custom email entry) and the staff one-click request
+ *  admin-driven send (custom email entry) and the member one-click request
  *  (uses the client's email already on file). */
 async function dispatchSignatureEnvelope(
   quote: Prisma.QuoteGetPayload<{ include: { client: true; createdBy: true } }>,
@@ -328,7 +328,7 @@ export async function sendForSignature(quoteId: string, formData: FormData): Pro
   revalidatePath(`/quote/${quoteId}`);
 }
 
-/** Staff (creator) or admin: one-click signature request using the client's
+/** Member (creator) or admin: one-click signature request using the client's
  *  email already on file — no email prompt. Logged immediately, but admins
  *  aren't emailed until the client actually signs (see the Documenso webhook
  *  handler) — there's nothing for them to do until then. */
@@ -370,7 +370,7 @@ export async function confirmCompanySignature(quoteId: string): Promise<void> {
   revalidatePath(`/quote/${quoteId}`);
 }
 
-/** Admin: re-send the proposal email (with PDF) to the staff member who created it. */
+/** Admin: re-send the proposal email (with PDF) to the member who created it. */
 export async function resendProposalEmail(quoteId: string): Promise<void> {
   const admin = await requireAdmin();
   const quote = await prisma.quote.findUnique({
@@ -382,8 +382,8 @@ export async function resendProposalEmail(quoteId: string): Promise<void> {
 
   try {
     const pdf = await renderProposalPdf(buildProposalData(quote));
-    await sendProposalToStaff({
-      staffEmail: quote.createdBy.email,
+    await sendProposalToMember({
+      memberEmail: quote.createdBy.email,
       proposalName: quote.proposalName,
       total: finalPrice(quote),
       monthly: quote.monthly,

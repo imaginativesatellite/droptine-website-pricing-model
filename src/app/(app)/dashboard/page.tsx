@@ -8,7 +8,7 @@ export default async function Dashboard() {
   const user = await requireUser();
   const isAdmin = user.role === "ADMIN";
 
-  // Admins see everything; staff see their own quotes plus any shared ones.
+  // Admins see everything; members see their own quotes plus any shared ones.
   const quotes = await prisma.quote.findMany({
     where: isAdmin ? {} : { OR: [{ createdById: user.id }, { shared: true }] },
     orderBy: { createdAt: "desc" },
@@ -37,7 +37,7 @@ export default async function Dashboard() {
       name: q.proposalName,
       status: q.status,
       createdAt: q.createdAt.toISOString(),
-      // Staff don't see the price on expired quotes.
+      // Members don't see the price on expired quotes.
       price: q.status === "CUSTOM_PENDING" || (!isAdmin && expired) ? null : finalPrice(q),
       requestedBy: q.createdBy.name || q.createdBy.email,
       shared: q.shared,

@@ -17,7 +17,7 @@ export default async function UsersPage({
   return (
     <div className="container">
       <h1>Users</h1>
-      <p className="lede">Add Droptine staff and manage access.</p>
+      <p className="lede">Add Droptine members and manage access.</p>
 
       {flash && (
         <div className="card" style={{ borderColor: "var(--gold)", marginBottom: 18 }}>

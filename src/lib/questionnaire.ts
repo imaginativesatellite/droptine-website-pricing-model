@@ -17,7 +17,7 @@ type Base = {
   group: "client" | "scope";
   // Visual section header this question sits under (rendered once per section).
   section?: string;
-  // Exact substring of `label` to render bold, so staff can scan the question
+  // Exact substring of `label` to render bold, so members can scan the question
   // list without reading every word (e.g. "blog" in "Will the website have a blog?").
   emphasize?: string;
   // A single condition, or an array of conditions that must ALL be true (AND).

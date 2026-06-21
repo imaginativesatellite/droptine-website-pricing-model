@@ -1,7 +1,7 @@
 # Droptine Pricing Model
 
-Internal tool for Luna Creative staff to generate Webflow website proposals for
-Droptine (and other clients). Staff answer a short questionnaire; the app produces
+Internal tool for Luna Creative and Droptine members to generate Webflow website
+proposals for Droptine's clients. Members answer a short questionnaire; the app produces
 a single, deterministic price (within Luna's historical $4k–$10k range), a branded
 PDF, and a private code-protected proposal page. Complex/"additional functionality"
 requests route to a custom quote instead.
@@ -10,7 +10,7 @@ requests route to a custom quote instead.
 - **Next.js** (App Router, TypeScript)
 - **Railway** hosting + **Railway Postgres**
 - **Prisma** ORM
-- **Auth.js / NextAuth** (email + password, individual accounts; STAFF/ADMIN roles)
+- **Auth.js / NextAuth** (email + password, individual accounts; MEMBER/ADMIN roles)
 - **Resend** for email
 - **Anthropic** for proposal prose only (the price is always computed in code)
 - **@react-pdf/renderer** for the PDF
@@ -90,7 +90,7 @@ openssl rand -base64 32   # paste output into AUTH_SECRET
 5. After first deploy, run the seed once (Railway shell): `npm run db:seed`.
 
 ## Email behavior (per spec)
-- **Proposal email → always the logged-in staff member** (PDF + code link).
+- **Proposal email → always the logged-in member** (PDF + code link).
 - **Admins (`ADMIN_EMAILS`) get an email on EVERY quote request** — proposal or custom.
 - **Custom-functionality requests** → no auto proposal; admins are notified to follow up.
 

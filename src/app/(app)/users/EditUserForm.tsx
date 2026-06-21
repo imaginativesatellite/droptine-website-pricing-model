@@ -39,7 +39,7 @@ export default function EditUserForm({
                 value={role}
                 onChange={setRole}
                 options={[
-                  { value: "STAFF", label: "Staff" },
+                  { value: "MEMBER", label: "Member" },
                   { value: "ADMIN", label: "Admin" },
                 ]}
               />

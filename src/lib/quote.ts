@@ -30,7 +30,7 @@ export const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 /** Visibility-toggle tooltip — shared by the new-quote form and the quote
  *  detail page so the wording can't drift between them. */
 export const VISIBILITY_TIP =
-  "When on, only the creator and admins can see this quote. When off, it's visible to all staff.";
+  "When on, only the creator and admins can see this quote. When off, it's visible to all members.";
 
 /** Proposals are valid for 60 days from validFrom (reset on admin reactivation). */
 export const VALID_DAYS = 60;

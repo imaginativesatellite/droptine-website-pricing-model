@@ -64,7 +64,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   const extraFunctionality = typeof ans.additionalFunctionality === "string" ? ans.additionalFunctionality : "";
   const existingUrl = ans.existingWebsite === true && typeof ans.existingWebsiteUrl === "string" ? ans.existingWebsiteUrl : "";
 
-  // Staff can't open an expired quote (no details, no price).
+  // Members can't open an expired quote (no details, no price).
   if (!isAdmin && expired) {
     return (
       <div className="container" style={{ maxWidth: 560 }}>

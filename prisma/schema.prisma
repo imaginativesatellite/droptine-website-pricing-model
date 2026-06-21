@@ -11,12 +11,12 @@ datasource db {
 }
 
 enum Role {
-  STAFF
+  MEMBER
   ADMIN
 }
 
 enum QuoteStatus {
-  PROPOSAL        // auto-priced; PDF + code page generated; emailed to staff
+  PROPOSAL        // auto-priced; PDF + code page generated; emailed to the member
   CUSTOM_PENDING  // "additional functionality" / complex — awaiting admin approval
   APPROVED        // admin set a price and approved a custom quote
 }
@@ -27,7 +27,7 @@ model User {
   name         String
   phone        String?
   passwordHash String
-  role         Role     @default(STAFF)
+  role         Role     @default(MEMBER)
   createdAt    DateTime @default(now())
 
   clients        Client[]    @relation("ClientOwner")
@@ -38,7 +38,7 @@ model User {
 }
 
 // A client/business that quotes are grouped under (the dashboard is organized
-// by client). Owned by the Droptine staff member who created it.
+// by client). Owned by the Droptine member who created it.
 model Client {
   id        String   @id @default(cuid())
   name      String

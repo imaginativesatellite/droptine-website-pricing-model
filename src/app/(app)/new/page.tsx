@@ -4,7 +4,7 @@ import NewQuoteForm from "./NewQuoteForm";
 
 export default async function NewQuotePage() {
   const user = await requireUser();
-  // Staff default to sharing with everyone; admins default to private.
+  // Members default to sharing with everyone; admins default to private.
   const defaultShared = user.role !== "ADMIN";
 
   // Suggest client names that still have at least one quote.

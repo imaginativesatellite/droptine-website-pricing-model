@@ -6,13 +6,13 @@ import { createUser, type FormState } from "./actions";
 
 export default function AddUserForm() {
   const [state, action, pending] = useActionState<FormState, FormData>(createUser, undefined);
-  const [role, setRole] = useState("STAFF");
+  const [role, setRole] = useState("MEMBER");
   const formRef = useRef<HTMLFormElement>(null);
 
   useEffect(() => {
     if (state?.ok) {
       formRef.current?.reset();
-      setRole("STAFF");
+      setRole("MEMBER");
     }
   }, [state]);
 
@@ -40,7 +40,7 @@ export default function AddUserForm() {
             value={role}
             onChange={setRole}
             options={[
-              { value: "STAFF", label: "Staff" },
+              { value: "MEMBER", label: "Member" },
               { value: "ADMIN", label: "Admin" },
             ]}
           />

@@ -43,9 +43,9 @@ async function send({ to, subject, html, attachments }: SendArgs) {
   });
 }
 
-/** Proposal email — always goes to the logged-in staff member. */
-export async function sendProposalToStaff(args: {
-  staffEmail: string;
+/** Proposal email — always goes to the logged-in member. */
+export async function sendProposalToMember(args: {
+  memberEmail: string;
   proposalName: string;
   total: number;
   monthly: number;
@@ -55,7 +55,7 @@ export async function sendProposalToStaff(args: {
 }) {
   const name = esc(args.proposalName);
   await send({
-    to: args.staffEmail,
+    to: args.memberEmail,
     subject: `Proposal ready: ${args.proposalName}`,
     html:
       `<p>Your proposal for <strong>${name}</strong> is ready.</p>` +
@@ -68,7 +68,7 @@ export async function sendProposalToStaff(args: {
 /** Notify admins on EVERY quote request (proposal or custom). */
 export async function notifyAdmins(args: {
   proposalName: string;
-  staffEmail: string;
+  memberEmail: string;
   isCustom: boolean;
   total?: number;
   code: string;
@@ -79,7 +79,7 @@ export async function notifyAdmins(args: {
   if (to.length === 0) return;
 
   const name = esc(args.proposalName);
-  const who = esc(args.staffEmail);
+  const who = esc(args.memberEmail);
   const subject = args.isCustom
     ? `Custom quote requested: ${args.proposalName}`
     : `New proposal generated: ${args.proposalName}`;
@@ -99,7 +99,7 @@ export async function notifyAdmins(args: {
 
 /** Notify admins once the client has signed — the moment an admin actually
  *  needs to step in and complete the company signature. Held back until then
- *  rather than firing the moment staff requests it, so admins aren't pinged
+ *  rather than firing the moment a member requests it, so admins aren't pinged
  *  before there's anything for them to do. */
 export async function notifyClientSigned(args: {
   proposalName: string;
@@ -125,7 +125,7 @@ export async function notifyClientSigned(args: {
 
 /**
  * After an admin approves a custom quote — emailed to the requester (Droptine
- * staff), Droptine-branded, with the PDF attached and a link to their quotes.
+ * member), Droptine-branded, with the PDF attached and a link to their quotes.
  */
 export async function sendApprovedQuoteToRequester(args: {
   requesterEmail: string;

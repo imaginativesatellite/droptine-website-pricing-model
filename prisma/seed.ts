@@ -2,7 +2,7 @@
  * Seeds the first admin from SEED_ADMIN_* env vars — create-only.
  *
  * If the admin already exists it is left untouched, so passwords changed in-app
- * (or staff accounts) survive redeploys. To force a password reset, delete the
+ * (or member accounts) survive redeploys. To force a password reset, delete the
  * user first or change it from the in-app account screen.
  *   npm run db:seed
  */

@@ -9,7 +9,7 @@ import { generateScopeSummary } from "@/lib/anthropic";
 import { generateAccessCode, generatePublicCode } from "@/lib/code";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
-import { notifyAdmins, sendProposalToStaff } from "@/lib/email";
+import { notifyAdmins, sendProposalToMember } from "@/lib/email";
 import { appUrl, proposalUrl } from "@/lib/quote";
 
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
@@ -86,7 +86,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
   try {
     if (result.requiresCustomQuote) {
       await notifyAdmins({
-        proposalName, staffEmail: creatorEmail, isCustom: true, code: quote.code,
+        proposalName, memberEmail: creatorEmail, isCustom: true, code: quote.code,
         reasons: result.reasons, manageUrl,
       });
     } else {
@@ -95,12 +95,12 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
         include: { createdBy: true, client: true },
       });
       const pdf = await renderProposalPdf(buildProposalData(full));
-      await sendProposalToStaff({
-        staffEmail: creatorEmail, proposalName, total: result.total, monthly: result.monthly,
+      await sendProposalToMember({
+        memberEmail: creatorEmail, proposalName, total: result.total, monthly: result.monthly,
         code: quote.publicCode, proposalUrl: proposalUrl(quote.publicCode), pdf,
       });
       await notifyAdmins({
-        proposalName, staffEmail: creatorEmail, isCustom: false, total: result.total,
+        proposalName, memberEmail: creatorEmail, isCustom: false, total: result.total,
         code: quote.code, manageUrl,
       });
       await prisma.quote.update({ where: { id: quote.id }, data: { emailStatus: "SENT", emailError: null } });

@@ -13,14 +13,14 @@ function flash(msg: string): never {
   redirect(`/users?flash=${encodeURIComponent(msg)}`);
 }
 
-/** Admin: create a staff or admin account with a temporary password. */
+/** Admin: create a member or admin account with a temporary password. */
 export async function createUser(_prev: FormState, formData: FormData): Promise<FormState> {
   await requireAdmin();
 
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
-  const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.STAFF;
+  const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.MEMBER;
   const password = String(formData.get("password") ?? "");
 
   if (!name || !email || !password) {
@@ -49,7 +49,7 @@ export async function updateUser(userId: string, formData: FormData): Promise<vo
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
-  const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.STAFF;
+  const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.MEMBER;
 
   if (!name || !email) flash("Name and email are required.");
 
@@ -91,7 +91,7 @@ export async function deleteUser(userId: string): Promise<void> {
     prisma.quoteEdit.count({ where: { editedById: userId } }),
   ]);
   if (clients + quotes + edits > 0) {
-    flash("Can't delete a user who has clients, quotes, or edit history. Set them to STAFF instead.");
+    flash("Can't delete a user who has clients, quotes, or edit history. Set them to Member instead.");
   }
 
   const user = await prisma.user.delete({ where: { id: userId } });

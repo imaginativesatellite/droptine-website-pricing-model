@@ -27,7 +27,7 @@ const fmtDate = (s: string) => new Date(s).toLocaleDateString(undefined, { month
 // Compact, muted icon that sits inline with the status tags and explains itself
 // on hover (native tooltip via title). Used for at-a-glance properties of a
 // quote that aren't workflow states - e.g. private, custom-priced.
-export function TagIcon({ Icon, label }: { Icon: LucideIcon; label: string }) {
+function TagIcon({ Icon, label }: { Icon: LucideIcon; label: string }) {
   return (
     <span className="tag-icon" title={label} aria-label={label}>
       <Icon size={14} aria-hidden />
@@ -35,15 +35,26 @@ export function TagIcon({ Icon, label }: { Icon: LucideIcon; label: string }) {
   );
 }
 
+// Ready-made row icons. Exposed as components (rather than passing the icon as a
+// prop) so server components - e.g. the admin UI reference page - can render
+// them without passing a function across the server/client boundary.
+export function PrivateIcon() {
+  return <TagIcon Icon={Lock} label="Private — visible only to its creator and admins" />;
+}
+export function CustomIcon() {
+  return <TagIcon Icon={Sparkles} label="Custom proposal — individually priced by Luna Creative" />;
+}
+
 // Icons render first so they sit to the LEFT of the status tags within the
 // right-aligned cluster. All quotes are proposals, so there's no
 // "Proposal"/"Approved" tag - a ready quote shows no status tag. We surface only
 // the states that mean something: awaiting approval and the signature flow.
-function badges(q: QuoteItem) {
+// The custom-proposal icon is admin-only - members don't need to see it.
+function badges(q: QuoteItem, isAdmin: boolean) {
   return (
     <>
-      {!q.shared && <TagIcon Icon={Lock} label="Private — visible only to its creator and admins" />}
-      {q.custom && <TagIcon Icon={Sparkles} label="Custom proposal — individually priced by Luna Creative" />}
+      {!q.shared && <PrivateIcon />}
+      {q.custom && isAdmin && <CustomIcon />}
       {q.status === "CUSTOM_PENDING" && <span className="pill pending">Pending approval</span>}
       {q.signed && <span className="pill signed">Signed</span>}
       {!q.signed && q.awaitingCountersign && <span className="pill awaiting">Awaiting signature</span>}
@@ -55,7 +66,7 @@ function badges(q: QuoteItem) {
   );
 }
 
-function Row({ q, attention, locked }: { q: QuoteItem; attention?: boolean; locked: boolean }) {
+function Row({ q, attention, locked, isAdmin }: { q: QuoteItem; attention?: boolean; locked: boolean; isAdmin: boolean }) {
   const inner = (
     <>
       <div className="main">
@@ -63,7 +74,7 @@ function Row({ q, attention, locked }: { q: QuoteItem; attention?: boolean; lock
         <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
       </div>
       <div className="right">
-        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{badges(q)}</div>
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{badges(q, isAdmin)}</div>
         <div className="price">{q.price == null ? "-" : money(q.price)}</div>
       </div>
     </>
@@ -73,10 +84,10 @@ function Row({ q, attention, locked }: { q: QuoteItem; attention?: boolean; lock
   return <Link href={`/quote/${q.id}`} className={cls}>{inner}</Link>;
 }
 
-function Tile({ q, attention, locked }: { q: QuoteItem; attention?: boolean; locked: boolean }) {
+function Tile({ q, attention, locked, isAdmin }: { q: QuoteItem; attention?: boolean; locked: boolean; isAdmin: boolean }) {
   const inner = (
     <>
-      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{badges(q)}</div>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{badges(q, isAdmin)}</div>
       <div className="name">{q.name}</div>
       <div className="price">{q.price == null ? "-" : money(q.price)}</div>
       <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
@@ -92,11 +103,11 @@ function Group({ items, view, isAdmin, attention }: { items: QuoteItem[]; view: 
   if (view === "tiles") {
     return (
       <div className="qtiles">
-        {items.map((q) => <Tile key={q.id} q={q} attention={attention} locked={locked(q)} />)}
+        {items.map((q) => <Tile key={q.id} q={q} attention={attention} locked={locked(q)} isAdmin={isAdmin} />)}
       </div>
     );
   }
-  return <>{items.map((q) => <Row key={q.id} q={q} attention={attention} locked={locked(q)} />)}</>;
+  return <>{items.map((q) => <Row key={q.id} q={q} attention={attention} locked={locked(q)} isAdmin={isAdmin} />)}</>;
 }
 
 const PAGE_SIZES = [10, 25, 50, 100];

@@ -1,21 +1,20 @@
-import { Lock, Sparkles } from "lucide-react";
 import { requireAdmin } from "@/lib/session";
-import { TagIcon } from "../../dashboard/DashboardList";
+import { PrivateIcon, CustomIcon } from "../../dashboard/DashboardList";
 
 // Visual reference for the row icons, status tags, and dashboard card colors
-// used across the app. Pure documentation - it reuses the real TagIcon / .pill /
-// .qrow classes so what's shown here is exactly what members and admins see in
-// the wild. KEEP THIS IN SYNC: any change to a tag, icon, or card color must be
-// mirrored here (see CLAUDE.md).
+// used across the app. Pure documentation - it reuses the real row icons /
+// .pill / .qrow classes so what's shown here is exactly what members and admins
+// see in the wild. KEEP THIS IN SYNC: any change to a tag, icon, or card color
+// must be mirrored here (see CLAUDE.md).
 
 const ICONS: { icon: React.ReactNode; when: string }[] = [
   {
-    icon: <TagIcon Icon={Lock} label="Private — visible only to its creator and admins" />,
+    icon: <PrivateIcon />,
     when: "Private - the quote is not shared, so only its creator and admins can see it.",
   },
   {
-    icon: <TagIcon Icon={Sparkles} label="Custom proposal — individually priced by Luna Creative" />,
-    when: "Custom proposal - routed to a custom quote and/or given an admin override price, rather than auto-priced by the engine.",
+    icon: <CustomIcon />,
+    when: "Custom proposal (admins only) - routed to a custom quote and/or given an admin override price, rather than auto-priced by the engine.",
   },
 ];
 

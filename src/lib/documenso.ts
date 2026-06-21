@@ -114,6 +114,13 @@ export async function sendEnvelopeForSignature(args: {
   const payload = {
     title: args.title,
     type: "DOCUMENT",
+    // Per-recipient signingOrder (below) is only enforced when the envelope
+    // itself is SEQUENTIAL - Documenso defaults to PARALLEL, which would let
+    // the company recipient complete their signature before the client's,
+    // regardless of the 1/2 index. This is the actual guarantee that Luna
+    // can't sign first; the app-side gate in confirmCompanySignature is only
+    // a courtesy on top of it.
+    meta: { signingOrder: "SEQUENTIAL" },
     recipients: [
       {
         email: args.clientEmail,

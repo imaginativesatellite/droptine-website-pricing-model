@@ -5,7 +5,7 @@
  * internal platform, not the end client's relationship with Luna Creative.
  */
 
-export const PLATFORM_TERMS_TITLE = "Platform Use & Right of First Refusal";
+export const PLATFORM_TERMS_TITLE = "Platform Use Terms";
 
 export const PLATFORM_TERMS_INTRO =
   "This platform is provided by Luna Creative LLC (\"Luna Creative\") to support Droptine's team in preparing website-build proposals for prospective clients. By accepting below, you (\"Member\") agree to the following terms:";

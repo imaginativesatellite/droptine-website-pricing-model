@@ -67,7 +67,8 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
 
   return (
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
-      <div style={{ textAlign: "right", marginBottom: 8 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 8 }}>
+        <h1 style={{ margin: 0 }}>New Quote</h1>
         <button type="button" className="clear-all-link" onClick={clearAll}>
           Clear
         </button>

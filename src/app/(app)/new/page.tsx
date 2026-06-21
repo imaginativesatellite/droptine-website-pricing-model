@@ -16,9 +16,6 @@ export default async function NewQuotePage() {
 
   return (
     <div className="container">
-      <div style={{ maxWidth: 640, margin: "0 auto" }}>
-        <h1>New Quote</h1>
-      </div>
       <NewQuoteForm clientNames={named.map((q) => q.proposalName)} defaultShared={defaultShared} />
     </div>
   );

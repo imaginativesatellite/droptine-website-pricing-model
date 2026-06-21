@@ -95,8 +95,8 @@ h1 {
   text-transform: uppercase;
   letter-spacing: 1.2px;
   color: var(--muted);
-  margin: 26px 0 2px;
-  padding-top: 18px;
+  margin: 16px 0 2px;
+  padding-top: 26px;
   border-top: 1px solid var(--line);
 }
 .section-head:first-child {
@@ -821,7 +821,6 @@ select:focus {
    dropdown in the same row, so it doesn't look short next to them. */
 .viewtoggle {
   display: inline-flex;
-  border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;
   flex: none;
@@ -829,7 +828,7 @@ select:focus {
 }
 .viewtoggle button {
   background: #fff;
-  border: none;
+  border: 1px solid var(--line);
   padding: 0 12px;
   cursor: pointer;
   color: var(--muted);
@@ -839,11 +838,13 @@ select:focus {
   height: 100%;
 }
 .viewtoggle button + button {
-  border-left: 1px solid var(--line);
+  margin-left: -1px;
 }
 .viewtoggle button.on {
   background: var(--charcoal);
+  border-color: var(--charcoal);
   color: #fff;
+  position: relative;
 }
 
 /* Tile view */

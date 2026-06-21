@@ -14,6 +14,19 @@ function previewFill(tpl: string, variables: { name: string }[]): string {
   });
 }
 
+/** Who each template is addressed to — for the preview's "To" line only. */
+function recipientHint(key: TemplateDef["key"]): string {
+  switch (key) {
+    case "proposal_to_member":
+    case "approved_quote_to_requester":
+      return "[member email]";
+    case "admin_proposal_generated":
+    case "admin_custom_requested":
+    case "client_signed":
+      return "Luna Creative admins";
+  }
+}
+
 export default function EmailTemplateForm(props: Props) {
   const { templateKey: key, name, description, variables } = props;
   const [subject, setSubject] = useState(props.subject);
@@ -61,9 +74,15 @@ export default function EmailTemplateForm(props: Props) {
         <div style={{ fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase", letterSpacing: 1, margin: "12px 0 6px" }}>
           Preview
         </div>
-        <div style={{ border: "1px solid var(--line)", borderRadius: 8, padding: "10px 14px", marginBottom: 14 }}>
-          <div style={{ fontWeight: 600, marginBottom: 6 }}>{previewFill(subject, variables)}</div>
-          <div dangerouslySetInnerHTML={{ __html: previewFill(body, variables) }} />
+        {/* Faux email-client window so this reads as a rendered message, not an
+            editable field: a tinted From/To/Subject header above the body. */}
+        <div style={{ border: "1px solid var(--line)", borderRadius: 10, overflow: "hidden", marginBottom: 14 }}>
+          <div style={{ background: "var(--bg)", borderBottom: "1px solid var(--line)", padding: "10px 14px", fontSize: "0.82rem", lineHeight: 1.6 }}>
+            <div><span style={{ color: "var(--muted)", display: "inline-block", width: 58 }}>From</span> Luna Creative</div>
+            <div><span style={{ color: "var(--muted)", display: "inline-block", width: 58 }}>To</span> {recipientHint(key)}</div>
+            <div><span style={{ color: "var(--muted)", display: "inline-block", width: 58 }}>Subject</span> <strong>{previewFill(subject, variables)}</strong></div>
+          </div>
+          <div style={{ background: "#fff", padding: "14px 16px" }} dangerouslySetInnerHTML={{ __html: previewFill(body, variables) }} />
         </div>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>

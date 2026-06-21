@@ -3,6 +3,8 @@ import { prisma } from "@/lib/db";
 import { requireAdmin } from "@/lib/session";
 import { money, finalPrice } from "@/lib/quote";
 
+const sublabel = { fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 10 };
+
 export default async function AdminPage() {
   await requireAdmin();
 
@@ -50,19 +52,22 @@ export default async function AdminPage() {
         ))
       )}
 
-      <h3 style={{ margin: "26px 0 10px" }}>Recent quotes</h3>
-      {recent.map((q) => (
-        <Link href={`/quote/${q.id}`} className="quote-row" key={q.id}>
-          <div className="grow">
-            <div style={{ fontWeight: 600 }}>{q.proposalName}</div>
-            <div className="help">{q.client.name} · {q.createdBy.email} · {new Date(q.createdAt).toLocaleDateString()}</div>
-          </div>
-          <span className={`pill ${q.status === "APPROVED" ? "approved" : "proposal"}`}>
-            {q.status === "APPROVED" ? "Approved" : "Proposal"}
-          </span>
-          <div className="price">{money(finalPrice(q))}</div>
-        </Link>
-      ))}
+      {/* Reference list — lower visual weight than the actionable section above. */}
+      <div style={{ marginTop: 32, paddingTop: 22, borderTop: "1px solid var(--line)" }}>
+        <div style={sublabel}>Recent quotes</div>
+        {recent.map((q) => (
+          <Link href={`/quote/${q.id}`} className="quote-row" key={q.id}>
+            <div className="grow">
+              <div style={{ fontWeight: 600 }}>{q.proposalName}</div>
+              <div className="help">{q.client.name} · {q.createdBy.email} · {new Date(q.createdAt).toLocaleDateString()}</div>
+            </div>
+            <span className={`pill ${q.status === "APPROVED" ? "approved" : "proposal"}`}>
+              {q.status === "APPROVED" ? "Approved" : "Proposal"}
+            </span>
+            <div className="price">{money(finalPrice(q))}</div>
+          </Link>
+        ))}
+      </div>
     </div>
   );
 }

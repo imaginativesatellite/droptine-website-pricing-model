@@ -4,6 +4,8 @@ import AddUserForm from "./AddUserForm";
 import EditUserForm from "./EditUserForm";
 import { resetPassword, deleteUser } from "./actions";
 
+const dangerLabel = { fontSize: "0.7rem", color: "#b3261e", textTransform: "uppercase" as const, letterSpacing: 1, marginBottom: 8 };
+
 export default async function UsersPage({
   searchParams,
 }: {
@@ -40,23 +42,27 @@ export default async function UsersPage({
             isSelf={u.id === admin.id}
           />
 
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center", marginTop: 16, borderTop: "1px solid var(--line)", paddingTop: 14 }}>
-            <form action={resetPassword.bind(null, u.id)} style={{ display: "flex", gap: 6 }}>
+          <div style={{ marginTop: 16, borderTop: "1px solid var(--line)", paddingTop: 14 }}>
+            <form action={resetPassword.bind(null, u.id)} style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
               <input name="password" type="text" placeholder="New password" minLength={8} required
                      style={{ width: 160 }} autoComplete="off" />
               <button type="submit" className="btn-secondary" style={{ padding: "8px 12px", fontSize: "0.82rem" }}>
                 Reset password
               </button>
             </form>
-            {u.id !== admin.id && (
+          </div>
+
+          {u.id !== admin.id && (
+            <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
+              <div style={dangerLabel}>Danger zone</div>
               <form action={deleteUser.bind(null, u.id)}>
                 <button type="submit" className="btn-secondary"
-                        style={{ padding: "8px 12px", fontSize: "0.82rem", color: "#b3261e" }}>
-                  Delete
+                        style={{ padding: "6px 10px", fontSize: "0.78rem", color: "#b3261e" }}>
+                  Delete user
                 </button>
               </form>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       ))}
     </div>

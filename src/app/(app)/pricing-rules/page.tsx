@@ -24,14 +24,16 @@ function Rows({ rows }: { rows: [string, string][] }) {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, children, accent }: { title: string; children: React.ReactNode; accent?: boolean }) {
   return (
-    <div className="card" style={{ marginBottom: 16 }}>
+    <div className="card" style={{ marginBottom: 16, ...(accent ? { borderColor: "var(--gold)" } : {}) }}>
       <h3 style={{ marginBottom: 12 }}>{title}</h3>
       {children}
     </div>
   );
 }
+
+const sublabel = { fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase" as const, letterSpacing: 1, margin: "28px 0 4px" };
 
 export default async function PricingRulesPage() {
   await requireAdmin();
@@ -55,9 +57,11 @@ export default async function PricingRulesPage() {
       <h1>Pricing Rules</h1>
       <p className="lede">Every rule the calculator applies, and the disclaimers added to proposals.</p>
 
-      <Card title="Demand adjustment">
+      <Card title="Demand adjustment" accent>
         <DemandAdjustmentForm initialPct={settings?.adjustmentPct ?? 0} />
       </Card>
+
+      <div style={sublabel}>Reference — how the calculator prices every quote</div>
 
       <Card title="Base build (by page count)">
         <p className="help" style={{ marginBottom: 10 }}>

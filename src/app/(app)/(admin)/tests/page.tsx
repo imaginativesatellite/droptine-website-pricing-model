@@ -5,7 +5,7 @@ export default async function TestsPage() {
   await requireAdmin();
 
   return (
-    <div className="container">
+    <div>
       <h1>Tests</h1>
       <p className="lede">
         Work through these scenarios to confirm everything works end-to-end. Your checkmarks are

@@ -23,7 +23,7 @@ export default function PricingPreview() {
   const discounted = Math.max(0, result.total - (discount || 0));
 
   return (
-    <div className="container">
+    <div>
       <span className="badge">Preview · pricing only</span>
       <h1>Pricing preview</h1>
       <p className="lede">

@@ -17,7 +17,7 @@ export default async function UsersPage({
   const users = await prisma.user.findMany({ orderBy: { createdAt: "asc" } });
 
   return (
-    <div className="container">
+    <div>
       <h1>Users</h1>
       <p className="lede">Add Droptine members and manage access.</p>
 
@@ -43,10 +43,10 @@ export default async function UsersPage({
           />
 
           <div style={{ marginTop: 16, borderTop: "1px solid var(--line)", paddingTop: 14 }}>
-            <form action={resetPassword.bind(null, u.id)} style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
+            <form action={resetPassword.bind(null, u.id)} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
               <input name="password" type="text" placeholder="New password" minLength={8} required
-                     style={{ width: 160 }} autoComplete="off" />
-              <button type="submit" className="btn-secondary" style={{ padding: "8px 12px", fontSize: "0.82rem" }}>
+                     style={{ width: 200 }} autoComplete="off" />
+              <button type="submit" className="btn-primary">
                 Reset password
               </button>
             </form>
@@ -56,8 +56,7 @@ export default async function UsersPage({
             <div style={{ marginTop: 16, paddingTop: 14, borderTop: "1px solid var(--line)" }}>
               <div style={dangerLabel}>Danger zone</div>
               <form action={deleteUser.bind(null, u.id)}>
-                <button type="submit" className="btn-secondary"
-                        style={{ padding: "6px 10px", fontSize: "0.78rem", color: "#b3261e" }}>
+                <button type="submit" className="btn-danger">
                   Delete user
                 </button>
               </form>

@@ -492,7 +492,8 @@ select:focus {
 /* Buttons */
 .btn-primary,
 .btn-secondary,
-.btn-gold {
+.btn-gold,
+.btn-danger {
   display: inline-block;
   border: none;
   border-radius: 8px;
@@ -525,6 +526,18 @@ select:focus {
 }
 .btn-gold:hover {
   background: var(--gold-dark);
+}
+/* Solid red — used everywhere a control deletes something for good. */
+.btn-danger {
+  background: #b3261e;
+  color: #fff;
+}
+.btn-danger:hover {
+  background: #8f1d17;
+}
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 
 /* Clear-all link above the new-quote form — a quiet outlined button, not a
@@ -821,6 +834,7 @@ select:focus {
    dropdown in the same row, so it doesn't look short next to them. */
 .viewtoggle {
   display: inline-flex;
+  border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;
   flex: none;
@@ -828,7 +842,7 @@ select:focus {
 }
 .viewtoggle button {
   background: #fff;
-  border: 1px solid var(--line);
+  border: none;
   padding: 0 12px;
   cursor: pointer;
   color: var(--muted);
@@ -838,13 +852,18 @@ select:focus {
   height: 100%;
 }
 .viewtoggle button + button {
-  margin-left: -1px;
+  border-left: 1px solid var(--line);
 }
 .viewtoggle button.on {
   background: var(--charcoal);
-  border-color: var(--charcoal);
   color: #fff;
-  position: relative;
+}
+/* The divider next to the selected (black) button blends into it instead of
+   showing a grey line against the black fill. The container keeps its own
+   grey border so the rounded corners stay outlined. */
+.viewtoggle button.on,
+.viewtoggle button.on + button {
+  border-left-color: var(--charcoal);
 }
 
 /* Tile view */
@@ -902,6 +921,48 @@ select:focus {
 }
 .section-label.attention {
   color: var(--gold-dark);
+}
+/* A solid count chip that reads clearly next to a section label, instead of
+   the pale pill that blends into the warm attention background. */
+.count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 6px;
+  margin-left: 8px;
+  border-radius: 999px;
+  background: var(--charcoal);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
+/* Secondary tab bar for the admin area */
+.admin-tabs {
+  display: flex;
+  gap: 26px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+.admin-tabs a {
+  padding: 10px 2px;
+  margin-bottom: -1px;
+  border-bottom: 3px solid transparent;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+.admin-tabs a:hover {
+  color: var(--charcoal);
+}
+.admin-tabs a.active {
+  color: var(--charcoal);
+  border-bottom-color: var(--gold);
 }
 
 /* Dashboard quote rows with hierarchy */

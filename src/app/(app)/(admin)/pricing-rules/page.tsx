@@ -24,16 +24,17 @@ function Rows({ rows }: { rows: [string, string][] }) {
   );
 }
 
-function Card({ title, children, accent }: { title: string; children: React.ReactNode; accent?: boolean }) {
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="card" style={{ marginBottom: 16, ...(accent ? { borderColor: "var(--gold)" } : {}) }}>
+    <div className="card" style={{ marginBottom: 16 }}>
       <h3 style={{ marginBottom: 12 }}>{title}</h3>
       {children}
     </div>
   );
 }
 
-const sublabel = { fontSize: "0.72rem", color: "var(--muted)", textTransform: "uppercase" as const, letterSpacing: 1, margin: "28px 0 4px" };
+// The page's two top-level sections carry equal weight.
+const sectionTitle = { fontSize: "1.2rem", color: "var(--charcoal)", margin: "8px 0 14px" } as const;
 
 export default async function PricingRulesPage() {
   await requireAdmin();
@@ -53,15 +54,11 @@ export default async function PricingRulesPage() {
   animalRows.push(["60+ animals/pedigrees", "Custom quote"]);
 
   return (
-    <div className="container">
-      <h1>Pricing Rules</h1>
-      <p className="lede">Every rule the calculator applies, and the disclaimers added to proposals.</p>
+    <div>
+      <h1>Pricing</h1>
+      <p className="lede">Every rule the calculator applies, the disclaimers added to proposals, and the demand adjustment.</p>
 
-      <Card title="Demand adjustment" accent>
-        <DemandAdjustmentForm initialPct={settings?.adjustmentPct ?? 0} />
-      </Card>
-
-      <div style={sublabel}>Reference — how the calculator prices every quote</div>
+      <h2 style={sectionTitle}>Pricing rules</h2>
 
       <Card title="Base build (by page count)">
         <p className="help" style={{ marginBottom: 10 }}>
@@ -179,6 +176,12 @@ export default async function PricingRulesPage() {
             <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: an admin adds one or more to the quote.</div>
           </div>
         </div>
+      </Card>
+
+      <h2 style={{ ...sectionTitle, marginTop: 36 }}>Adjustments</h2>
+
+      <Card title="Demand adjustment">
+        <DemandAdjustmentForm initialPct={settings?.adjustmentPct ?? 0} />
       </Card>
     </div>
   );

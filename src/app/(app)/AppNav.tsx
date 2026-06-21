@@ -24,9 +24,13 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
   }, [pathname]);
 
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
+  // The admin section spans several routes that now live as tabs under Admin, so
+  // the top-level Admin link stays lit on any of them.
+  const ADMIN_SECTION = ["/admin", "/users", "/pricing-rules", "/tests", "/pricing-preview"];
+  const inAdminSection = ADMIN_SECTION.some((h) => isActive(h));
   const navLinks = (onClick?: () => void) => {
-    const item = (href: string, label: string) => (
-      <Link key={href} href={href} className={isActive(href) ? "active" : ""} onClick={onClick}>
+    const item = (href: string, label: string, active = isActive(href)) => (
+      <Link key={href} href={href} className={active ? "active" : ""} onClick={onClick}>
         {label}
       </Link>
     );
@@ -34,10 +38,8 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
       <>
         {item("/dashboard", "Dashboard")}
         {item("/new", "New Quote")}
-        {isAdmin && item("/admin", "Admin")}
-        {isAdmin && item("/users", "Users")}
-        {isAdmin && item("/pricing-rules", "Pricing Rules")}
-        {isAdmin && item("/tests", "Tests")}
+        {/* Users / Pricing / Tests now live as tabs under Admin. */}
+        {isAdmin && item("/admin", "Admin", inAdminSection)}
       </>
     );
   };

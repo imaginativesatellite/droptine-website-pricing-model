@@ -29,7 +29,7 @@ export default function DemandAdjustmentForm({ initialPct }: { initialPct: numbe
       </p>
 
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>
-        <div className="q" style={{ paddingTop: 0, borderBottom: "none", flex: "0 0 120px" }}>
+        <div className="q" style={{ padding: 0, borderBottom: "none", flex: "0 0 120px" }}>
           <label className="qlabel" htmlFor="magnitude">Percent</label>
           <input
             id="magnitude"
@@ -40,14 +40,14 @@ export default function DemandAdjustmentForm({ initialPct }: { initialPct: numbe
             onChange={(e) => setMagnitude(e.target.value.replace(/[^0-9]/g, ""))}
           />
         </div>
-        <div className="q" style={{ paddingTop: 0, borderBottom: "none", flex: "0 0 160px" }}>
+        <div className="q" style={{ padding: 0, borderBottom: "none", flex: "0 0 160px" }}>
           <label className="qlabel" htmlFor="direction">Direction</label>
           <select id="direction" name="direction" value={direction} onChange={(e) => setDirection(e.target.value)}>
             <option value="increase">Increase</option>
             <option value="decrease">Decrease</option>
           </select>
         </div>
-        <button type="submit" className="btn-primary" disabled={pending} style={{ marginBottom: 1 }}>
+        <button type="submit" className="btn-primary" disabled={pending}>
           {pending ? "Saving…" : "Save"}
         </button>
       </div>

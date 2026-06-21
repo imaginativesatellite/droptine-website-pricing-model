@@ -47,7 +47,7 @@ export default function EditUserForm({
           )}
         </div>
       </div>
-      <button type="submit" className="btn-secondary" style={{ marginTop: 12 }}>Save details</button>
+      <button type="submit" className="btn-primary" style={{ marginTop: 12 }}>Save details</button>
     </form>
   );
 }

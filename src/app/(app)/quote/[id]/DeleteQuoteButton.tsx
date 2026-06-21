@@ -15,8 +15,7 @@ export default function DeleteQuoteButton({ quoteId }: { quoteId: string }) {
   return (
     <button
       type="button"
-      className="btn-secondary"
-      style={{ color: "#b3261e" }}
+      className="btn-danger"
       disabled={pending}
       onClick={onClick}
     >

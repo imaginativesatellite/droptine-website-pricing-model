@@ -28,9 +28,12 @@ type SendArgs = {
   subject: string;
   html: string;
   attachments?: { filename: string; content: Buffer }[];
+  // Flags the message as high importance for emails that need Luna Creative to
+  // act (review a custom quote, add a signature) so they stand out in the inbox.
+  priority?: boolean;
 };
 
-async function send({ to, subject, html, attachments }: SendArgs) {
+async function send({ to, subject, html, attachments, priority }: SendArgs) {
   if (!resend) {
     console.warn("[email] RESEND_API_KEY not set - skipping send:", subject);
     return;
@@ -41,6 +44,9 @@ async function send({ to, subject, html, attachments }: SendArgs) {
     subject,
     html,
     attachments: attachments?.map((a) => ({ filename: a.filename, content: a.content })),
+    headers: priority
+      ? { "X-Priority": "1", Importance: "high", "X-MSMail-Priority": "High" }
+      : undefined,
   });
 }
 
@@ -100,7 +106,8 @@ export async function notifyAdmins(args: {
         code: esc(args.code),
       });
 
-  await send({ to, subject, html });
+  // A custom-quote request needs an admin to act, so flag it high priority.
+  await send({ to, subject, html, priority: args.isCustom });
 }
 
 /** Notify admins once the client has signed - the moment an admin actually
@@ -126,7 +133,8 @@ export async function notifyClientSigned(args: {
     requestedByName: who,
     manageUrl: args.manageUrl,
   });
-  await send({ to, subject, html });
+  // Luna Creative needs to add its signature, so flag it high priority.
+  await send({ to, subject, html, priority: true });
 }
 
 /** Once BOTH parties have signed, tell everyone the proposal is complete: the

@@ -23,6 +23,8 @@ export default async function Dashboard() {
       discount: true,
       shared: true,
       validFrom: true,
+      signatureStatus: true,
+      signatureSentAt: true,
       clientSignedAt: true,
       companySignedAt: true,
       createdBy: { select: { name: true, email: true } },
@@ -46,6 +48,10 @@ export default async function Dashboard() {
       // Member has accepted/signed, but Luna Creative's counter-signature is
       // still outstanding - shown distinctly so it's clearly mid-flow.
       awaitingCountersign: Boolean(q.clientSignedAt && !q.companySignedAt),
+      // Sent out for signature, but no one has signed yet.
+      sentForSignature: Boolean(
+        q.signatureSentAt && !q.clientSignedAt && !q.companySignedAt && q.signatureStatus !== "DECLINED",
+      ),
     };
   });
 

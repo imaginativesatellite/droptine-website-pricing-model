@@ -16,16 +16,11 @@ export type QuoteItem = {
   expired: boolean;
   signed: boolean;
   awaitingCountersign: boolean;
+  sentForSignature: boolean;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 const fmtDate = (s: string) => new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric" });
-
-function pill(status: string) {
-  if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending</span>;
-  if (status === "APPROVED") return <span className="pill approved">Approved</span>;
-  return <span className="pill proposal">Proposal</span>;
-}
 
 function PrivateBadge() {
   return (
@@ -39,14 +34,20 @@ function PrivateBadge() {
   );
 }
 
+// All quotes are proposals, so there's no "Proposal"/"Approved" tag - a ready
+// quote shows no status tag. We surface only the states that mean something:
+// awaiting approval, where it is in the signature flow, expiry, and visibility.
 function badges(q: QuoteItem) {
   return (
     <>
+      {q.status === "CUSTOM_PENDING" && <span className="pill pending">Pending approval</span>}
       {q.signed && <span className="pill signed">Signed</span>}
-      {!q.signed && q.awaitingCountersign && <span className="pill awaiting">Awaiting Luna signature</span>}
+      {!q.signed && q.awaitingCountersign && <span className="pill awaiting">Awaiting signature</span>}
+      {!q.signed && !q.awaitingCountersign && q.sentForSignature && (
+        <span className="pill awaiting">Sent for signature</span>
+      )}
       {q.expired && <span className="pill expired">Expired</span>}
       {!q.shared && <PrivateBadge />}
-      {pill(q.status)}
     </>
   );
 }
@@ -65,7 +66,7 @@ function Row({ q, attention, locked }: { q: QuoteItem; attention?: boolean; lock
     </>
   );
   if (locked) return <div className="qrow" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
-  const cls = `qrow${attention ? " attention" : q.signed ? " signed" : q.awaitingCountersign ? " awaiting" : ""}`;
+  const cls = `qrow${attention ? " attention" : q.signed ? " signed" : q.awaitingCountersign || q.sentForSignature ? " awaiting" : ""}`;
   return <Link href={`/quote/${q.id}`} className={cls}>{inner}</Link>;
 }
 
@@ -79,7 +80,7 @@ function Tile({ q, attention, locked }: { q: QuoteItem; attention?: boolean; loc
     </>
   );
   if (locked) return <div className="qtile" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;
-  const cls = `qtile${attention ? " attention" : q.signed ? " signed" : q.awaitingCountersign ? " awaiting" : ""}`;
+  const cls = `qtile${attention ? " attention" : q.signed ? " signed" : q.awaitingCountersign || q.sentForSignature ? " awaiting" : ""}`;
   return <Link href={`/quote/${q.id}`} className={cls}>{inner}</Link>;
 }
 

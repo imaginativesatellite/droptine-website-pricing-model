@@ -40,14 +40,15 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
     variables: [
       { name: "proposalName", description: "The proposal / project name" },
       { name: "total", description: "One-time build price, formatted (e.g. $8,500)" },
-      { name: "monthly", description: "Monthly hosting & maintenance, formatted" },
+      { name: "monthly", description: "Monthly cost, formatted" },
       { name: "proposalUrl", description: "Link to the private proposal page" },
     ],
-    subject: "Proposal ready: {{proposalName}}",
+    subject: "Your proposal is ready: {{proposalName}}",
     body:
       `<p>Your proposal for <strong>{{proposalName}}</strong> is ready.</p>` +
-      `<p>One-time build: <strong>{{total}}</strong> &middot; {{monthly}}/mo hosting &amp; maintenance.</p>` +
-      `<p>Link: <a href="{{proposalUrl}}">{{proposalUrl}}</a></p>`,
+      `<p>One-time build <strong>{{total}}</strong> &middot; {{monthly}}/mo.</p>` +
+      `<p><a href="{{proposalUrl}}">View your proposal</a></p>` +
+      `<p>- Luna Creative</p>`,
   },
   {
     key: "admin_proposal_generated",
@@ -58,60 +59,54 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
       { name: "proposalName", description: "The proposal / project name" },
       { name: "total", description: "One-time build price, formatted" },
       { name: "manageUrl", description: "Link to view the quote in the app" },
-      { name: "code", description: "Internal reference code" },
     ],
-    subject: "New proposal generated: {{proposalName}}",
+    subject: "New proposal: {{proposalName}}",
     body:
-      `<p><strong>{{memberEmail}}</strong> generated a proposal for <strong>{{proposalName}}</strong>.</p>` +
-      `<p>Total: <strong>{{total}}</strong>. <a href="{{manageUrl}}">View in the app →</a></p>` +
-      `<p>Reference code: <strong>{{code}}</strong></p>`,
+      `<p><strong>{{memberEmail}}</strong> generated a proposal for <strong>{{proposalName}}</strong> ({{total}}).</p>` +
+      `<p><a href="{{manageUrl}}">View in the app</a></p>`,
   },
   {
     key: "admin_custom_requested",
     name: "Custom quote requested (to admins)",
-    description: "Notifies admins when a member's request routes to a custom quote awaiting approval.",
+    description: "Notifies admins when a member's request routes to a custom quote awaiting approval. Sent high priority (action needed).",
     variables: [
       { name: "memberEmail", description: "Email of the member who requested it" },
       { name: "proposalName", description: "The proposal / project name" },
       { name: "reasons", description: "Why it routed to custom (semicolon-separated)" },
       { name: "manageUrl", description: "Link to review & approve in the app" },
-      { name: "code", description: "Internal reference code" },
     ],
     subject: "Custom quote requested: {{proposalName}}",
     body:
       `<p><strong>{{memberEmail}}</strong> requested a custom quote for <strong>{{proposalName}}</strong>.</p>` +
-      `<p>Reasons: {{reasons}}.</p>` +
-      `<p><a href="{{manageUrl}}">Review &amp; approve in the app →</a></p>` +
-      `<p>Reference code: <strong>{{code}}</strong></p>`,
+      `<p>Reason: {{reasons}}</p>` +
+      `<p><a href="{{manageUrl}}">Review &amp; approve</a></p>`,
   },
   {
     key: "client_signed",
-    name: "Proposal signed (to admins)",
-    description: "Notifies admins once the proposal has been signed, so an admin can complete the company signature.",
+    name: "Signature needed (to admins)",
+    description: "Sent to admins after the member signs, so Luna Creative can add its signature. Sent high priority (action needed).",
     variables: [
       { name: "signerEmail", description: "Email of whoever signed the proposal" },
       { name: "proposalName", description: "The proposal / project name" },
-      { name: "requestedByName", description: "Name of the member who requested the signature" },
-      { name: "manageUrl", description: "Link to complete the company signature" },
+      { name: "manageUrl", description: "Link to add Luna Creative's signature" },
     ],
-    subject: "Proposal signed: {{proposalName}}",
+    subject: "Signature needed: {{proposalName}}",
     body:
-      `<p><strong>{{signerEmail}}</strong> signed the proposal for <strong>{{proposalName}}</strong> (requested by {{requestedByName}}).</p>` +
-      `<p><a href="{{manageUrl}}">Complete the company signature →</a></p>`,
+      `<p><strong>{{signerEmail}}</strong> signed the proposal for <strong>{{proposalName}}</strong>.</p>` +
+      `<p><a href="{{manageUrl}}">Add Luna Creative's signature</a></p>`,
   },
   {
     key: "proposal_fully_signed",
-    name: "Proposal fully signed (to both parties)",
-    description: "Sent to the member and Luna Creative admins once BOTH parties have signed and the proposal is complete. The signed PDF is attached when available.",
+    name: "Signed & complete (to both parties)",
+    description: "Sent to the member and Luna Creative admins once BOTH parties have signed. The signed PDF is attached when available.",
     variables: [
       { name: "proposalName", description: "The proposal / project name" },
-      { name: "memberName", description: "Name of the member the proposal was prepared for" },
       { name: "proposalUrl", description: "Link to the proposal page" },
     ],
     subject: "Signed & complete: {{proposalName}}",
     body:
-      `<p>The proposal for <strong>{{proposalName}}</strong> has been signed by both parties and is now complete.</p>` +
-      `<p>The fully signed copy is attached. You can also view it here: <a href="{{proposalUrl}}">{{proposalUrl}}</a></p>` +
+      `<p>The proposal for <strong>{{proposalName}}</strong> is signed by both parties and complete.</p>` +
+      `<p>The signed copy is attached. <a href="{{proposalUrl}}">View it here</a></p>` +
       `<p>- Luna Creative</p>`,
   },
   {
@@ -121,19 +116,15 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
     variables: [
       { name: "proposalName", description: "The proposal / project name" },
       { name: "total", description: "One-time build price, formatted" },
-      { name: "monthly", description: "Monthly hosting & maintenance, formatted" },
+      { name: "monthly", description: "Monthly cost, formatted" },
       { name: "proposalUrl", description: "Link to the private proposal page" },
-      { name: "code", description: "Access code for the proposal page" },
-      { name: "dashboardUrl", description: "Link to the member's quotes" },
     ],
-    subject: "Your Droptine quote is ready: {{proposalName}}",
+    subject: "Your quote is ready: {{proposalName}}",
     body:
-      `<p>Good news - your custom quote for <strong>{{proposalName}}</strong> has been approved.</p>` +
-      `<p>One-time build: <strong>{{total}}</strong> &middot; {{monthly}}/mo hosting &amp; maintenance.</p>` +
-      `<p>The proposal is attached. You can also view it any time here: ` +
-      `<a href="{{proposalUrl}}">{{proposalUrl}}</a> (access code <strong>{{code}}</strong>).</p>` +
-      `<p>See all the quotes you've received: <a href="{{dashboardUrl}}">{{dashboardUrl}}</a></p>` +
-      `<p>- Droptine</p>`,
+      `<p>Your custom quote for <strong>{{proposalName}}</strong> has been approved.</p>` +
+      `<p>One-time build <strong>{{total}}</strong> &middot; {{monthly}}/mo.</p>` +
+      `<p>The proposal is attached. <a href="{{proposalUrl}}">View it here</a>.</p>` +
+      `<p>- Luna Creative</p>`,
   },
 ];
 

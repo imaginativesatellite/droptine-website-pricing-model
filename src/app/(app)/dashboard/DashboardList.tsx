@@ -102,6 +102,17 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
   const [view, setView] = useState<"list" | "tiles">("list");
   const [isMobile, setIsMobile] = useState(false);
 
+  // Remember the member's list/tile choice across visits so they don't have to
+  // re-pick it every time. Read once on mount; write whenever it changes.
+  useEffect(() => {
+    const saved = window.localStorage.getItem("dashboardView");
+    if (saved === "list" || saved === "tiles") setView(saved);
+  }, []);
+  const chooseView = (v: "list" | "tiles") => {
+    setView(v);
+    window.localStorage.setItem("dashboardView", v);
+  };
+
   // On mobile, always use the list view (no tile toggle).
   useEffect(() => {
     const mq = window.matchMedia("(max-width: 640px)");
@@ -139,10 +150,10 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
 
         {!isMobile && (
           <div className="viewtoggle">
-            <button type="button" className={view === "list" ? "on" : ""} onClick={() => setView("list")} title="List view" aria-label="List view">
+            <button type="button" className={view === "list" ? "on" : ""} onClick={() => chooseView("list")} title="List view" aria-label="List view">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
             </button>
-            <button type="button" className={view === "tiles" ? "on" : ""} onClick={() => setView("tiles")} title="Tile view" aria-label="Tile view">
+            <button type="button" className={view === "tiles" ? "on" : ""} onClick={() => chooseView("tiles")} title="Tile view" aria-label="Tile view">
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /></svg>
             </button>
           </div>

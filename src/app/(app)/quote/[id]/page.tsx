@@ -124,11 +124,9 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
       {!isAdmin && isCreator && !isPending && (
         <div className="card" style={{ marginTop: 18 }}>
-          <div style={{ fontWeight: 600, marginBottom: 10 }}>Signature</div>
+          <div style={{ fontWeight: 600, marginBottom: 10 }}>Accept proposal</div>
           {!documensoEnabled() ? (
             <p className="help">E-signature isn&apos;t set up yet — ask an admin to enable it.</p>
-          ) : !quote!.client.email ? (
-            <p className="help">No email on file for this client yet — ask an admin to add one before requesting a signature.</p>
           ) : (
             <>
               {quote!.signatureStatus && (
@@ -139,11 +137,11 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
               )}
               <form action={requestSignature.bind(null, quote!.id)}>
                 <button type="submit" className="btn-gold">
-                  {quote!.signatureStatus ? "Resend Proposal" : "Sign Proposal"}
+                  {quote!.signatureStatus ? "Resend for signature" : "Accept & sign"}
                 </button>
               </form>
               <p className="help" style={{ marginTop: 10 }}>
-                Sends the proposal to {quote!.client.email} for signature.
+                Sends the proposal to your account email ({quote!.createdBy.email}) to review and sign.
               </p>
             </>
           )}

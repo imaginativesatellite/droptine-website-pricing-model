@@ -214,9 +214,9 @@ export const QUESTIONNAIRE: Question[] = [
   {
     id: "additionalFunctionality",
     type: "longtext",
-    label: "Will the website need any custom functionality?",
+    label: "What custom or advanced functionality should we plan for?",
     emphasize: "custom",
-    placeholder: "Describe anything beyond the options above. Anything here routes the request to a custom quote.",
+    placeholder: "Describe any features beyond the options above — e.g. member logins, booking/reservations, herd-management tools, payment portals, API integrations. Leave blank if none. Anything here routes the request to a custom quote.",
     group: "scope",
     section: "Custom",
   },

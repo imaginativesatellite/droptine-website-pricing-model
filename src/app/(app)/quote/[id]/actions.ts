@@ -212,7 +212,7 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
 }
 
 /** Admin: AI recommendation of a custom-quote price + reasoning. */
-export async function recommendPriceAction(quoteId: string): Promise<{ reasoning: string } | { error: string }> {
+export async function recommendPriceAction(quoteId: string): Promise<{ reasoning: string; scope: string } | { error: string }> {
   await requireAdmin();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
   if (!quote) return { error: "Quote not found." };
@@ -225,6 +225,7 @@ export async function recommendPriceAction(quoteId: string): Promise<{ reasoning
     customReasons: quote.customReasons,
     additionalFunctionality: typeof answers.additionalFunctionality === "string" ? answers.additionalFunctionality : undefined,
     pageCountExact: typeof answers.pageCountExact === "string" ? answers.pageCountExact : undefined,
+    answers: answers as unknown as PricingAnswers,
     min: PRICING_RULES.min,
     max: PRICING_RULES.max,
   });
@@ -293,13 +294,14 @@ export async function deleteQuote(quoteId: string): Promise<void> {
 async function dispatchSignatureEnvelope(
   quote: Prisma.QuoteGetPayload<{ include: { client: true; createdBy: true } }>,
   clientEmail: string,
+  signerName?: string,
 ): Promise<void> {
   const pdf = await renderProposalPdf(buildProposalData(quote));
   const { envelopeId, clientToken, companyToken, raw } = await sendEnvelopeForSignature({
     title: `${quote.proposalName} — Proposal`,
     pdf,
     clientEmail,
-    clientName: quote.client.name,
+    clientName: signerName ?? quote.client.name,
   });
 
   await prisma.quote.update({
@@ -347,10 +349,12 @@ export async function sendForSignature(quoteId: string, formData: FormData): Pro
   revalidatePath(`/quote/${quoteId}`);
 }
 
-/** Member (creator) or admin: one-click signature request using the client's
- *  email already on file — no email prompt. Logged immediately, but admins
- *  aren't emailed until the client actually signs (see the Documenso webhook
- *  handler) — there's nothing for them to do until then. */
+/** Member (creator) or admin: one-click request to accept/sign the proposal.
+ *  The signer is the member the proposal was prepared for (Droptine) — i.e. the
+ *  quote's creator — NOT the member's own downstream client. We use the
+ *  creator's account email, so there's never anything for an admin to "add."
+ *  Logged immediately, but admins aren't emailed until the proposal is actually
+ *  signed (see the Documenso webhook handler) — nothing for them to do until then. */
 export async function requestSignature(quoteId: string): Promise<void> {
   const user = await requireUser();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { client: true, createdBy: true } });
@@ -361,10 +365,10 @@ export async function requestSignature(quoteId: string): Promise<void> {
   }
   if (quote.status === "CUSTOM_PENDING") throw new Error("Approve this quote before sending it for signature.");
 
-  const email = quote.client.email;
-  if (!email) throw new Error("No email on file for this client yet — ask an admin to add one.");
+  const email = quote.createdBy.email;
+  if (!email) throw new Error("No account email on file for the proposal owner.");
 
-  await dispatchSignatureEnvelope(quote, email);
+  await dispatchSignatureEnvelope(quote, email, quote.createdBy.name);
   await logEdit(quoteId, user.id, "signature", null, `${user.name} requested a signature from ${email}`);
 
   revalidatePath(`/quote/${quoteId}`);

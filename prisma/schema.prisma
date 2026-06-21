@@ -159,6 +159,18 @@ model QuoteEdit {
   @@index([quoteId])
 }
 
+// Admin-editable overrides for the transactional emails this app sends. Each
+// row is keyed by a stable template key (see src/lib/email-templates.ts). The
+// built-in defaults live in code; a row here only exists once an admin has
+// customized that template's subject/body. Bodies are HTML with {{variable}}
+// placeholders that are filled at send time.
+model EmailTemplate {
+  key       String   @id
+  subject   String
+  body      String   @db.Text
+  updatedAt DateTime @updatedAt
+}
+
 // Singleton row controlling the admin "demand adjustment" — a global
 // percentage nudge on every new/recomputed quote total to account for
 // being busy (raise prices) or slow (lower prices). Never exposed to members.

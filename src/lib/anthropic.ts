@@ -119,9 +119,10 @@ export async function recommendCustomPrice(input: {
   customReasons: string[];
   additionalFunctionality?: string;
   pageCountExact?: string;
+  answers?: PricingAnswers;
   min: number;
   max: number;
-}): Promise<{ reasoning: string } | { error: string }> {
+}): Promise<{ reasoning: string; scope: string } | { error: string }> {
   const aiEnabled = process.env.ENABLE_AI_PRICING === "true";
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!aiEnabled || !apiKey) {
@@ -132,17 +133,29 @@ export async function recommendCustomPrice(input: {
   const model = process.env.ANTHROPIC_MODEL ?? "claude-opus-4-8";
 
   const itemized = input.lineItems.map((li) => `- ${li.label}: $${li.amount}`).join("\n") || "(none priced)";
+  // The deterministic "standard" scope prose. We hand this to the model and ask
+  // it to keep this language intact, only layering technical detail for the
+  // complex functionality on top — so the proposed scope doesn't drift.
+  const standardScope = input.answers
+    ? defaultSummary({ proposalName: input.proposalName, answers: input.answers })
+    : "";
 
   const msg = await client.messages.create({
     model,
-    max_tokens: 500,
+    max_tokens: 800,
     system:
       "You price custom Webflow website builds for Luna Creative (ranch / hunting / breeder clients). " +
       "The standard calculator runs $4,000–$15,000; genuinely complex builds can exceed $15,000. " +
       "Given the standard line items plus the complex/extra functionality requested, recommend ONE one-time " +
       "build price (whole US dollars) and justify it in 2–4 sentences. Start your reply with a line exactly " +
       "like 'Recommended: $12,500' and then the reasoning. Weigh the extra build effort, risk, and ongoing " +
-      "maintenance of the complex functionality.",
+      "maintenance of the complex functionality. " +
+      "After the reasoning, output a line containing exactly 'SCOPE:' on its own, then a client-facing scope " +
+      "summary. Begin from the STANDARD SCOPE provided and keep that standard language intact — do NOT rewrite " +
+      "or restyle it unless strictly necessary. Then add the requested complex/custom functionality, described " +
+      "in precise technical terms (name the actual mechanisms — e.g. authenticated member portal, headless " +
+      "CMS collections, Stripe checkout, third-party API integration, booking/reservation engine). " +
+      "Never mention prices, hours, or dollar amounts inside the SCOPE section.",
     messages: [
       {
         role: "user",
@@ -152,7 +165,8 @@ export async function recommendCustomPrice(input: {
           `Why it's custom: ${input.customReasons.join("; ") || "n/a"}\n` +
           (input.pageCountExact ? `Page count requested: ${input.pageCountExact}\n` : "") +
           (input.additionalFunctionality ? `Complex / additional functionality requested:\n${input.additionalFunctionality}\n` : "") +
-          `\nRecommend the one-time price and explain why.`,
+          (standardScope ? `\nSTANDARD SCOPE (keep this language intact):\n${standardScope}\n` : "") +
+          `\nRecommend the one-time price, explain why, then provide the SCOPE.`,
       },
     ],
   });
@@ -163,5 +177,12 @@ export async function recommendCustomPrice(input: {
     .join("\n")
     .trim();
 
-  return { reasoning: text || "No recommendation returned." };
+  // Split the single reply into the pricing reasoning and the proposed scope.
+  const idx = text.search(/^\s*SCOPE:\s*$/im);
+  if (idx === -1) {
+    return { reasoning: text || "No recommendation returned.", scope: "" };
+  }
+  const reasoning = text.slice(0, idx).trim();
+  const scope = text.slice(idx).replace(/^\s*SCOPE:\s*$/im, "").trim();
+  return { reasoning: reasoning || "No recommendation returned.", scope };
 }

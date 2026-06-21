@@ -1,4 +1,5 @@
 import { Resend } from "resend";
+import { renderEmail } from "./email-templates";
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -54,13 +55,16 @@ export async function sendProposalToMember(args: {
   pdf?: Buffer;
 }) {
   const name = esc(args.proposalName);
+  const { subject, html } = await renderEmail("proposal_to_member", {
+    proposalName: name,
+    total: money(args.total),
+    monthly: money(args.monthly),
+    proposalUrl: args.proposalUrl,
+  });
   await send({
     to: args.memberEmail,
-    subject: `Proposal ready: ${args.proposalName}`,
-    html:
-      `<p>Your proposal for <strong>${name}</strong> is ready.</p>` +
-      `<p>One-time build: <strong>${money(args.total)}</strong> &middot; ${money(args.monthly)}/mo hosting &amp; maintenance.</p>` +
-      `<p>Link: <a href="${args.proposalUrl}">${args.proposalUrl}</a><br/>Access code: <strong>${esc(args.code)}</strong></p>`,
+    subject,
+    html,
     attachments: args.pdf ? [{ filename: `${name}-proposal.pdf`, content: args.pdf }] : undefined,
   });
 }
@@ -80,21 +84,23 @@ export async function notifyAdmins(args: {
 
   const name = esc(args.proposalName);
   const who = esc(args.memberEmail);
-  const subject = args.isCustom
-    ? `Custom quote requested: ${args.proposalName}`
-    : `New proposal generated: ${args.proposalName}`;
+  const { subject, html } = args.isCustom
+    ? await renderEmail("admin_custom_requested", {
+        memberEmail: who,
+        proposalName: name,
+        reasons: esc((args.reasons ?? []).join("; ") || "complex functionality"),
+        manageUrl: args.manageUrl,
+        code: esc(args.code),
+      })
+    : await renderEmail("admin_proposal_generated", {
+        memberEmail: who,
+        proposalName: name,
+        total: money(args.total ?? 0),
+        manageUrl: args.manageUrl,
+        code: esc(args.code),
+      });
 
-  const body = args.isCustom
-    ? `<p><strong>${who}</strong> requested a custom quote for <strong>${name}</strong>.</p>` +
-      `<p>Reasons: ${esc((args.reasons ?? []).join("; ") || "complex functionality")}.</p>` +
-      `<p><a href="${args.manageUrl}">Review &amp; approve in the app →</a></p>` +
-      `<p>Reference code: <strong>${esc(args.code)}</strong></p>`
-    : `<p><strong>${who}</strong> generated a proposal for <strong>${name}</strong>.</p>` +
-      `<p>Total: <strong>${money(args.total ?? 0)}</strong>. ` +
-      `<a href="${args.manageUrl}">View in the app →</a></p>` +
-      `<p>Reference code: <strong>${esc(args.code)}</strong></p>`;
-
-  await send({ to, subject, html: body });
+  await send({ to, subject, html });
 }
 
 /** Notify admins once the client has signed — the moment an admin actually
@@ -112,15 +118,15 @@ export async function notifyClientSigned(args: {
 
   const name = esc(args.proposalName);
   const who = esc(args.requestedByName);
-  const clientEmail = esc(args.clientEmail);
+  const signerEmail = esc(args.clientEmail);
 
-  await send({
-    to,
-    subject: `Client signed: ${args.proposalName}`,
-    html:
-      `<p><strong>${clientEmail}</strong> signed the proposal for <strong>${name}</strong> (requested by ${who}).</p>` +
-      `<p><a href="${args.manageUrl}">Complete the company signature →</a></p>`,
+  const { subject, html } = await renderEmail("client_signed", {
+    signerEmail,
+    proposalName: name,
+    requestedByName: who,
+    manageUrl: args.manageUrl,
   });
+  await send({ to, subject, html });
 }
 
 /**
@@ -138,16 +144,18 @@ export async function sendApprovedQuoteToRequester(args: {
   pdf?: Buffer;
 }) {
   const name = esc(args.proposalName);
+  const { subject, html } = await renderEmail("approved_quote_to_requester", {
+    proposalName: name,
+    total: money(args.total),
+    monthly: money(args.monthly),
+    proposalUrl: args.proposalUrl,
+    code: esc(args.code),
+    dashboardUrl: args.dashboardUrl,
+  });
   await send({
     to: args.requesterEmail,
-    subject: `Your Droptine quote is ready: ${args.proposalName}`,
-    html:
-      `<p>Good news — your custom quote for <strong>${name}</strong> has been approved.</p>` +
-      `<p>One-time build: <strong>${money(args.total)}</strong> &middot; ${money(args.monthly)}/mo hosting &amp; maintenance.</p>` +
-      `<p>The proposal is attached. You can also view it any time here: ` +
-      `<a href="${args.proposalUrl}">${args.proposalUrl}</a> (access code <strong>${esc(args.code)}</strong>).</p>` +
-      `<p>See all the quotes you've received: <a href="${args.dashboardUrl}">${args.dashboardUrl}</a></p>` +
-      `<p>— Droptine</p>`,
+    subject,
+    html,
     attachments: args.pdf ? [{ filename: `${name}-quote.pdf`, content: args.pdf }] : undefined,
   });
 }

@@ -36,6 +36,21 @@ Every question that affects price needs matching changes in:
 Never ship a questionnaire question with no corresponding pricing rule, and
 never add a pricing rule with no way to trigger it from the questionnaire.
 
+## Hard rule: the admin portal documents the app - keep it in sync
+Several admin tabs are living documentation of how the app behaves. When you
+change the behavior, update its reference page **in the same commit**, or admins
+will be reading stale docs:
+- **UI tab** (`src/app/(app)/(admin)/ui/page.tsx`) - the canonical reference for
+  every status tag (`.pill`), row icon (`TagIcon`), and dashboard card color
+  (`.qrow`/`.qtile` accents). Adding, removing, renaming, or recoloring any of
+  these means editing the UI page too. It deliberately imports the live
+  `TagIcon` and reuses the real `.pill`/`.qrow` classes so styling can't drift,
+  but the *set* of indicators and their meanings is hand-maintained.
+- **Pricing tab** (`src/app/(app)/pricing-rules/page.tsx`) - what the calculator
+  charges (see the questionnaire hard rule above).
+- **Emails tab** - the default templates live in `src/lib/email-templates.ts`;
+  keep their copy and the listed template variables accurate.
+
 ## Pricing engine
 - `src/lib/pricing.ts` is the single source of truth for price. It is fully
   deterministic - no AI involvement, ever.

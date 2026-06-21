@@ -23,6 +23,7 @@ export default async function Dashboard() {
       discount: true,
       shared: true,
       validFrom: true,
+      customReasons: true,
       signatureStatus: true,
       signatureSentAt: true,
       clientSignedAt: true,
@@ -43,6 +44,9 @@ export default async function Dashboard() {
       price: q.status === "CUSTOM_PENDING" || (!isAdmin && expired) ? null : finalPrice(q),
       requestedBy: q.createdBy.name || q.createdBy.email,
       shared: q.shared,
+      // A custom proposal: routed to a custom quote (has reasons) and/or was
+      // given an admin override price, rather than auto-priced by the engine.
+      custom: q.customReasons.length > 0 || q.overrideTotal != null,
       expired,
       signed: Boolean(q.clientSignedAt && q.companySignedAt),
       // Member has accepted/signed, but Luna Creative's counter-signature is

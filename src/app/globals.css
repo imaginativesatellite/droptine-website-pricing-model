@@ -841,6 +841,16 @@ select:focus {
    status reads as an active, attention-worthy tag rather than a soft chip. */
 .pill.gold     { background: var(--gold); color: #fff; }
 
+/* Inline status icon - sits to the left of the status tags as a quiet,
+   self-explaining marker (tooltip on hover). Muted so it never competes with
+   the colored tags. */
+.tag-icon {
+  display: inline-flex;
+  align-items: center;
+  color: var(--muted);
+  cursor: help;
+}
+
 /* Dashboard search bar (reads as a control, not a card) */
 .searchbar {
   display: flex;

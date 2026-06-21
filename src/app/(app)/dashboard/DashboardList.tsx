@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { Lock, Sparkles, type LucideIcon } from "lucide-react";
 import BrandSelect from "@/components/BrandSelect";
 
 export type QuoteItem = {
@@ -13,6 +14,7 @@ export type QuoteItem = {
   price: number | null;
   requestedBy: string;
   shared: boolean;
+  custom: boolean;
   expired: boolean;
   signed: boolean;
   awaitingCountersign: boolean;
@@ -22,24 +24,26 @@ export type QuoteItem = {
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 const fmtDate = (s: string) => new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric" });
 
-function PrivateBadge() {
+// Compact, muted icon that sits inline with the status tags and explains itself
+// on hover (native tooltip via title). Used for at-a-glance properties of a
+// quote that aren't workflow states - e.g. private, custom-priced.
+export function TagIcon({ Icon, label }: { Icon: LucideIcon; label: string }) {
   return (
-    <span className="pill private">
-      <svg width="9" height="9" viewBox="0 0 12 12" fill="none" style={{ verticalAlign: "-1px", marginRight: 3 }}>
-        <rect x="2.5" y="5.5" width="7" height="5" rx="1" stroke="currentColor" strokeWidth="1.2" />
-        <path d="M4 5.5V4a2 2 0 014 0v1.5" stroke="currentColor" strokeWidth="1.2" />
-      </svg>
-      Private
+    <span className="tag-icon" title={label} aria-label={label}>
+      <Icon size={14} aria-hidden />
     </span>
   );
 }
 
-// All quotes are proposals, so there's no "Proposal"/"Approved" tag - a ready
-// quote shows no status tag. We surface only the states that mean something:
-// awaiting approval, where it is in the signature flow, expiry, and visibility.
+// Icons render first so they sit to the LEFT of the status tags within the
+// right-aligned cluster. All quotes are proposals, so there's no
+// "Proposal"/"Approved" tag - a ready quote shows no status tag. We surface only
+// the states that mean something: awaiting approval and the signature flow.
 function badges(q: QuoteItem) {
   return (
     <>
+      {!q.shared && <TagIcon Icon={Lock} label="Private — visible only to its creator and admins" />}
+      {q.custom && <TagIcon Icon={Sparkles} label="Custom proposal — individually priced by Luna Creative" />}
       {q.status === "CUSTOM_PENDING" && <span className="pill pending">Pending approval</span>}
       {q.signed && <span className="pill signed">Signed</span>}
       {!q.signed && q.awaitingCountersign && <span className="pill awaiting">Awaiting signature</span>}
@@ -47,7 +51,6 @@ function badges(q: QuoteItem) {
         <span className="pill awaiting">Sent for signature</span>
       )}
       {q.expired && <span className="pill expired">Expired</span>}
-      {!q.shared && <PrivateBadge />}
     </>
   );
 }

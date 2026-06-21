@@ -617,6 +617,7 @@ select:focus {
   align-items: center;
   gap: 32px;
   height: 64px;
+  flex-wrap: nowrap;
 }
 .appnav a {
   color: #b7b2a9;
@@ -632,17 +633,30 @@ select:focus {
   display: inline-flex;
   align-items: center;
   gap: 9px;
-  font-weight: 800;
   color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  font-size: 1.05rem;
+  /* Scales down on narrow screens so the wordmark never wraps to a second line;
+     capped at the desktop size. The icon and hamburger stay fixed (see below). */
+  font-size: clamp(0.7rem, 3.4vw, 1.05rem);
+  min-width: 0;
+}
+.appnav .brandword {
+  white-space: nowrap;
+}
+/* "Droptine" stays bold to stand out; "Web Pricing" is lighter. */
+.appnav .brandword strong {
+  font-weight: 800;
+}
+.appnav .brandlight {
+  font-weight: 400;
 }
 /* Brand mark sits a touch taller than the cap height so it reads above and
-   below the lettering; inherits the gold text color via fill: currentColor. */
+   below the lettering; inherits the gold text color via fill: currentColor.
+   Fixed pixel size so it never scales down with the wordmark text. */
 .appnav .brandmark {
-  width: 1.5em;
-  height: 1.5em;
+  width: 26px;
+  height: 26px;
   flex: none;
 }
 .appnav .brandlink:hover {
@@ -751,12 +765,20 @@ select:focus {
 }
 
 @media (max-width: 640px) {
+  .appnav {
+    padding: 0 16px;
+  }
+  /* Tighten the row so the wordmark + icon + hamburger share one line. */
+  .appnav .wrap {
+    gap: 12px;
+  }
   .appnav .links,
   .appnav .avatarwrap {
     display: none;
   }
   .appnav .hamburger {
     display: block;
+    flex: none;
   }
   .appnav .mobile-panel {
     display: flex;
@@ -973,10 +995,15 @@ select:focus {
   border-radius: 10px;
   padding: 4px;
   margin-bottom: 24px;
-  width: max-content;
-  max-width: 100%;
+  width: 100%;
   overflow-x: auto;
   flex-wrap: nowrap;
+  /* Stay scrollable, but hide the horizontal scrollbar chrome. */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge/IE */
+}
+.admin-tabs::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
 }
 .admin-tabs a {
   flex: none;

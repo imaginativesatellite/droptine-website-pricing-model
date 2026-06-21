@@ -131,8 +131,13 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
     return q ? items.filter((i) => i.name.toLowerCase().includes(q)) : items;
   }, [items, query]);
 
-  const pending = filtered.filter((i) => i.status === "CUSTOM_PENDING");
-  const rest = filtered.filter((i) => i.status !== "CUSTOM_PENDING");
+  // Top section = anything where the next move is Luna Creative's: a custom
+  // quote awaiting pricing/approval, or a proposal the member signed that still
+  // needs Luna's counter-signature. (awaitingCountersign already implies the
+  // member has signed and Luna hasn't.)
+  const needsLuna = (i: QuoteItem) => i.status === "CUSTOM_PENDING" || i.awaitingCountersign;
+  const pending = filtered.filter(needsLuna);
+  const rest = filtered.filter((i) => !needsLuna(i));
 
   const totalPages = Math.max(1, Math.ceil(rest.length / pageSize));
   const current = Math.min(page, totalPages);
@@ -171,7 +176,7 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
 
       {pending.length > 0 && (
         <section style={{ marginBottom: 24 }}>
-          <div className="section-label attention">{isAdmin ? "Needs attention" : "Awaiting pricing"} · {pending.length}</div>
+          <div className="section-label attention">{isAdmin ? "Needs attention" : "Awaiting Luna Creative"} · {pending.length}</div>
           <Group items={pending} view={effectiveView} isAdmin={isAdmin} attention />
         </section>
       )}

@@ -376,7 +376,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                 <div style={field}>
                   <label className="qlabel" htmlFor="overrideTotal">Override total ($)</label>
                   <input id="overrideTotal" name="overrideTotal" type="text" inputMode="numeric" defaultValue={quote!.overrideTotal ?? ""} />
-                  <div className="help" style={{ marginTop: 4 }}>Leave blank to use the computed price ({money(quote!.computedTotal)}).</div>
+                  <div className="help" style={{ marginTop: 4 }}>Replaces the price shown to the client on the proposal (before discount). Leave blank to use the computed price ({money(quote!.computedTotal)}).</div>
                 </div>
                 <div style={field}>
                   <label className="qlabel" htmlFor="discount">Discount ($)</label>
@@ -385,7 +385,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                 <div style={field}>
                   <label className="qlabel" htmlFor="actualCharged">Actual charged ($)</label>
                   <input id="actualCharged" name="actualCharged" type="text" inputMode="numeric" defaultValue={quote!.actualCharged ?? ""} />
-                  <div className="help" style={{ marginTop: 4 }}>What the client was actually billed - for quoted-vs-actual reporting.</div>
+                  <div className="help" style={{ marginTop: 4 }}>What the client was actually billed - for quoted-vs-actual reporting only. Not shown to the client.</div>
                 </div>
                 <div style={field}>
                   <label className="qlabel" htmlFor="priceReason">Reason for price adjustment (optional)</label>

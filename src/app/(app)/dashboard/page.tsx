@@ -32,7 +32,11 @@ export default async function Dashboard() {
     },
   });
 
-  const items: QuoteItem[] = quotes.map((q) => {
+  const items: QuoteItem[] = quotes
+    // Members don't see expired quotes at all - they can't open or price them,
+    // so listing them only causes confusion. Admins still see everything.
+    .filter((q) => isAdmin || !isExpired(q))
+    .map((q) => {
     const expired = isExpired(q);
     return {
       id: q.id,

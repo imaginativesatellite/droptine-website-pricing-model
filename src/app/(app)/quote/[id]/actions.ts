@@ -11,7 +11,7 @@ import { recommendCustomPrice as aiRecommendCustomPrice, type CustomRecommendati
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToMember } from "@/lib/email";
-import { appUrl, proposalUrl, finalPrice, asDisclaimers, MAX_DISCLAIMERS, type Disclaimer } from "@/lib/quote";
+import { appUrl, proposalUrl, finalPrice, isExpired, asDisclaimers, MAX_DISCLAIMERS, type Disclaimer } from "@/lib/quote";
 import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
 
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
@@ -163,6 +163,9 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
   const admin = await requireAdmin();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
   if (!quote) throw new Error("Quote not found.");
+  // Reactivation is only meaningful for an expired quote (it resets the 60-day
+  // window and issues a fresh link). Guard against it firing on a live one.
+  if (!isExpired(quote)) throw new Error("This quote hasn't expired - nothing to reactivate.");
 
   const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
   const result = applyDemandAdjustment(computeQuote(quote.answers as unknown as PricingAnswers), settings?.adjustmentPct ?? 0);

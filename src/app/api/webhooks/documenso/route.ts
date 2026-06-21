@@ -61,10 +61,13 @@ export async function POST(req: Request) {
   const company = recipients.find((r) => r.email?.toLowerCase() === companyEmail().toLowerCase());
   const member = recipients.find((r) => r.email && r.email.toLowerCase() !== companyEmail().toLowerCase());
 
-  const clientSignedAt = member?.signingStatus === "SIGNED" ? new Date(member.signedAt ?? Date.now()) : quote.clientSignedAt;
-  const companySignedAt = company?.signingStatus === "SIGNED" ? new Date(company.signedAt ?? Date.now()) : quote.companySignedAt;
+  // Compare signing status case-insensitively - the exact casing Documenso
+  // sends wasn't confirmed against a live instance, so don't depend on it.
+  const status = (r?: DocumensoWebhookRecipient) => (r?.signingStatus ?? "").toUpperCase();
+  const clientSignedAt = status(member) === "SIGNED" ? new Date(member!.signedAt ?? Date.now()) : quote.clientSignedAt;
+  const companySignedAt = status(company) === "SIGNED" ? new Date(company!.signedAt ?? Date.now()) : quote.companySignedAt;
 
-  const declined = recipients.some((r) => r.signingStatus === "REJECTED" || r.signingStatus === "DECLINED");
+  const declined = recipients.some((r) => ["REJECTED", "DECLINED"].includes(status(r)));
   const signatureStatus = declined
     ? "DECLINED"
     : clientSignedAt && companySignedAt

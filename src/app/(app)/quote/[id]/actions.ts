@@ -10,7 +10,7 @@ import { generatePublicCode } from "@/lib/code";
 import { recommendCustomPrice as aiRecommendCustomPrice } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
-import { sendApprovedQuoteToRequester, sendProposalToStaff } from "@/lib/email";
+import { sendApprovedQuoteToRequester, sendProposalToStaff, notifySignatureRequested } from "@/lib/email";
 import { appUrl, proposalUrl, finalPrice } from "@/lib/quote";
 import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
 
@@ -267,6 +267,40 @@ export async function deleteQuote(quoteId: string): Promise<void> {
   redirect("/dashboard");
 }
 
+/** Renders the proposal PDF, creates the two-recipient Documenso envelope,
+ *  and saves the resulting tokens/status onto the quote — shared by the
+ *  admin-driven send (custom email entry) and the staff one-click request
+ *  (uses the client's email already on file). */
+async function dispatchSignatureEnvelope(
+  quote: Prisma.QuoteGetPayload<{ include: { client: true; createdBy: true } }>,
+  clientEmail: string,
+): Promise<void> {
+  const pdf = await renderProposalPdf(buildProposalData(quote));
+  const { envelopeId, clientToken, companyToken, raw } = await sendEnvelopeForSignature({
+    title: `${quote.proposalName} — Proposal`,
+    pdf,
+    clientEmail,
+    clientName: quote.client.name,
+  });
+
+  await prisma.quote.update({
+    where: { id: quote.id },
+    data: {
+      signatureStatus: "SENT",
+      signatureEnvelopeId: envelopeId,
+      signatureSentAt: new Date(),
+      clientSigningToken: clientToken,
+      clientSignedAt: null,
+      companySigningToken: companyToken,
+      companySignedAt: null,
+      companySignedById: null,
+      companySignedByName: null,
+      signedDocumentUrl: null,
+      signatureMeta: raw as Prisma.InputJsonValue,
+    },
+  });
+}
+
 /** Admin: send the proposal out for e-signature via Documenso. Saves the
  *  client's email onto the Client record (if new/changed) and creates a
  *  two-recipient envelope — the client signs first, then any admin can
@@ -288,31 +322,40 @@ export async function sendForSignature(quoteId: string, formData: FormData): Pro
     await prisma.client.update({ where: { id: quote.client.id }, data: { email } });
   }
 
-  const pdf = await renderProposalPdf(buildProposalData(quote));
-  const { envelopeId, clientToken, companyToken, raw } = await sendEnvelopeForSignature({
-    title: `${quote.proposalName} — Proposal`,
-    pdf,
-    clientEmail: email,
-    clientName: quote.client.name,
-  });
-
-  await prisma.quote.update({
-    where: { id: quoteId },
-    data: {
-      signatureStatus: "SENT",
-      signatureEnvelopeId: envelopeId,
-      signatureSentAt: new Date(),
-      clientSigningToken: clientToken,
-      clientSignedAt: null,
-      companySigningToken: companyToken,
-      companySignedAt: null,
-      companySignedById: null,
-      companySignedByName: null,
-      signedDocumentUrl: null,
-      signatureMeta: raw as Prisma.InputJsonValue,
-    },
-  });
+  await dispatchSignatureEnvelope(quote, email);
   await logEdit(quoteId, admin.id, "signature", null, `Sent for signature to ${email}`);
+
+  revalidatePath(`/quote/${quoteId}`);
+}
+
+/** Staff (creator) or admin: one-click signature request using the client's
+ *  email already on file — no email prompt. Notifies admins and logs the
+ *  request the same way the admin-driven send does. */
+export async function requestSignature(quoteId: string): Promise<void> {
+  const user = await requireUser();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { client: true, createdBy: true } });
+  if (!quote) throw new Error("Quote not found.");
+  if (user.role !== "ADMIN" && quote.createdById !== user.id) throw new Error("Not allowed.");
+  if (!documensoEnabled()) {
+    throw new Error("Documenso isn't configured — set DOCUMENSO_API_KEY and DOCUMENSO_COMPANY_EMAIL in the environment.");
+  }
+  if (quote.status === "CUSTOM_PENDING") throw new Error("Approve this quote before sending it for signature.");
+
+  const email = quote.client.email;
+  if (!email) throw new Error("No email on file for this client yet — ask an admin to add one.");
+
+  await dispatchSignatureEnvelope(quote, email);
+  await logEdit(quoteId, user.id, "signature", null, `${user.name} requested a signature from ${email}`);
+  try {
+    await notifySignatureRequested({
+      proposalName: quote.proposalName,
+      staffName: user.name ?? user.email ?? "A staff member",
+      clientEmail: email,
+      manageUrl: `${appUrl()}/quote/${quoteId}`,
+    });
+  } catch {
+    // Envelope already sent and logged — don't fail the request over a notification email.
+  }
 
   revalidatePath(`/quote/${quoteId}`);
 }

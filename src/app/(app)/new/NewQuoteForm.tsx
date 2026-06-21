@@ -67,7 +67,7 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
     <div style={{ maxWidth: 640, margin: "0 auto" }}>
       <div style={{ textAlign: "right", marginBottom: 8 }}>
         <button type="button" className="clear-all-link" onClick={clearAll}>
-          Clear all
+          Clear
         </button>
       </div>
       <div className="card qform">

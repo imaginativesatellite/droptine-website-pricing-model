@@ -6,7 +6,7 @@ import { buildProposalData } from "@/lib/proposal-data";
 import { money, subtotal, finalPrice, isExpired } from "@/lib/quote";
 import { leadTimeDays } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
-import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, confirmCompanySignature } from "./actions";
+import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, requestSignature, confirmCompanySignature } from "./actions";
 import { documensoEnabled, documensoSignUrl } from "@/lib/documenso";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 import VisibilityToggle from "./VisibilityToggle";
@@ -111,6 +111,34 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         <div className="card" style={{ marginTop: 18 }}>
           <div style={{ fontWeight: 600, marginBottom: 10 }}>Visibility</div>
           <VisibilityToggle quoteId={quote!.id} shared={quote!.shared} />
+        </div>
+      )}
+
+      {!isAdmin && isCreator && !isPending && (
+        <div className="card" style={{ marginTop: 18 }}>
+          <div style={{ fontWeight: 600, marginBottom: 10 }}>Signature</div>
+          {!documensoEnabled() ? (
+            <p className="help">E-signature isn&apos;t set up yet — ask an admin to enable it.</p>
+          ) : !quote!.client.email ? (
+            <p className="help">No email on file for this client yet — ask an admin to add one before requesting a signature.</p>
+          ) : (
+            <>
+              {quote!.signatureStatus && (
+                <p style={{ margin: "0 0 10px" }}>
+                  <strong>{signatureStatusLabel[quote!.signatureStatus] ?? quote!.signatureStatus}</strong>
+                  {quote!.signatureSentAt && ` · sent ${new Date(quote!.signatureSentAt).toLocaleString()}`}
+                </p>
+              )}
+              <form action={requestSignature.bind(null, quote!.id)}>
+                <button type="submit" className="btn-gold">
+                  {quote!.signatureStatus ? "Resend Proposal" : "Sign Proposal"}
+                </button>
+              </form>
+              <p className="help" style={{ marginTop: 10 }}>
+                Sends the proposal to {quote!.client.email} for signature.
+              </p>
+            </>
+          )}
         </div>
       )}
 

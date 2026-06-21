@@ -97,6 +97,29 @@ export async function notifyAdmins(args: {
   await send({ to, subject, html: body });
 }
 
+/** Notify admins when staff sends a proposal out for client signature. */
+export async function notifySignatureRequested(args: {
+  proposalName: string;
+  staffName: string;
+  clientEmail: string;
+  manageUrl: string;
+}) {
+  const to = adminEmails();
+  if (to.length === 0) return;
+
+  const name = esc(args.proposalName);
+  const who = esc(args.staffName);
+  const clientEmail = esc(args.clientEmail);
+
+  await send({
+    to,
+    subject: `Signature requested: ${args.proposalName}`,
+    html:
+      `<p><strong>${who}</strong> sent the proposal for <strong>${name}</strong> to <strong>${clientEmail}</strong> for signature.</p>` +
+      `<p><a href="${args.manageUrl}">View in the app →</a></p>`,
+  });
+}
+
 /**
  * After an admin approves a custom quote — emailed to the requester (Droptine
  * staff), Droptine-branded, with the PDF attached and a link to their quotes.

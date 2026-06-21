@@ -48,12 +48,7 @@ export default async function Dashboard() {
 
   return (
     <div className="container">
-      <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 20 }}>
-        <div style={{ flex: 1 }}>
-          <h1>Dashboard</h1>
-        </div>
-        <Link href="/new" className="btn-primary">+ New Quote</Link>
-      </div>
+      <h1 style={{ marginBottom: 20 }}>Dashboard</h1>
 
       {items.length === 0 ? (
         <div className="card"><p>No quotes yet. <Link href="/new">Create your first quote →</Link></p></div>

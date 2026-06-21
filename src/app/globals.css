@@ -873,6 +873,82 @@ select:focus {
   border-left-color: var(--gold-dark);
 }
 
+/* ── TEMP: toggle-style gallery (10 candidates) ───────────────────────────
+   Shared base, then one block per variant (.tg1 … .tg10). Once a style is
+   chosen, delete the gallery component and every rule in this section. */
+.tg {
+  display: inline-flex;
+  align-items: center;
+}
+.tg button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  font: inherit;
+  background: none;
+  border: none;
+  color: var(--muted);
+}
+
+/* 1. Sliding pill / iOS-style segmented control */
+.tg1 { background: #e9e6e1; border-radius: 10px; padding: 3px; }
+.tg1 button { border-radius: 8px; height: 34px; padding: 0 18px; }
+.tg1 button.on { background: #fff; color: var(--charcoal); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
+
+/* 2. Bordered group, gold-dark fill on active */
+.tg2 { border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.tg2 button { height: 40px; padding: 0 16px; }
+.tg2 button:first-child { border-radius: 7px 0 0 7px; }
+.tg2 button:last-child { border-radius: 0 7px 7px 0; }
+.tg2 button + button { border-left: 1px solid var(--line); }
+.tg2 button.on { background: var(--gold-dark); color: #fff; }
+
+/* 3. Outlined chips, gold ring on active */
+.tg3 { gap: 8px; }
+.tg3 button { border: 1.5px solid var(--line); border-radius: 8px; height: 40px; padding: 0 16px; background: #fff; }
+.tg3 button.on { border-color: var(--gold); color: var(--gold-dark); }
+
+/* 4. Underline indicator */
+.tg4 { gap: 20px; }
+.tg4 button { border-bottom: 2px solid transparent; padding: 0 2px 8px; }
+.tg4 button.on { border-bottom-color: var(--gold); color: var(--charcoal); }
+
+/* 5. Separated round pills, solid gold on active */
+.tg5 { gap: 8px; }
+.tg5 button { border: 1px solid var(--line); border-radius: 999px; height: 40px; width: 46px; background: #fff; }
+.tg5 button.on { background: var(--gold); border-color: var(--gold); color: #fff; }
+
+/* 6. Light track, charcoal pill on active */
+.tg6 { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
+.tg6 button { border-radius: 7px; height: 34px; padding: 0 16px; }
+.tg6 button.on { background: var(--charcoal); color: #fff; }
+
+/* 7. Soft gold tint on active */
+.tg7 { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 4px; gap: 4px; }
+.tg7 button { border-radius: 7px; height: 34px; padding: 0 16px; }
+.tg7 button.on { background: #fbe9d6; color: var(--gold-dark); }
+
+/* 8. Ghost / minimal — just icons */
+.tg8 { gap: 16px; }
+.tg8 button { color: #c9c4bc; padding: 6px; border-radius: 8px; }
+.tg8 button:hover { color: var(--muted); }
+.tg8 button.on { color: var(--gold-dark); }
+
+/* 9. Inset / pressed look on active */
+.tg9 { border: 1px solid var(--line); border-radius: 8px; background: #fff; }
+.tg9 button { height: 40px; padding: 0 16px; }
+.tg9 button:first-child { border-radius: 7px 0 0 7px; }
+.tg9 button:last-child { border-radius: 0 7px 7px 0; }
+.tg9 button + button { border-left: 1px solid var(--line); }
+.tg9 button.on { background: var(--bg); color: var(--gold-dark); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12); }
+
+/* 10. Labeled pills with text, gold-dark fill on active */
+.tg10 { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 3px; }
+.tg10 button { border-radius: 999px; height: 34px; padding: 0 16px; font-weight: 600; font-size: 0.85rem; }
+.tg10 button.on { background: var(--gold-dark); color: #fff; }
+
 /* Tile view */
 .qtiles {
   display: grid;

@@ -49,23 +49,18 @@ never add a pricing rule with no way to trigger it from the questionnaire.
 ## Git workflow (read this — it ends the recurring "Unverified" nag)
 - Commit and push directly to `main` — no PR workflow on this repo unless
   explicitly asked for one.
-- Sessions run on a harness branch (e.g. `claude/…`). After committing, push
-  **HEAD to both** so the branch's upstream never drifts behind `main`:
+- **Push to `main` only.** Even though sessions run on a harness branch
+  (e.g. `claude/…`), do not push the harness branch — the single target is
+  `main`:
   ```
-  git push origin HEAD:main          # the real target
-  git push origin HEAD               # keep the harness branch in sync
+  git push origin HEAD:main          # the only target
   ```
-  If only `main` is pushed, the stop-hook (`stop-hook-git-check.sh`) compares
-  HEAD against the *harness* branch's upstream, sees the commits as "unpushed /
-  Unverified", and re-fires that warning every turn. Pushing to both makes
-  `origin/<harness-branch> == HEAD`, the comparison range is empty, and the
-  warning stops.
-- The "Unverified" / `%G? = N` part of that warning is a **false positive in
-  this container**: commits *are* SSH-signed with the correct committer
-  (`Claude <noreply@anthropic.com>`), but git can't verify them locally because
-  no `gpg.ssh.allowedSignersFile` is configured. GitHub verifies against the
-  registered key and shows them as Verified. **Do not** "fix" it with
-  `git commit --amend --reset-author` or a force-push to `main` — that rewrites
+- The "Unverified" / `%G? = N` part of the stop-hook warning is a **false
+  positive in this container**: commits *are* SSH-signed with the correct
+  committer (`Claude <noreply@anthropic.com>`), but git can't verify them
+  locally because no `gpg.ssh.allowedSignersFile` is configured. GitHub
+  verifies against the registered key and shows them as Verified. **Do not**
+  "fix" it with `git commit --amend --reset-author` — that rewrites
   already-pushed history for no benefit.
 
 ## UI conventions

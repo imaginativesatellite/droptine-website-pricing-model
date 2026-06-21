@@ -37,6 +37,7 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
         {isAdmin && item("/admin", "Admin")}
         {isAdmin && item("/users", "Users")}
         {isAdmin && item("/pricing-rules", "Pricing Rules")}
+        {isAdmin && item("/tests", "Tests")}
       </>
     );
   };

@@ -13,10 +13,30 @@ import VisibilityToggle from "./VisibilityToggle";
 import AiRecommendation from "./AiRecommendation";
 import DisclaimersField from "./DisclaimersField";
 
-const statusPill = (status: string) => {
-  if (status === "CUSTOM_PENDING") return <span className="pill gold">Custom · pending approval</span>;
-  if (status === "APPROVED") return <span className="pill approved">Approved</span>;
-  return <span className="pill proposal">Proposal</span>;
+// Status pills mirror the dashboard scheme: all quotes are proposals, so there's
+// no "Proposal"/"Approved" tag - a ready quote shows no status pill. We surface
+// only meaningful states: awaiting approval and where it is in the signature flow.
+const statusPills = (q: {
+  status: string;
+  signatureStatus: string | null;
+  clientSignedAt: Date | null;
+  companySignedAt: Date | null;
+}) => {
+  const signed = Boolean(q.clientSignedAt && q.companySignedAt);
+  const awaitingCountersign = Boolean(q.clientSignedAt && !q.companySignedAt);
+  const sentForSignature = Boolean(
+    q.signatureStatus && !q.clientSignedAt && !q.companySignedAt && q.signatureStatus !== "DECLINED",
+  );
+  return (
+    <>
+      {q.status === "CUSTOM_PENDING" && <span className="pill gold">Pending approval</span>}
+      {signed && <span className="pill signed">Signed</span>}
+      {!signed && awaitingCountersign && <span className="pill awaiting">Awaiting signature</span>}
+      {!signed && !awaitingCountersign && sentForSignature && (
+        <span className="pill awaiting">Sent for signature</span>
+      )}
+    </>
+  );
 };
 
 const signatureStatusLabel: Record<string, string> = {
@@ -108,8 +128,8 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
       </Link>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 18, flexWrap: "wrap" }}>
         <h1 style={{ flex: 1 }}>{quote!.proposalName}</h1>
+        {statusPills(quote!)}
         {expired && <span className="pill expired">Expired</span>}
-        {statusPill(quote!.status)}
       </div>
 
       {isPending ? (

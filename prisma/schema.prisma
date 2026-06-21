@@ -30,6 +30,11 @@ model User {
   role         Role     @default(MEMBER)
   createdAt    DateTime @default(now())
 
+  // platform terms acceptance (MEMBER accounts only) — snapshot of the exact
+  // text agreed to, so the Account page stays accurate even if wording changes later
+  termsAcceptedAt   DateTime?
+  termsAcceptedText String?   @db.Text
+
   clients        Client[]    @relation("ClientOwner")
   quotes         Quote[]     @relation("CreatedBy")
   approvedQuotes Quote[]     @relation("ApprovedBy")
@@ -79,9 +84,12 @@ model Quote {
   monthly       Int      @default(169)
   // manual turnaround override (business days); falls back to price-based
   leadDaysOverride Int?
-  // optional admin disclaimer + where it shows: "development" | "monthly"
-  customDisclaimer String? @db.Text
-  customDisclaimerPlacement String?
+  // up to 3 single-line admin disclaimers: [{ text, placement }], placement
+  // is "development" | "monthly"
+  disclaimers   Json?
+  // why the price was raised/lowered/overridden — internal-only, never shown
+  // to the member; freeform notes an admin can later feed back into pricing
+  priceReason   String?  @db.Text
   notes         String?  @db.Text
   scopeSummary  String?  @db.Text // LLM-drafted prose (price stays deterministic)
 
@@ -149,4 +157,13 @@ model QuoteEdit {
   createdAt  DateTime @default(now())
 
   @@index([quoteId])
+}
+
+// Singleton row controlling the admin "demand adjustment" — a global
+// percentage nudge on every new/recomputed quote total to account for
+// being busy (raise prices) or slow (lower prices). Never exposed to members.
+model PricingSettings {
+  id            String   @id @default("singleton")
+  adjustmentPct Int      @default(0)
+  updatedAt     DateTime @updatedAt
 }

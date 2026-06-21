@@ -114,9 +114,9 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
           <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between" }}>
             <span>50% on completion</span><span>{money(d.total - half)}</span>
           </div>
-          {d.customDisclaimer && d.customDisclaimerPlacement === "development" && (
-            <p className="note" style={{ marginTop: 14 }}>{d.customDisclaimer}</p>
-          )}
+          {d.disclaimers.filter((x) => x.placement === "development").map((x, i) => (
+            <p key={i} className="note" style={{ marginTop: i === 0 ? 14 : 4 }}>{x.text}</p>
+          ))}
           <p style={{ fontStyle: "italic", fontSize: "0.78rem", color: "var(--muted)", lineHeight: 1.5, marginTop: 28 }}>
             {PROPOSAL_DISCLAIMER} {PROPOSAL_VALIDITY}
           </p>
@@ -131,9 +131,9 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
           </ul>
           <div className="total"><span>Per month</span><span className="big">{money(d.monthly)}</span></div>
           {monthlyNote && <p className="note">{monthlyNote}</p>}
-          {d.customDisclaimer && d.customDisclaimerPlacement === "monthly" && (
-            <p className="note">{d.customDisclaimer}</p>
-          )}
+          {d.disclaimers.filter((x) => x.placement === "monthly").map((x, i) => (
+            <p key={i} className="note">{x.text}</p>
+          ))}
         </div>
 
         <p className="note">{d.code}</p>

@@ -1,5 +1,23 @@
 import type { Quote } from "@prisma/client";
 
+export type Disclaimer = { text: string; placement: "development" | "monthly" };
+
+export const MAX_DISCLAIMERS = 3;
+
+/** Safely reads the `Quote.disclaimers` JSON column, ignoring malformed entries. */
+export function asDisclaimers(json: unknown): Disclaimer[] {
+  if (!Array.isArray(json)) return [];
+  return json
+    .filter((d): d is Disclaimer =>
+      !!d && typeof d === "object" && typeof (d as { text?: unknown }).text === "string",
+    )
+    .map((d): Disclaimer => ({
+      text: d.text,
+      placement: d.placement === "monthly" ? "monthly" : "development",
+    }))
+    .slice(0, MAX_DISCLAIMERS);
+}
+
 /** Base URL of the deployed app, for building shareable proposal links. */
 export function appUrl(): string {
   return (

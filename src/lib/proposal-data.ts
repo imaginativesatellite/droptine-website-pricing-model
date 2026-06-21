@@ -1,6 +1,6 @@
 import type { Quote, Client, User } from "@prisma/client";
 import { computeQuote, leadTimeDays, type PricingAnswers } from "./pricing";
-import { subtotal, finalPrice } from "./quote";
+import { subtotal, finalPrice, asDisclaimers } from "./quote";
 import type { ProposalPdfData } from "./pdf";
 
 /**
@@ -47,7 +47,6 @@ export function buildProposalData(
     monthly: quote.monthly,
     ecommerce: answers.ecommerce === true,
     mlsIdx: answers.mlsIdx === true,
-    customDisclaimer: quote.customDisclaimer,
-    customDisclaimerPlacement: quote.customDisclaimerPlacement,
+    disclaimers: asDisclaimers(quote.disclaimers),
   };
 }

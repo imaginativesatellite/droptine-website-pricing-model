@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
-import { money, subtotal, finalPrice, isExpired } from "@/lib/quote";
+import { money, subtotal, finalPrice, isExpired, asDisclaimers } from "@/lib/quote";
 import { leadTimeDays } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
 import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, requestSignature, confirmCompanySignature } from "./actions";
@@ -11,6 +11,7 @@ import { documensoEnabled, documensoSignUrl } from "@/lib/documenso";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 import VisibilityToggle from "./VisibilityToggle";
 import AiRecommendation from "./AiRecommendation";
+import DisclaimersField from "./DisclaimersField";
 
 const statusPill = (status: string) => {
   if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending approval</span>;
@@ -299,12 +300,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                   <textarea id="approve-scope" name="scopeSummary" defaultValue={quote!.scopeSummary ?? ""} style={{ minHeight: 110 }} />
                 </div>
                 <div style={field}>
-                  <label className="qlabel" htmlFor="approve-disc">Additional disclaimer (optional)</label>
-                  <textarea id="approve-disc" name="customDisclaimer" defaultValue={quote!.customDisclaimer ?? ""} />
-                  <div style={{ display: "flex", gap: 18, marginTop: 8, fontSize: "0.9rem" }}>
-                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="development" defaultChecked={quote!.customDisclaimerPlacement !== "monthly"} /> Website price</label>
-                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="monthly" defaultChecked={quote!.customDisclaimerPlacement === "monthly"} /> Monthly</label>
-                  </div>
+                  <DisclaimersField initial={asDisclaimers(quote!.disclaimers)} />
                 </div>
                 <button type="submit" className="btn-gold">Approve &amp; send</button>
                 <p className="help" style={{ marginTop: 10 }}>Approving emails the requester the PDF and a link to their quotes.</p>
@@ -339,6 +335,11 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                   <div className="help" style={{ marginTop: 4 }}>What the client was actually billed — for quoted-vs-actual reporting.</div>
                 </div>
                 <div style={field}>
+                  <label className="qlabel" htmlFor="priceReason">Reason for price adjustment (optional)</label>
+                  <input id="priceReason" name="priceReason" type="text" defaultValue={quote!.priceReason ?? ""} />
+                  <div className="help" style={{ marginTop: 4 }}>Internal note on why this was charged more or less — feeds future AI pricing review.</div>
+                </div>
+                <div style={field}>
                   <label className="qlabel" htmlFor="leadDaysOverride">Turnaround (business days)</label>
                   <input id="leadDaysOverride" name="leadDaysOverride" type="text" inputMode="numeric" defaultValue={quote!.leadDaysOverride ?? ""} />
                   <div className="help" style={{ marginTop: 4 }}>Leave blank to use the price-based default.</div>
@@ -352,12 +353,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                   <textarea id="scopeSummary" name="scopeSummary" defaultValue={quote!.scopeSummary ?? ""} style={{ minHeight: 110 }} />
                 </div>
                 <div style={field}>
-                  <label className="qlabel" htmlFor="customDisclaimer">Additional disclaimer (optional)</label>
-                  <textarea id="customDisclaimer" name="customDisclaimer" defaultValue={quote!.customDisclaimer ?? ""} />
-                  <div style={{ display: "flex", gap: 18, marginTop: 8, fontSize: "0.9rem" }}>
-                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="development" defaultChecked={quote!.customDisclaimerPlacement !== "monthly"} /> Website price</label>
-                    <label style={{ display: "inline-flex", gap: 6, alignItems: "center" }}><input type="radio" name="customDisclaimerPlacement" value="monthly" defaultChecked={quote!.customDisclaimerPlacement === "monthly"} /> Monthly</label>
-                  </div>
+                  <DisclaimersField initial={asDisclaimers(quote!.disclaimers)} />
                 </div>
                 <div style={field}>
                   <label className="qlabel" htmlFor="notes">Notes</label>

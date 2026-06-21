@@ -14,6 +14,16 @@ export default async function AccountPage() {
 
       <ProfileForm defaultName={user.name} defaultPhone={user.phone ?? ""} />
       <PasswordForm />
+
+      {user.role === "MEMBER" && user.termsAcceptedAt && (
+        <div className="card" style={{ marginTop: 20 }}>
+          <h3 style={{ marginBottom: 4 }}>Platform terms</h3>
+          <p className="help" style={{ marginBottom: 10 }}>
+            Accepted {user.termsAcceptedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+          </p>
+          <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>{user.termsAcceptedText}</p>
+        </div>
+      )}
     </div>
   );
 }

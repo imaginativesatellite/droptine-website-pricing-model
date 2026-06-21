@@ -5,13 +5,13 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/session";
-import { computeQuote, PRICING_RULES, type PricingAnswers } from "@/lib/pricing";
+import { computeQuote, applyDemandAdjustment, PRICING_RULES, type PricingAnswers } from "@/lib/pricing";
 import { generatePublicCode } from "@/lib/code";
 import { recommendCustomPrice as aiRecommendCustomPrice } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToMember } from "@/lib/email";
-import { appUrl, proposalUrl, finalPrice } from "@/lib/quote";
+import { appUrl, proposalUrl, finalPrice, asDisclaimers, MAX_DISCLAIMERS, type Disclaimer } from "@/lib/quote";
 import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
 
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
@@ -51,6 +51,23 @@ function toInt(v: FormDataEntryValue | null): number | null {
   return Number.isFinite(n) ? n : null;
 }
 
+/** Reads up to MAX_DISCLAIMERS single-line disclaimers from fields named
+ *  `disclaimerText{i}` / `disclaimerPlacement{i}`, dropping empty ones. */
+function parseDisclaimers(formData: FormData): Disclaimer[] {
+  const out: Disclaimer[] = [];
+  for (let i = 0; i < MAX_DISCLAIMERS; i++) {
+    const text = String(formData.get(`disclaimerText${i}`) ?? "").trim();
+    if (!text) continue;
+    const placement = formData.get(`disclaimerPlacement${i}`) === "monthly" ? "monthly" : "development";
+    out.push({ text, placement });
+  }
+  return out;
+}
+
+function disclaimersJson(disclaimers: Disclaimer[]) {
+  return disclaimers.length ? (disclaimers as unknown as Prisma.InputJsonValue) : Prisma.JsonNull;
+}
+
 /** Admin: edit a quote (name, override, discount, actual charged, notes) with audit logging. */
 export async function updateQuote(quoteId: string, formData: FormData): Promise<void> {
   const admin = await requireAdmin();
@@ -61,26 +78,27 @@ export async function updateQuote(quoteId: string, formData: FormData): Promise<
   const overrideTotal = toInt(formData.get("overrideTotal"));
   const discount = toInt(formData.get("discount")) ?? 0;
   const actualCharged = toInt(formData.get("actualCharged"));
+  const priceReason = String(formData.get("priceReason") ?? "").trim() || null;
   const leadDaysOverride = toInt(formData.get("leadDaysOverride"));
   const monthly = toInt(formData.get("monthly")) ?? quote.monthly;
   const scopeSummary = formData.get("scopeSummary") != null ? String(formData.get("scopeSummary")) : quote.scopeSummary;
-  const customDisclaimer = String(formData.get("customDisclaimer") ?? "").trim() || null;
-  const customDisclaimerPlacement = customDisclaimer ? String(formData.get("customDisclaimerPlacement") || "development") : null;
+  const disclaimers = parseDisclaimers(formData);
   const notes = formData.get("notes") ? String(formData.get("notes")) : null;
 
   await logEdit(quoteId, admin.id, "proposalName", quote.proposalName, proposalName);
   await logEdit(quoteId, admin.id, "overrideTotal", quote.overrideTotal?.toString() ?? null, overrideTotal?.toString() ?? null);
   await logEdit(quoteId, admin.id, "discount", quote.discount.toString(), discount.toString());
   await logEdit(quoteId, admin.id, "actualCharged", quote.actualCharged?.toString() ?? null, actualCharged?.toString() ?? null);
+  await logEdit(quoteId, admin.id, "priceReason", quote.priceReason ?? null, priceReason);
   await logEdit(quoteId, admin.id, "leadDaysOverride", quote.leadDaysOverride?.toString() ?? null, leadDaysOverride?.toString() ?? null);
   await logEdit(quoteId, admin.id, "monthly", quote.monthly.toString(), monthly.toString());
   await logEdit(quoteId, admin.id, "scope", quote.scopeSummary ?? null, scopeSummary ?? null);
-  await logEdit(quoteId, admin.id, "customDisclaimer", quote.customDisclaimer ?? null, customDisclaimer);
+  await logEdit(quoteId, admin.id, "disclaimers", JSON.stringify(asDisclaimers(quote.disclaimers)), JSON.stringify(disclaimers));
   await logEdit(quoteId, admin.id, "notes", quote.notes ?? null, notes);
 
   await prisma.quote.update({
     where: { id: quoteId },
-    data: { proposalName, overrideTotal, discount, actualCharged, leadDaysOverride, monthly, scopeSummary, customDisclaimer, customDisclaimerPlacement, notes },
+    data: { proposalName, overrideTotal, discount, actualCharged, priceReason, leadDaysOverride, monthly, scopeSummary, disclaimers: disclaimersJson(disclaimers), notes },
   });
 
   revalidatePath(`/quote/${quoteId}`);
@@ -100,20 +118,19 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
   const leadDaysOverride = toInt(formData.get("leadDaysOverride"));
   const monthly = toInt(formData.get("monthly")) ?? quote.monthly;
   const scopeSummary = formData.get("scopeSummary") != null ? String(formData.get("scopeSummary")) : quote.scopeSummary;
-  const customDisclaimer = String(formData.get("customDisclaimer") ?? "").trim() || null;
-  const customDisclaimerPlacement = customDisclaimer ? String(formData.get("customDisclaimerPlacement") || "development") : null;
+  const disclaimers = parseDisclaimers(formData);
 
   await logEdit(quoteId, admin.id, "overrideTotal", quote.overrideTotal?.toString() ?? null, price.toString());
   await logEdit(quoteId, admin.id, "leadDaysOverride", quote.leadDaysOverride?.toString() ?? null, leadDaysOverride?.toString() ?? null);
   await logEdit(quoteId, admin.id, "monthly", quote.monthly.toString(), monthly.toString());
   await logEdit(quoteId, admin.id, "scope", quote.scopeSummary ?? null, scopeSummary ?? null);
-  await logEdit(quoteId, admin.id, "customDisclaimer", quote.customDisclaimer ?? null, customDisclaimer);
+  await logEdit(quoteId, admin.id, "disclaimers", JSON.stringify(asDisclaimers(quote.disclaimers)), JSON.stringify(disclaimers));
   await logEdit(quoteId, admin.id, "status", quote.status, "APPROVED");
 
   const updated = await prisma.quote.update({
     where: { id: quoteId },
     // Approval resets the 60-day validity window.
-    data: { overrideTotal: price, leadDaysOverride, monthly, scopeSummary, customDisclaimer, customDisclaimerPlacement, status: "APPROVED", approvedById: admin.id, approvedAt: new Date(), validFrom: new Date() },
+    data: { overrideTotal: price, leadDaysOverride, monthly, scopeSummary, disclaimers: disclaimersJson(disclaimers), status: "APPROVED", approvedById: admin.id, approvedAt: new Date(), validFrom: new Date() },
     include: { client: true, createdBy: true },
   });
 
@@ -147,7 +164,8 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
   if (!quote) throw new Error("Quote not found.");
 
-  const result = computeQuote(quote.answers as unknown as PricingAnswers);
+  const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
+  const result = applyDemandAdjustment(computeQuote(quote.answers as unknown as PricingAnswers), settings?.adjustmentPct ?? 0);
   // Issue a fresh public code so the expired URL can never be used again.
   let publicCode = generatePublicCode();
   for (let i = 0; i < 6; i++) {
@@ -229,7 +247,8 @@ export async function editAnswers(quoteId: string, answers: RawAnswers): Promise
   if (!quote) throw new Error("Quote not found.");
 
   const pricing = answers as PricingAnswers;
-  const result = computeQuote(pricing);
+  const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
+  const result = applyDemandAdjustment(computeQuote(pricing), settings?.adjustmentPct ?? 0);
   const proposalName = String(answers.proposalName ?? quote.proposalName).trim() || quote.proposalName;
 
   const summary = summarizeAnswerChanges(quote.answers as Record<string, unknown>, answers);

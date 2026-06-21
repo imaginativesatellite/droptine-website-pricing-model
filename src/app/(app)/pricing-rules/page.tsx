@@ -1,9 +1,11 @@
 import { requireAdmin } from "@/lib/session";
+import { prisma } from "@/lib/db";
 import { PRICING_RULES as R } from "@/lib/pricing";
 import {
   ECOMMERCE_MONTHLY_DISCLAIMER,
   IDX_MONTHLY_DISCLAIMER,
 } from "@/lib/proposal-copy";
+import DemandAdjustmentForm from "./DemandAdjustmentForm";
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
 
@@ -34,6 +36,8 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 export default async function PricingRulesPage() {
   await requireAdmin();
 
+  const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
+
   const pageRows: [string, string][] = Object.entries(R.pageBase).map(([k, v]) => [`${k} pages`, money(v)]);
   pageRows.push(["30+ pages", "Custom quote"]);
 
@@ -50,6 +54,10 @@ export default async function PricingRulesPage() {
     <div className="container">
       <h1>Pricing Rules</h1>
       <p className="lede">Every rule the calculator applies, and the disclaimers added to proposals.</p>
+
+      <Card title="Demand adjustment">
+        <DemandAdjustmentForm initialPct={settings?.adjustmentPct ?? 0} />
+      </Card>
 
       <Card title="Base build (by page count)">
         <p className="help" style={{ marginBottom: 10 }}>

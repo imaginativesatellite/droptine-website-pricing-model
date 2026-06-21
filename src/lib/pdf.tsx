@@ -22,6 +22,7 @@ import {
   LUNA_WEB,
 } from "./proposal-copy";
 import { SIGNATURE_FIELDS } from "./signature-layout";
+import type { Disclaimer } from "./quote";
 
 const GOLD = "#e89422";
 const CHARCOAL = "#1a1a1a";
@@ -102,8 +103,7 @@ export type ProposalPdfData = {
   monthly: number;
   ecommerce: boolean;
   mlsIdx: boolean;
-  customDisclaimer?: string | null;
-  customDisclaimerPlacement?: string | null;
+  disclaimers: Disclaimer[];
 };
 
 const usd = (n: number) => `$${n.toLocaleString("en-US")}.00`;
@@ -188,9 +188,9 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
           <View style={s.splitRow}><Text>50% on completion</Text><Text>{usd(d.total - half)}</Text></View>
         </View>
 
-        {d.customDisclaimer && d.customDisclaimerPlacement === "development" && (
-          <Text style={[s.note, { marginTop: 12 }]}>{d.customDisclaimer}</Text>
-        )}
+        {d.disclaimers.filter((x) => x.placement === "development").map((x, i) => (
+          <Text key={i} style={[s.note, { marginTop: i === 0 ? 12 : 4 }]}>{x.text}</Text>
+        ))}
         <Text style={[s.italic, { marginTop: 22 }]}>{PROPOSAL_DISCLAIMER} {PROPOSAL_VALIDITY}</Text>
 
         <Footer code={d.code} />
@@ -216,9 +216,9 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         </View>
         {d.ecommerce && <Text style={s.note}>{ECOMMERCE_MONTHLY_DISCLAIMER}</Text>}
         {d.mlsIdx && <Text style={s.note}>{IDX_MONTHLY_DISCLAIMER}</Text>}
-        {d.customDisclaimer && d.customDisclaimerPlacement === "monthly" && (
-          <Text style={s.note}>{d.customDisclaimer}</Text>
-        )}
+        {d.disclaimers.filter((x) => x.placement === "monthly").map((x, i) => (
+          <Text key={i} style={s.note}>{x.text}</Text>
+        ))}
         <Text style={s.note}>{PROPOSAL_VALIDITY}</Text>
 
         <Footer code={d.code} />

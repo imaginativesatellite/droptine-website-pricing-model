@@ -219,6 +219,18 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
   return { requiresCustomQuote: reasons.length > 0, reasons, total, monthly: R.monthlyBase + surcharge, lineItems };
 }
 
+/** Admin-controlled global nudge on demand (busy → raise prices, slow → lower
+ *  them). Applied after computeQuote, as a line item appended to the
+ *  internal-only breakdown — never shown to the member (see ProposalView /
+ *  pdf.tsx, which only render subtotal/discount/total, not lineItems). */
+export function applyDemandAdjustment(result: PricingResult, pct: number): PricingResult {
+  if (!pct) return result;
+  const amount = Math.round((result.total * pct) / 100);
+  const total = Math.max(0, result.total + amount);
+  const label = `Demand adjustment (${pct > 0 ? "+" : ""}${pct}%)`;
+  return { ...result, total, lineItems: [...result.lineItems, { label, amount }] };
+}
+
 /** Estimated lead time (business days) based on the final price. */
 export function leadTimeDays(total: number): number {
   if (total <= 5000) return 45;

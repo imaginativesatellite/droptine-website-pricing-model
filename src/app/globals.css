@@ -527,19 +527,24 @@ select:focus {
   background: var(--gold-dark);
 }
 
-/* Clear-all link above the new-quote form */
+/* Clear-all link above the new-quote form — a quiet outlined button, not a
+   bare text link (too cheap) and not a heavy filled button (too much
+   emphasis for a destructive-but-low-stakes action). */
 .clear-all-link {
   background: none;
-  border: none;
-  padding: 0;
-  font-size: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.85rem;
   font-family: inherit;
-  color: var(--gold-dark);
-  text-decoration: underline;
+  color: var(--muted);
+  text-decoration: none;
   cursor: pointer;
 }
 .clear-all-link:hover {
-  color: var(--gold);
+  background: var(--bg);
+  color: var(--ink);
+  border-color: var(--ink);
 }
 
 /* Back links (no underline, small, uppercase) */
@@ -812,22 +817,26 @@ select:focus {
   background: #fff;
 }
 
-/* View toggle (list / tiles) */
+/* View toggle (list / tiles) — height matches the search input / page-size
+   dropdown in the same row, so it doesn't look short next to them. */
 .viewtoggle {
   display: inline-flex;
   border: 1px solid var(--line);
   border-radius: 8px;
   overflow: hidden;
   flex: none;
+  height: 42px;
 }
 .viewtoggle button {
   background: #fff;
   border: none;
-  padding: 9px 11px;
+  padding: 0 12px;
   cursor: pointer;
   color: var(--muted);
   display: flex;
   align-items: center;
+  justify-content: center;
+  height: 100%;
 }
 .viewtoggle button + button {
   border-left: 1px solid var(--line);

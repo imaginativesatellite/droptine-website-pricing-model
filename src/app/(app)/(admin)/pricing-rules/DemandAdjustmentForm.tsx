@@ -2,6 +2,7 @@
 
 import { useActionState, useMemo, useState } from "react";
 import { saveDemandAdjustment, type FormState } from "./actions";
+import BrandSelect from "@/components/BrandSelect";
 
 const money = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const PREVIEW_LEVELS = [15000, 12500, 10000, 7500, 5000];
@@ -42,10 +43,16 @@ export default function DemandAdjustmentForm({ initialPct }: { initialPct: numbe
         </div>
         <div className="q" style={{ padding: 0, borderBottom: "none", flex: "0 0 160px" }}>
           <label className="qlabel" htmlFor="direction">Direction</label>
-          <select id="direction" name="direction" value={direction} onChange={(e) => setDirection(e.target.value)}>
-            <option value="increase">Increase</option>
-            <option value="decrease">Decrease</option>
-          </select>
+          <BrandSelect
+            id="direction"
+            name="direction"
+            value={direction}
+            onChange={setDirection}
+            options={[
+              { value: "increase", label: "Increase" },
+              { value: "decrease", label: "Decrease" },
+            ]}
+          />
         </div>
         <button type="submit" className="btn-primary" disabled={pending}>
           {pending ? "Saving…" : "Save"}

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { MAX_DISCLAIMERS, type Disclaimer } from "@/lib/quote";
+import BrandSelect from "@/components/BrandSelect";
 
 /** Up to MAX_DISCLAIMERS single-line disclaimers, each placed on the website
  *  price or the monthly section. Renders plain named inputs
@@ -20,7 +21,7 @@ export default function DisclaimersField({ initial }: { initial: Disclaimer[] })
 
   return (
     <div>
-      <label className="qlabel">Disclaimers (optional)</label>
+      <label className="qlabel" style={{ display: "block", marginBottom: 10 }}>Disclaimers (optional)</label>
       {rows.map((row, i) => (
         <div key={i} style={{ display: "flex", gap: 8, alignItems: "center", marginBottom: 8 }}>
           <input
@@ -31,15 +32,17 @@ export default function DisclaimersField({ initial }: { initial: Disclaimer[] })
             placeholder="Disclaimer text"
             style={{ flex: 1 }}
           />
-          <select
-            name={`disclaimerPlacement${i}`}
-            value={row.placement}
-            onChange={(e) => updateRow(i, { placement: e.target.value as Disclaimer["placement"] })}
-            style={{ width: 160 }}
-          >
-            <option value="development">Website price</option>
-            <option value="monthly">Monthly</option>
-          </select>
+          <div style={{ width: 160, flex: "none" }}>
+            <BrandSelect
+              name={`disclaimerPlacement${i}`}
+              value={row.placement}
+              onChange={(v) => updateRow(i, { placement: v as Disclaimer["placement"] })}
+              options={[
+                { value: "development", label: "Website price" },
+                { value: "monthly", label: "Monthly" },
+              ]}
+            />
+          </div>
           <button
             type="button"
             onClick={() => removeRow(i)}

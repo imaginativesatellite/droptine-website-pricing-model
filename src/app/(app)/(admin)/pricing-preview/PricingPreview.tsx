@@ -25,7 +25,7 @@ export default function PricingPreview() {
   return (
     <div>
       <span className="badge">Preview · pricing only</span>
-      <h1>Pricing preview</h1>
+      <h1>Pricing Preview</h1>
       <p className="lede">
         Change the options on the left and watch the price update live. This is a sandbox to
         validate the pricing model — it doesn&apos;t save anything.

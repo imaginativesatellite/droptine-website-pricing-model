@@ -11,7 +11,7 @@ export default async function AdminApprovalBanner() {
   const pending = await prisma.quote.findMany({
     where: { status: "CUSTOM_PENDING" },
     orderBy: { createdAt: "asc" },
-    include: { createdBy: true, client: true },
+    include: { createdBy: true },
   });
 
   if (pending.length === 0) return null;
@@ -26,7 +26,10 @@ export default async function AdminApprovalBanner() {
         <Link href={`/quote/${q.id}`} className="qrow attention" key={q.id}>
           <div className="main">
             <div className="name">{q.proposalName}</div>
-            <div className="meta">{q.client.name} · {q.createdBy.email} · {q.customReasons[0] ?? "custom"}</div>
+            <div className="meta">
+              {q.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+              {" · "}{q.createdBy.email} · {q.customReasons[0] ?? "custom"}
+            </div>
           </div>
           <div className="right">
             <span className="pill pending">Custom · pending</span>

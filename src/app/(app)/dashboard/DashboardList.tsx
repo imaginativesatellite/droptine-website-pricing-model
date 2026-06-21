@@ -95,56 +95,6 @@ function Group({ items, view, isAdmin, attention }: { items: QuoteItem[]; view: 
 
 const PAGE_SIZES = [10, 25, 50, 100];
 
-const ListIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" /></svg>
-);
-const TileIcon = () => (
-  <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" strokeWidth="1.5" /></svg>
-);
-
-// TEMP: ten candidate designs for the list/tiles toggle, rendered at the bottom
-// of the dashboard so the look can be picked. All share the live `view` state,
-// so clicking any of them switches the real list above. Once a style is chosen
-// this gallery (and the unused .tgN rules in globals.css) can be deleted.
-function ToggleGallery({ view, setView }: { view: "list" | "tiles"; setView: (v: "list" | "tiles") => void }) {
-  const variants = [
-    { n: 1, label: "Sliding pill (segmented)" },
-    { n: 2, label: "Filled — gold active" },
-    { n: 3, label: "Outline — gold ring active" },
-    { n: 4, label: "Underline indicator" },
-    { n: 5, label: "Separated pills" },
-    { n: 6, label: "Charcoal active" },
-    { n: 7, label: "Soft gold tint" },
-    { n: 8, label: "Ghost / minimal" },
-    { n: 9, label: "Inset pressed" },
-    { n: 10, label: "Labeled with text" },
-  ];
-  const withText = (n: number) => n === 10;
-  return (
-    <section style={{ marginTop: 48, paddingTop: 24, borderTop: "1px dashed var(--line)" }}>
-      <div className="section-label">Toggle styles — pick one</div>
-      <p className="help" style={{ marginBottom: 20 }}>
-        Temporary preview. Click any toggle to switch the list above; tell me the number you like and I&apos;ll keep that one and remove the rest.
-      </p>
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 20 }}>
-        {variants.map(({ n, label }) => (
-          <div key={n} style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 8 }}>
-            <div className={`tg tg${n}`}>
-              <button type="button" className={view === "list" ? "on" : ""} onClick={() => setView("list")} title="List view">
-                <ListIcon />{withText(n) && <span>List</span>}
-              </button>
-              <button type="button" className={view === "tiles" ? "on" : ""} onClick={() => setView("tiles")} title="Tile view">
-                <TileIcon />{withText(n) && <span>Tiles</span>}
-              </button>
-            </div>
-            <span className="help" style={{ fontSize: "0.8rem" }}>{n}. {label}</span>
-          </div>
-        ))}
-      </div>
-    </section>
-  );
-}
-
 export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; isAdmin: boolean }) {
   const [query, setQuery] = useState("");
   const [pageSize, setPageSize] = useState(10);
@@ -239,8 +189,6 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
           </div>
         </section>
       )}
-
-      {!isMobile && <ToggleGallery view={view} setView={setView} />}
     </>
   );
 }

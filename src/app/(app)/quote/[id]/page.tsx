@@ -14,7 +14,7 @@ import AiRecommendation from "./AiRecommendation";
 import DisclaimersField from "./DisclaimersField";
 
 const statusPill = (status: string) => {
-  if (status === "CUSTOM_PENDING") return <span className="pill pending">Custom · pending approval</span>;
+  if (status === "CUSTOM_PENDING") return <span className="pill gold">Custom · pending approval</span>;
   if (status === "APPROVED") return <span className="pill approved">Approved</span>;
   return <span className="pill proposal">Proposal</span>;
 };
@@ -62,6 +62,10 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
   const expired = isExpired(quote!);
   const isPending = quote!.status === "CUSTOM_PENDING";
+  // When an admin is reviewing a pending custom quote, the approval controls are
+  // the point of the visit, so float the Admin card to the top and push the
+  // request summary + visibility cards beneath it (via flex order, below).
+  const reorderAdminReview = isAdmin && isPending;
   const d = buildProposalData(quote!);
   const ans = quote!.answers as Record<string, unknown>;
   const exactPages = typeof ans.pageCountExact === "string" ? ans.pageCountExact : "";
@@ -88,7 +92,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   }
 
   return (
-    <div className="container" style={{ maxWidth: 820 }}>
+    <div className="container" style={{ maxWidth: 820, ...(reorderAdminReview ? { display: "flex", flexDirection: "column" } : {}) }}>
       <Link href="/dashboard" className="backnav">
         <svg viewBox="0 0 20 20" fill="none"><path d="M12 4l-6 6 6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" /></svg>
         Dashboard
@@ -100,7 +104,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
       </div>
 
       {isPending ? (
-        <div className="card">
+        <div className="card" style={reorderAdminReview ? { order: 2, marginTop: 18 } : undefined}>
           <h3 style={{ marginBottom: 8 }}>Custom quote — awaiting approval</h3>
           <ul style={{ marginLeft: 18 }}>
             {quote!.customReasons.map((r, i) => <li key={i}>{r}</li>)}
@@ -112,7 +116,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
       )}
 
       {(isAdmin || isCreator) && (
-        <div className="card" style={{ marginTop: 18 }}>
+        <div className="card" style={{ marginTop: 18, ...(reorderAdminReview ? { order: 3 } : {}) }}>
           <div style={{ fontWeight: 600, marginBottom: 10 }}>Visibility</div>
           <VisibilityToggle quoteId={quote!.id} shared={quote!.shared} isCreator={isCreator} />
         </div>
@@ -148,9 +152,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
       {/* Admin controls */}
       {isAdmin && (
-        <div className="card" style={{ marginTop: 18, borderColor: "var(--gold)" }}>
-          <h3 style={{ marginBottom: 2 }}>Admin</h3>
-
+        <div className="card" style={{ marginTop: 18, borderColor: "var(--gold)", ...(reorderAdminReview ? { order: 1 } : {}) }}>
           {expired && (
             <div style={{ marginTop: 16 }}>
               <div style={sublabel}>Expired</div>

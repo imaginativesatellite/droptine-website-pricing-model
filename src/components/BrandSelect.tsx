@@ -6,12 +6,14 @@ export type Option = { value: string; label: string };
 
 export default function BrandSelect({
   id,
+  name,
   value,
   options,
   placeholder = "Select…",
   onChange,
 }: {
   id?: string;
+  name?: string;
   value: string;
   options: Option[];
   placeholder?: string;
@@ -32,9 +34,12 @@ export default function BrandSelect({
 
   return (
     <div className="bs" ref={ref}>
-      {/* Touch devices get the OS's own picker instead of the custom list below. */}
+      {/* Touch devices get the OS's own picker instead of the custom list below.
+          It's display:none on desktop but still carries `name`, so a
+          BrandSelect submits its value inside a plain form on every device. */}
       <select
         className="bs-native"
+        name={name}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-label={placeholder}

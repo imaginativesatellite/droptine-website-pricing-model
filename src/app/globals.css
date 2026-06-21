@@ -795,6 +795,9 @@ select:focus {
 .pill.private  { background: #f0ede8; color: var(--muted); }
 .pill.expired  { background: #fdeaea; color: #b3261e; }
 .pill.signed   { background: #e3f6e9; color: #1b5e20; }
+/* Solid-gold pill — matches the "Preview · pricing only" badge so the pending
+   status reads as an active, attention-worthy tag rather than a soft chip. */
+.pill.gold     { background: var(--gold); color: #fff; }
 
 /* Dashboard search bar (reads as a control, not a card) */
 .searchbar {
@@ -830,124 +833,34 @@ select:focus {
   background: #fff;
 }
 
-/* View toggle (list / tiles) — height matches the search input / page-size
-   dropdown in the same row, so it doesn't look short next to them. */
+/* View toggle (list / tiles) — a sliding-pill segmented control. The active
+   side reads as a raised white pill on a warm-grey track. Height matches the
+   search input / New Quote button in the same row. */
 .viewtoggle {
   display: inline-flex;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  background: #e9e6e1;
+  border-radius: 10px;
+  padding: 4px;
   flex: none;
   height: 42px;
 }
 .viewtoggle button {
-  background: #fff;
+  background: none;
   border: none;
-  padding: 0 12px;
+  padding: 0 16px;
   cursor: pointer;
   color: var(--muted);
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-}
-/* Round to match the container's own corners instead of relying on
-   overflow: hidden to clip square buttons — that clipping is what was
-   swallowing the container's border right at the curve. */
-.viewtoggle button:first-child {
-  border-radius: 7px 0 0 7px;
-}
-.viewtoggle button:last-child {
-  border-radius: 0 7px 7px 0;
-}
-.viewtoggle button + button {
-  border-left: 1px solid var(--line);
+  border-radius: 7px;
+  transition: background 0.15s ease, color 0.15s ease;
 }
 .viewtoggle button.on {
-  background: var(--gold-dark);
-  color: #fff;
+  background: #fff;
+  color: var(--charcoal);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
-/* The divider next to the selected button blends into it instead of
-   showing a grey line against the fill. */
-.viewtoggle button.on,
-.viewtoggle button.on + button {
-  border-left-color: var(--gold-dark);
-}
-
-/* ── TEMP: toggle-style gallery (10 candidates) ───────────────────────────
-   Shared base, then one block per variant (.tg1 … .tg10). Once a style is
-   chosen, delete the gallery component and every rule in this section. */
-.tg {
-  display: inline-flex;
-  align-items: center;
-}
-.tg button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  cursor: pointer;
-  font: inherit;
-  background: none;
-  border: none;
-  color: var(--muted);
-}
-
-/* 1. Sliding pill / iOS-style segmented control */
-.tg1 { background: #e9e6e1; border-radius: 10px; padding: 3px; }
-.tg1 button { border-radius: 8px; height: 34px; padding: 0 18px; }
-.tg1 button.on { background: #fff; color: var(--charcoal); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
-
-/* 2. Bordered group, gold-dark fill on active */
-.tg2 { border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-.tg2 button { height: 40px; padding: 0 16px; }
-.tg2 button:first-child { border-radius: 7px 0 0 7px; }
-.tg2 button:last-child { border-radius: 0 7px 7px 0; }
-.tg2 button + button { border-left: 1px solid var(--line); }
-.tg2 button.on { background: var(--gold-dark); color: #fff; }
-
-/* 3. Outlined chips, gold ring on active */
-.tg3 { gap: 8px; }
-.tg3 button { border: 1.5px solid var(--line); border-radius: 8px; height: 40px; padding: 0 16px; background: #fff; }
-.tg3 button.on { border-color: var(--gold); color: var(--gold-dark); }
-
-/* 4. Underline indicator */
-.tg4 { gap: 20px; }
-.tg4 button { border-bottom: 2px solid transparent; padding: 0 2px 8px; }
-.tg4 button.on { border-bottom-color: var(--gold); color: var(--charcoal); }
-
-/* 5. Separated round pills, solid gold on active */
-.tg5 { gap: 8px; }
-.tg5 button { border: 1px solid var(--line); border-radius: 999px; height: 40px; width: 46px; background: #fff; }
-.tg5 button.on { background: var(--gold); border-color: var(--gold); color: #fff; }
-
-/* 6. Light track, charcoal pill on active */
-.tg6 { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 3px; gap: 3px; }
-.tg6 button { border-radius: 7px; height: 34px; padding: 0 16px; }
-.tg6 button.on { background: var(--charcoal); color: #fff; }
-
-/* 7. Soft gold tint on active */
-.tg7 { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 4px; gap: 4px; }
-.tg7 button { border-radius: 7px; height: 34px; padding: 0 16px; }
-.tg7 button.on { background: #fbe9d6; color: var(--gold-dark); }
-
-/* 8. Ghost / minimal — just icons */
-.tg8 { gap: 16px; }
-.tg8 button { color: #c9c4bc; padding: 6px; border-radius: 8px; }
-.tg8 button:hover { color: var(--muted); }
-.tg8 button.on { color: var(--gold-dark); }
-
-/* 9. Inset / pressed look on active */
-.tg9 { border: 1px solid var(--line); border-radius: 8px; background: #fff; }
-.tg9 button { height: 40px; padding: 0 16px; }
-.tg9 button:first-child { border-radius: 7px 0 0 7px; }
-.tg9 button:last-child { border-radius: 0 7px 7px 0; }
-.tg9 button + button { border-left: 1px solid var(--line); }
-.tg9 button.on { background: var(--bg); color: var(--gold-dark); box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.12); }
-
-/* 10. Labeled pills with text, gold-dark fill on active */
-.tg10 { background: #fff; border: 1px solid var(--line); border-radius: 999px; padding: 3px; gap: 3px; }
-.tg10 button { border-radius: 999px; height: 34px; padding: 0 16px; font-weight: 600; font-size: 0.85rem; }
-.tg10 button.on { background: var(--gold-dark); color: #fff; }
 
 /* Tile view */
 .qtiles {
@@ -1055,6 +968,105 @@ select:focus {
 .admin-tabs a.active:hover {
   background: #c7c0b3;
   color: var(--charcoal);
+}
+
+/* ── TEMP: admin sub-menu style gallery (10 candidates) ────────────────────
+   Shared base, then one block per variant (.atg1 … .atg10). Once a style is
+   chosen, delete the gallery component, its render, and this whole section. */
+.atg {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  flex-wrap: nowrap;
+}
+.atg button {
+  flex: none;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  background: none;
+  border: none;
+  color: var(--muted);
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+}
+
+/* 1. Filled pill bar (the current admin-tabs look) */
+.atg1 { background: var(--line); border-radius: 10px; padding: 5px; }
+.atg1 button { padding: 9px 16px; border-radius: 7px; }
+.atg1 button:hover { background: #d6d1c8; color: var(--charcoal); }
+.atg1 button.active { background: #c7c0b3; color: var(--charcoal); }
+
+/* 2. Underline tabs on a baseline */
+.atg2 { gap: 6px; border-bottom: 1px solid var(--line); }
+.atg2 button { padding: 10px 14px; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+.atg2 button:hover { color: var(--charcoal); }
+.atg2 button.active { color: var(--gold-dark); border-bottom-color: var(--gold); }
+
+/* 3. Folder tabs (active tab boxed, merges into the baseline) */
+.atg3 { gap: 4px; border-bottom: 1px solid var(--line); }
+.atg3 button { padding: 9px 16px; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; margin-bottom: -1px; }
+.atg3 button:hover { color: var(--charcoal); }
+.atg3 button.active { background: #fff; border-color: var(--line); color: var(--charcoal); }
+
+/* 4. Sliding-pill segmented (matches the dashboard view toggle) */
+.atg4 { background: #e9e6e1; border-radius: 10px; padding: 4px; width: max-content; }
+.atg4 button { padding: 8px 16px; border-radius: 7px; }
+.atg4 button.active { background: #fff; color: var(--charcoal); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18); }
+
+/* 5. Light track, solid-gold active pill */
+.atg5 { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 4px; width: max-content; }
+.atg5 button { padding: 8px 16px; border-radius: 7px; }
+.atg5 button.active { background: var(--gold); color: #fff; }
+
+/* 6. Minimal text with a thick gold underline */
+.atg6 { gap: 22px; }
+.atg6 button { padding: 6px 0; border-bottom: 3px solid transparent; }
+.atg6 button:hover { color: var(--charcoal); }
+.atg6 button.active { color: var(--charcoal); border-bottom-color: var(--gold); }
+
+/* 7. Outlined active pill */
+.atg7 { gap: 8px; }
+.atg7 button { padding: 8px 16px; border: 1.5px solid transparent; border-radius: 999px; }
+.atg7 button:hover { color: var(--charcoal); }
+.atg7 button.active { border-color: var(--gold); color: var(--gold-dark); }
+
+/* 8. Boxed connected button group, gold-dark active */
+.atg8 { border: 1px solid var(--line); border-radius: 8px; background: #fff; width: max-content; }
+.atg8 button { padding: 9px 16px; }
+.atg8 button + button { border-left: 1px solid var(--line); }
+.atg8 button:first-child { border-radius: 7px 0 0 7px; }
+.atg8 button:last-child { border-radius: 0 7px 7px 0; }
+.atg8 button.active { background: var(--gold-dark); color: #fff; }
+
+/* 9. Dot indicator under the active label */
+.atg9 { gap: 20px; }
+.atg9 button { padding: 8px 4px; position: relative; }
+.atg9 button:hover { color: var(--charcoal); }
+.atg9 button.active { color: var(--charcoal); }
+.atg9 button.active::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--gold);
+}
+
+/* 10. Raised folder tabs sitting on a baseline */
+.atg10 { gap: 4px; border-bottom: 2px solid var(--line); padding-top: 2px; }
+.atg10 button { padding: 10px 16px; border-radius: 8px 8px 0 0; }
+.atg10 button:hover { background: #efece7; color: var(--charcoal); }
+.atg10 button.active {
+  background: #fff;
+  color: var(--charcoal);
+  border-bottom: 2px solid var(--gold);
+  margin-bottom: -2px;
+  box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.08);
 }
 
 /* Dashboard quote rows with hierarchy */

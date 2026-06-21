@@ -247,9 +247,10 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
         <Footer code={d.code} />
       </Page>
 
-      {/* Page 4 — Signatures. Fixed layout so the boxes below line up exactly
-          with the coordinate-based fields Documenso overlays on this same
-          rendered PDF (see signature-layout.ts). */}
+      {/* Signatures — always the last page, however many physical pages the
+          sections above wrapped onto. Fixed layout so the boxes below line
+          up exactly with the coordinate-based fields Documenso overlays on
+          this same rendered PDF (see signature-layout.ts). */}
       <Page size="LETTER" style={s.sigPage}>
         <View style={s.sigContent}>
           <Header />

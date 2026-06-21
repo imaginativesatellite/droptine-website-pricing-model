@@ -18,13 +18,18 @@
  * of "combined work" question the AGPL is built around. A plain iframe at a
  * normal page URL on our own self-hosted instance avoids that question.
  *
- * Field placement is coordinate-based against a dedicated, fixed-layout
- * "Signatures" page we always render last — see lib/signature-layout.ts.
+ * Field placement is coordinate-based against a dedicated "Signatures" page
+ * we always render last — see lib/signature-layout.ts. Earlier sections
+ * (Terms especially) can wrap onto extra physical pages depending on
+ * content length, so we count the actual pages in the rendered PDF rather
+ * than assuming a fixed page number, and place fields on whatever page
+ * comes out as the real last one.
  * Field/endpoint names below are best-effort from Documenso's public docs and
  * source (their docs site returns 403 to automated fetches, so this wasn't
  * verified against a live instance); check your own deploy's /developers/api
  * docs if something doesn't line up.
  */
+import { PDFDocument } from "pdf-lib";
 import { SIGNATURE_FIELDS } from "./signature-layout";
 
 const API_KEY = process.env.DOCUMENSO_API_KEY;
@@ -58,8 +63,15 @@ async function call<T>(path: string, init: RequestInit): Promise<T> {
 type DocumensoRecipient = { id: number; email: string; token?: string; signingUrl?: string };
 type EnvelopeResponse = { id: number | string; recipients?: DocumensoRecipient[] };
 
-function field(type: "SIGNATURE" | "DATE", box: { page: number; positionX: number; positionY: number; width: number; height: number }) {
-  return { type, page: box.page, positionX: box.positionX, positionY: box.positionY, width: box.width, height: box.height };
+function field(type: "SIGNATURE" | "DATE", page: number, box: { positionX: number; positionY: number; width: number; height: number }) {
+  return { type, page, positionX: box.positionX, positionY: box.positionY, width: box.width, height: box.height };
+}
+
+/** Last page of the rendered PDF — the Signatures page always renders last
+ *  in lib/pdf.tsx, but earlier sections can wrap onto extra pages first. */
+async function lastPageNumber(pdf: Buffer): Promise<number> {
+  const doc = await PDFDocument.load(pdf);
+  return doc.getPageCount();
 }
 
 function tokenFor(recipients: DocumensoRecipient[] | undefined, email: string): string | null {
@@ -75,6 +87,7 @@ export async function sendEnvelopeForSignature(args: {
   clientEmail: string;
   clientName: string;
 }): Promise<{ envelopeId: string; clientToken: string | null; companyToken: string | null; raw: unknown }> {
+  const sigPage = await lastPageNumber(args.pdf);
   const payload = {
     title: args.title,
     type: "DOCUMENT",
@@ -84,14 +97,20 @@ export async function sendEnvelopeForSignature(args: {
         name: args.clientName,
         role: "SIGNER",
         signingOrder: 1,
-        fields: [field("SIGNATURE", SIGNATURE_FIELDS.client.signature), field("DATE", SIGNATURE_FIELDS.client.date)],
+        fields: [
+          field("SIGNATURE", sigPage, SIGNATURE_FIELDS.client.signature),
+          field("DATE", sigPage, SIGNATURE_FIELDS.client.date),
+        ],
       },
       {
         email: COMPANY_EMAIL,
         name: COMPANY_NAME,
         role: "SIGNER",
         signingOrder: 2,
-        fields: [field("SIGNATURE", SIGNATURE_FIELDS.company.signature), field("DATE", SIGNATURE_FIELDS.company.date)],
+        fields: [
+          field("SIGNATURE", sigPage, SIGNATURE_FIELDS.company.signature),
+          field("DATE", sigPage, SIGNATURE_FIELDS.company.date),
+        ],
       },
     ],
   };

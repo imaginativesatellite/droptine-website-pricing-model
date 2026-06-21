@@ -7,20 +7,23 @@
  * Positions/sizes are percentages of the LETTER page (0–100), since that's
  * react-pdf's native percentage-string unit and Documenso's documented
  * examples use small numbers consistent with percentages rather than points.
+ *
+ * There's no fixed page *number* here on purpose: the Signatures page is
+ * always the last `<Page>` in lib/pdf.tsx's JSX, but earlier sections (Terms
+ * especially) can wrap onto extra physical pages depending on content
+ * length, so the actual last page number varies per document. lib/documenso.ts
+ * resolves the real page count from the rendered PDF and applies it here.
  */
 
-// Must match the page order in lib/pdf.tsx (Proposal, Monthly, Terms, Signatures).
-export const SIGNATURE_PAGE_NUMBER = 4;
+type FieldPosition = { positionX: number; positionY: number; width: number; height: number };
 
-type FieldBox = { page: number; positionX: number; positionY: number; width: number; height: number };
-
-export const SIGNATURE_FIELDS: Record<"client" | "company", { signature: FieldBox; date: FieldBox }> = {
+export const SIGNATURE_FIELDS: Record<"client" | "company", { signature: FieldPosition; date: FieldPosition }> = {
   client: {
-    signature: { page: SIGNATURE_PAGE_NUMBER, positionX: 8, positionY: 24, width: 47, height: 9 },
-    date: { page: SIGNATURE_PAGE_NUMBER, positionX: 60, positionY: 24, width: 32, height: 9 },
+    signature: { positionX: 8, positionY: 24, width: 47, height: 9 },
+    date: { positionX: 60, positionY: 24, width: 32, height: 9 },
   },
   company: {
-    signature: { page: SIGNATURE_PAGE_NUMBER, positionX: 8, positionY: 54, width: 47, height: 9 },
-    date: { page: SIGNATURE_PAGE_NUMBER, positionX: 60, positionY: 54, width: 32, height: 9 },
+    signature: { positionX: 8, positionY: 54, width: 47, height: 9 },
+    date: { positionX: 60, positionY: 54, width: 32, height: 9 },
   },
 };

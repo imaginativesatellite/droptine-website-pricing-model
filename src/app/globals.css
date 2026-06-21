@@ -636,9 +636,10 @@ select:focus {
   color: var(--gold);
   text-transform: uppercase;
   letter-spacing: 1.5px;
-  /* Scales down on narrow screens so the wordmark never wraps to a second line;
-     capped at the desktop size. The icon and hamburger stay fixed (see below). */
-  font-size: clamp(0.7rem, 3.4vw, 1.05rem);
+  /* Scales with viewport on narrow screens so the wordmark never wraps to a
+     second line; the middle vw value drives the mobile size, capped at the
+     desktop size (1.05rem). The icon and hamburger stay fixed (see below). */
+  font-size: clamp(0.8rem, 3.9vw, 1.05rem);
   min-width: 0;
 }
 .appnav .brandword {

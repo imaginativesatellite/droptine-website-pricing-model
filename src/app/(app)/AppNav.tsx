@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { UserCircle, LogOut } from "lucide-react";
 import { logout } from "./actions";
 
 function initialOf(name: string, email: string): string {
@@ -27,7 +28,7 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
   // The admin section spans several routes that live as tabs under Admin, so
   // the top-level Admin link stays lit on any of them. There's no standalone
   // admin landing page — the link goes straight to the first tab, Users.
-  const ADMIN_SECTION = ["/users", "/pricing-rules", "/tests", "/pricing-preview", "/export"];
+  const ADMIN_SECTION = ["/users", "/pricing-rules", "/emails", "/tests", "/pricing-preview", "/export"];
   const inAdminSection = ADMIN_SECTION.some((h) => isActive(h));
   const navLinks = (onClick?: () => void) => {
     const item = (href: string, label: string, active = isActive(href)) => (
@@ -59,9 +60,13 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
           {menuOpen && (
             <div className="menu">
               <div className="menu-email">{user.email}</div>
-              <Link href="/account" onClick={() => setMenuOpen(false)}>Account</Link>
+              <Link href="/account" onClick={() => setMenuOpen(false)}>
+                <UserCircle size={16} aria-hidden /> Account
+              </Link>
               <form action={logout}>
-                <button type="submit">Sign out</button>
+                <button type="submit">
+                  <LogOut size={16} aria-hidden /> Sign out
+                </button>
               </form>
             </div>
           )}
@@ -74,9 +79,13 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
         <div className="mobile-panel">
           {navLinks(() => setNavOpen(false))}
           <div className="menu-email">{user.email}</div>
-          <Link href="/account" onClick={() => setNavOpen(false)}>Account</Link>
+          <Link href="/account" onClick={() => setNavOpen(false)}>
+            <UserCircle size={16} aria-hidden /> Account
+          </Link>
           <form action={logout}>
-            <button type="submit" className="linklike">Sign out</button>
+            <button type="submit" className="linklike">
+              <LogOut size={16} aria-hidden /> Sign out
+            </button>
           </form>
         </div>
       )}

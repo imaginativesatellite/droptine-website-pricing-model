@@ -3,16 +3,17 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Users, Tag, Mail, CheckCircle, LineChart, Download, type LucideIcon } from "lucide-react";
 
 // Secondary navigation for the admin area. Rendered by the admin layout so it
 // persists across every admin page and highlights the active section.
-const TABS: { href: string; label: string }[] = [
-  { href: "/users", label: "Users" },
-  { href: "/pricing-rules", label: "Pricing" },
-  { href: "/emails", label: "Emails" },
-  { href: "/tests", label: "Tests" },
-  { href: "/pricing-preview", label: "Pricing Preview" },
-  { href: "/export", label: "Export" },
+const TABS: { href: string; label: string; Icon: LucideIcon }[] = [
+  { href: "/users", label: "Users", Icon: Users },
+  { href: "/pricing-rules", label: "Pricing", Icon: Tag },
+  { href: "/emails", label: "Emails", Icon: Mail },
+  { href: "/tests", label: "Tests", Icon: CheckCircle },
+  { href: "/pricing-preview", label: "Pricing Preview", Icon: LineChart },
+  { href: "/export", label: "Export", Icon: Download },
 ];
 
 export default function AdminTabs() {
@@ -34,7 +35,7 @@ export default function AdminTabs() {
     <div className="admin-tabs" ref={barRef}>
       {TABS.map((t) => (
         <Link key={t.href} href={t.href} className={isActive(t.href) ? "active" : ""}>
-          {t.label}
+          <t.Icon size={15} aria-hidden /> {t.label}
         </Link>
       ))}
     </div>

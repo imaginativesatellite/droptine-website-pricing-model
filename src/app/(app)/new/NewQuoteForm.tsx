@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
+import { Globe, ShoppingCart, FileText, PawPrint, Newspaper, FolderOpen, PlusCircle, Sparkles, type LucideIcon } from "lucide-react";
 import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
@@ -9,6 +10,18 @@ import { VISIBILITY_TIP } from "@/lib/quote";
 import { createQuote } from "./actions";
 
 const DRAFT_KEY = "droptine-quote-draft";
+
+// Icon per questionnaire section, to make the long form easier to scan.
+const SECTION_ICONS: Record<string, LucideIcon> = {
+  "Existing site": Globe,
+  "E-commerce": ShoppingCart,
+  "Pages": FileText,
+  "Animals & pedigrees": PawPrint,
+  "Content": Newspaper,
+  "Add-ons": PlusCircle,
+  "Custom": Sparkles,
+};
+const FALLBACK_SECTION_ICON: LucideIcon = FolderOpen;
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
 
@@ -81,7 +94,14 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
           const qClass = ["q", followUp && "q-followup", hasFollowUp && "q-has-followup"].filter(Boolean).join(" ");
           return (
             <Fragment key={q.id}>
-              {showHeader && <h3 className="section-head">{q.section}</h3>}
+              {showHeader && (() => {
+                const SectionIcon = SECTION_ICONS[q.section!] ?? FALLBACK_SECTION_ICON;
+                return (
+                  <h3 className="section-head">
+                    <SectionIcon size={15} aria-hidden /> {q.section}
+                  </h3>
+                );
+              })()}
               <div className={qClass}>
                 <label className="qlabel" htmlFor={q.id}>
                   {splitLabel(q).map((p, idx) => (p.bold ? <strong key={idx}>{p.text}</strong> : p.text))}

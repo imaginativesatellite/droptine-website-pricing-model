@@ -90,6 +90,9 @@ h1 {
 }
 
 .section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 0.74rem;
   font-weight: 700;
   text-transform: uppercase;
@@ -98,6 +101,9 @@ h1 {
   margin: 16px 0 2px;
   padding-top: 26px;
   border-top: 1px solid var(--line);
+}
+.section-head svg {
+  color: var(--gold);
 }
 .section-head:first-child {
   margin-top: 6px;
@@ -680,7 +686,7 @@ select:focus {
   background: #fff;
   border: 1px solid var(--line);
   border-radius: 8px;
-  min-width: 200px;
+  min-width: 350px;
   padding: 8px;
   display: flex;
   flex-direction: column;
@@ -693,7 +699,9 @@ select:focus {
 }
 .appnav .menu a,
 .appnav .menu button {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 10px;
   width: 100%;
   color: var(--ink);
   text-align: left;
@@ -957,6 +965,9 @@ select:focus {
 }
 .admin-tabs a {
   flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
   padding: 8px 16px;
   border-radius: 7px;
   color: var(--muted);

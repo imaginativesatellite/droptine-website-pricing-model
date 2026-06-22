@@ -1,3 +1,4 @@
+import { timingSafeEqual } from "crypto";
 import { prisma } from "@/lib/db";
 import { syncSignatureFromRecipients, type SignatureRecipient } from "@/lib/signature-sync";
 
@@ -30,6 +31,14 @@ import { syncSignatureFromRecipients, type SignatureRecipient } from "@/lib/sign
 
 const WEBHOOK_SECRET = process.env.DOCUMENSO_WEBHOOK_SECRET;
 
+/** Constant-time comparison so a forged header can't be brute-forced one byte
+ *  at a time via response-time differences. */
+function safeEqual(a: string, b: string): boolean {
+  const bufA = Buffer.from(a);
+  const bufB = Buffer.from(b);
+  return bufA.length === bufB.length && timingSafeEqual(bufA, bufB);
+}
+
 type DocumensoWebhookPayload = {
   event?: string;
   payload?: {
@@ -41,8 +50,8 @@ type DocumensoWebhookPayload = {
 
 export async function POST(req: Request) {
   if (WEBHOOK_SECRET) {
-    const provided = req.headers.get("x-documenso-secret");
-    if (provided !== WEBHOOK_SECRET) {
+    const provided = req.headers.get("x-documenso-secret") ?? "";
+    if (!safeEqual(provided, WEBHOOK_SECRET)) {
       return new Response("Unauthorized", { status: 401 });
     }
   }

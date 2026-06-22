@@ -113,6 +113,9 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
     include: { createdBy: true, client: true },
   });
   if (!quote) throw new Error("Quote not found.");
+  // Guards against a double-submit (e.g. a fast double-click before the page
+  // re-renders) re-running approval and emailing the requester twice.
+  if (quote.status !== "CUSTOM_PENDING") throw new Error("This quote has already been approved.");
 
   const price = toInt(formData.get("overrideTotal"));
   if (price == null) throw new Error("Enter an approved price.");
@@ -248,11 +251,13 @@ export async function setShared(quoteId: string, shared: boolean): Promise<void>
   revalidatePath(`/quote/${quoteId}`);
 }
 
+export type EditAnswersResult = { error: string } | void;
+
 /** Admin: edit the questionnaire answers, recompute the price, and log the change. */
-export async function editAnswers(quoteId: string, answers: RawAnswers): Promise<void> {
+export async function editAnswers(quoteId: string, answers: RawAnswers): Promise<EditAnswersResult> {
   const admin = await requireAdmin();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId } });
-  if (!quote) throw new Error("Quote not found.");
+  if (!quote) return { error: "Quote not found - it may have been deleted." };
 
   const pricing = answers as PricingAnswers;
   const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
@@ -279,17 +284,24 @@ export async function editAnswers(quoteId: string, answers: RawAnswers): Promise
   redirect(`/quote/${quoteId}`);
 }
 
+export type DeleteResult = { error: string } | void;
+
 /** Admin: permanently delete a quote (its edit history cascades). Also removes
  *  the client if it has no remaining quotes, so its name leaves the suggestions. */
-export async function deleteQuote(quoteId: string): Promise<void> {
+export async function deleteQuote(quoteId: string): Promise<DeleteResult> {
   await requireAdmin();
   const quote = await prisma.quote.findUnique({ where: { id: quoteId }, select: { clientId: true } });
-  await prisma.quote.delete({ where: { id: quoteId } });
-  if (quote) {
-    const remaining = await prisma.quote.count({ where: { clientId: quote.clientId } });
-    if (remaining === 0) {
-      await prisma.client.delete({ where: { id: quote.clientId } }).catch(() => {});
-    }
+  if (!quote) return { error: "Quote not found - it may have already been deleted." };
+
+  try {
+    await prisma.quote.delete({ where: { id: quoteId } });
+  } catch (e) {
+    return { error: e instanceof Error ? e.message : "Couldn't delete this quote." };
+  }
+
+  const remaining = await prisma.quote.count({ where: { clientId: quote.clientId } });
+  if (remaining === 0) {
+    await prisma.client.delete({ where: { id: quote.clientId } }).catch(() => {});
   }
   redirect("/dashboard");
 }

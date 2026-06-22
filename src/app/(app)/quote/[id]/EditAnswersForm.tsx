@@ -27,8 +27,9 @@ export default function EditAnswersForm({
 
   const submit = () => {
     setError(null);
-    startTransition(() => {
-      void editAnswers(quoteId, answers);
+    startTransition(async () => {
+      const res = await editAnswers(quoteId, answers);
+      if (res?.error) setError(res.error);
     });
   };
 

@@ -8,10 +8,11 @@
  */
 import { PrismaClient, Role } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { TEMPLATE_MAP, type TemplateKey } from "../src/lib/email-templates";
 
 const prisma = new PrismaClient();
 
-async function main() {
+async function seedAdmin() {
   const email = (process.env.SEED_ADMIN_EMAIL ?? "david@luna-creative.com").trim().toLowerCase();
   const name = process.env.SEED_ADMIN_NAME ?? "David";
   const password = process.env.SEED_ADMIN_PASSWORD;
@@ -32,6 +33,29 @@ async function main() {
     data: { email, name, passwordHash, role: Role.ADMIN },
   });
   console.log(`Seeded admin: ${user.email}`);
+}
+
+// One-time defaults requested directly (the admin Emails tab's on/off toggle
+// was broken while the `enabled` column's migration was stuck - see start.sh).
+// Create-only: an admin's later choice from the Emails tab always wins, this
+// only sets the initial state the first time each row is created.
+const DEFAULT_DISABLED: TemplateKey[] = ["proposal_to_member", "client_signed", "proposal_fully_signed"];
+
+async function seedDisabledEmailDefaults() {
+  for (const key of DEFAULT_DISABLED) {
+    const existing = await prisma.emailTemplate.findUnique({ where: { key } });
+    if (existing) continue;
+    const def = TEMPLATE_MAP[key];
+    await prisma.emailTemplate.create({
+      data: { key, subject: def.subject, body: def.body, enabled: false },
+    });
+    console.log(`Disabled email by default: ${key}`);
+  }
+}
+
+async function main() {
+  await seedAdmin();
+  await seedDisabledEmailDefaults();
 }
 
 main()

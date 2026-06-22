@@ -107,6 +107,38 @@ export default function EmailTemplateForm(props: Props) {
   const { templateKey: key, name, description, variables } = props;
   const [subject, setSubject] = useState(props.subject);
   const [body, setBody] = useState(props.body);
+  const [saveErr, setSaveErr] = useState<string | null>(null);
+  const [saving, startSaving] = useTransition();
+  const [resetErr, setResetErr] = useState<string | null>(null);
+  const [resetting, startResetting] = useTransition();
+
+  // Catch save/reset failures here (e.g. a DB hiccup) so the admin sees an
+  // inline message instead of the framework's generic crash screen - same
+  // approach as EnabledToggle above.
+  const handleSave = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setSaveErr(null);
+    const formData = new FormData(e.currentTarget);
+    startSaving(async () => {
+      try {
+        await saveTemplate(formData);
+      } catch (err) {
+        setSaveErr(err instanceof Error ? err.message : "Couldn't save - try again.");
+      }
+    });
+  };
+
+  const handleReset = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setResetErr(null);
+    startResetting(async () => {
+      try {
+        await resetTemplate(key);
+      } catch (err) {
+        setResetErr(err instanceof Error ? err.message : "Couldn't reset - try again.");
+      }
+    });
+  };
 
   return (
     <div className="card" style={{ marginBottom: 18 }}>
@@ -124,7 +156,7 @@ export default function EmailTemplateForm(props: Props) {
         </p>
       )}
 
-      <form action={saveTemplate}>
+      <form onSubmit={handleSave}>
         <input type="hidden" name="key" value={key} />
 
         <label className="qlabel" htmlFor={`subject-${key}`} style={{ display: "block", marginTop: 18 }}>Subject</label>
@@ -169,14 +201,16 @@ export default function EmailTemplateForm(props: Props) {
           <div style={{ background: "#fff", padding: "14px 16px" }} dangerouslySetInnerHTML={{ __html: previewFill(body, variables) }} />
         </div>
 
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <button type="submit" className="btn-primary">Save</button>
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button type="submit" className="btn-primary" disabled={saving}>Save</button>
+          {saveErr && <span className="help" style={{ color: "#b3261e" }}>{saveErr}</span>}
         </div>
       </form>
 
       {props.customized && (
-        <form action={resetTemplate.bind(null, key)} style={{ marginTop: 10 }}>
-          <button type="submit" className="btn-secondary">Reset to default</button>
+        <form onSubmit={handleReset} style={{ marginTop: 10, display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+          <button type="submit" className="btn-secondary" disabled={resetting}>Reset to default</button>
+          {resetErr && <span className="help" style={{ color: "#b3261e" }}>{resetErr}</span>}
         </form>
       )}
     </div>

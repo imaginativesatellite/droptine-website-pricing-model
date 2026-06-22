@@ -181,7 +181,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
 
       {!isAdmin && isCreator && !isPending && (
         <div className="card" style={{ marginTop: 18 }}>
-          <div style={{ fontWeight: 600, marginBottom: 10 }}>Accept proposal</div>
+          <div style={{ fontWeight: 600, marginBottom: 10 }}>Signatures</div>
           {!documensoEnabled() ? (
             <p className="help">E-signature isn&apos;t set up yet - ask an admin to enable it.</p>
           ) : (

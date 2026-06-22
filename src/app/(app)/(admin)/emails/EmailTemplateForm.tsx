@@ -9,68 +9,74 @@ type Props = Omit<TemplateDef, "key"> & { templateKey: TemplateDef["key"]; custo
 /** Quick on/off switch for a template. Off means the email is never sent. */
 function EnabledToggle({ templateKey, enabled }: { templateKey: TemplateDef["key"]; enabled: boolean }) {
   const [on, setOn] = useState(enabled);
+  const [err, setErr] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
 
   const toggle = () => {
     const next = !on;
     setOn(next); // optimistic
+    setErr(null);
     startTransition(async () => {
       try {
         await setTemplateEnabled(templateKey, next);
-      } catch {
+      } catch (e) {
         setOn(!next); // revert on failure
+        setErr(e instanceof Error ? e.message : "Couldn't save - try again.");
       }
     });
   };
 
   return (
-    <button
-      type="button"
-      role="switch"
-      aria-checked={on}
-      onClick={toggle}
-      disabled={pending}
-      title={on ? "This email is on - click to stop sending it" : "This email is off - click to start sending it"}
-      style={{
-        display: "inline-flex",
-        alignItems: "center",
-        gap: 8,
-        border: "none",
-        background: "none",
-        cursor: pending ? "default" : "pointer",
-        padding: 0,
-        opacity: pending ? 0.6 : 1,
-      }}
-    >
-      <span
+    <span style={{ display: "inline-flex", flexDirection: "column", alignItems: "flex-end", gap: 2 }}>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        onClick={toggle}
+        disabled={pending}
+        title={on ? "This email is on - click to stop sending it" : "This email is off - click to start sending it"}
         style={{
-          width: 38,
-          height: 22,
-          borderRadius: 999,
-          background: on ? "var(--good)" : "var(--line)",
-          position: "relative",
-          transition: "background 0.15s",
-          flex: "none",
+          display: "inline-flex",
+          alignItems: "center",
+          gap: 8,
+          border: "none",
+          background: "none",
+          cursor: pending ? "default" : "pointer",
+          padding: 0,
+          opacity: pending ? 0.6 : 1,
         }}
       >
         <span
           style={{
-            position: "absolute",
-            top: 2,
-            left: on ? 18 : 2,
-            width: 18,
-            height: 18,
-            borderRadius: "50%",
-            background: "#fff",
-            transition: "left 0.15s",
-            boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+            width: 38,
+            height: 22,
+            borderRadius: 999,
+            background: on ? "var(--good)" : "var(--line)",
+            position: "relative",
+            transition: "background 0.15s",
+            flex: "none",
           }}
-        />
-      </span>
-      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: on ? "var(--good)" : "var(--muted)" }}>
-        {on ? "On" : "Off"}
-      </span>
-    </button>
+        >
+          <span
+            style={{
+              position: "absolute",
+              top: 2,
+              left: on ? 18 : 2,
+              width: 18,
+              height: 18,
+              borderRadius: "50%",
+              background: "#fff",
+              transition: "left 0.15s",
+              boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+            }}
+          />
+        </span>
+        <span style={{ fontSize: "0.82rem", fontWeight: 600, color: on ? "var(--good)" : "var(--muted)" }}>
+          {on ? "On" : "Off"}
+        </span>
+      </button>
+      {err && <span className="help" style={{ color: "#b3261e", maxWidth: 260, textAlign: "right" }}>{err}</span>}
+    </span>
   );
 }
 

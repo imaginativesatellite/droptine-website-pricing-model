@@ -1,10 +1,78 @@
 "use client";
 
-import { useState } from "react";
-import { saveTemplate, resetTemplate } from "./actions";
+import { useState, useTransition } from "react";
+import { saveTemplate, resetTemplate, setTemplateEnabled } from "./actions";
 import type { TemplateDef } from "@/lib/email-templates";
 
-type Props = Omit<TemplateDef, "key"> & { templateKey: TemplateDef["key"]; customized: boolean };
+type Props = Omit<TemplateDef, "key"> & { templateKey: TemplateDef["key"]; customized: boolean; enabled: boolean };
+
+/** Quick on/off switch for a template. Off means the email is never sent. */
+function EnabledToggle({ templateKey, enabled }: { templateKey: TemplateDef["key"]; enabled: boolean }) {
+  const [on, setOn] = useState(enabled);
+  const [pending, startTransition] = useTransition();
+
+  const toggle = () => {
+    const next = !on;
+    setOn(next); // optimistic
+    startTransition(async () => {
+      try {
+        await setTemplateEnabled(templateKey, next);
+      } catch {
+        setOn(!next); // revert on failure
+      }
+    });
+  };
+
+  return (
+    <button
+      type="button"
+      role="switch"
+      aria-checked={on}
+      onClick={toggle}
+      disabled={pending}
+      title={on ? "This email is on - click to stop sending it" : "This email is off - click to start sending it"}
+      style={{
+        display: "inline-flex",
+        alignItems: "center",
+        gap: 8,
+        border: "none",
+        background: "none",
+        cursor: pending ? "default" : "pointer",
+        padding: 0,
+        opacity: pending ? 0.6 : 1,
+      }}
+    >
+      <span
+        style={{
+          width: 38,
+          height: 22,
+          borderRadius: 999,
+          background: on ? "var(--good)" : "var(--line)",
+          position: "relative",
+          transition: "background 0.15s",
+          flex: "none",
+        }}
+      >
+        <span
+          style={{
+            position: "absolute",
+            top: 2,
+            left: on ? 18 : 2,
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            background: "#fff",
+            transition: "left 0.15s",
+            boxShadow: "0 1px 2px rgba(0,0,0,0.25)",
+          }}
+        />
+      </span>
+      <span style={{ fontSize: "0.82rem", fontWeight: 600, color: on ? "var(--good)" : "var(--muted)" }}>
+        {on ? "On" : "Off"}
+      </span>
+    </button>
+  );
+}
 
 /** Fill {{var}} placeholders with a readable sample so the preview reads naturally. */
 function previewFill(tpl: string, variables: { name: string }[]): string {
@@ -39,8 +107,16 @@ export default function EmailTemplateForm(props: Props) {
       <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4, flexWrap: "wrap" }}>
         <span style={{ fontWeight: 600 }}>{name}</span>
         {props.customized && <span className="pill gold">Customized</span>}
+        <span style={{ marginLeft: "auto" }}>
+          <EnabledToggle templateKey={key} enabled={props.enabled} />
+        </span>
       </div>
       <p className="help" style={{ marginTop: 0 }}>{description}</p>
+      {!props.enabled && (
+        <p className="help" style={{ marginTop: 0, color: "var(--muted)" }}>
+          This email is currently <strong>off</strong> and won&apos;t be sent.
+        </p>
+      )}
 
       <form action={saveTemplate}>
         <input type="hidden" name="key" value={key} />

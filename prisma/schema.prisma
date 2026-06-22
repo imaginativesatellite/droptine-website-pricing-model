@@ -168,6 +168,10 @@ model EmailTemplate {
   key       String   @id
   subject   String
   body      String   @db.Text
+  // When false, this transactional email is suppressed entirely - the app
+  // computes everything as normal but skips the actual send. Toggled from the
+  // admin Emails tab. Defaults on, so an untouched template always sends.
+  enabled   Boolean  @default(true)
   updatedAt DateTime @updatedAt
 }
 

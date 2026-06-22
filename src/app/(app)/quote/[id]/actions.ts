@@ -344,7 +344,7 @@ export async function sendForSignature(quoteId: string, formData: FormData): Pro
   if (quote.status === "CUSTOM_PENDING") throw new Error("Approve this quote before sending it for signature.");
 
   const email = String(formData.get("clientEmail") ?? "").trim();
-  if (!email) throw new Error("Enter the client's email to send for signature.");
+  if (!email) throw new Error("Enter the member's email to send for signature.");
 
   if (email !== quote.client.email) {
     await prisma.client.update({ where: { id: quote.client.id }, data: { email } });

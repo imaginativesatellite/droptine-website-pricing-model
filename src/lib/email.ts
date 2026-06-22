@@ -15,6 +15,10 @@ function esc(s: string): string {
 }
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
+const COMPANY_NAME = "Luna Creative";
+// Proposals are billed 50% to begin, 50% on completion - expose both halves
+// as template variables so admins can spell out the payment split in any email.
+const deposit = (total: number) => Math.round(total / 2);
 
 function adminEmails(): string[] {
   return (process.env.ADMIN_EMAILS ?? "")
@@ -61,12 +65,19 @@ export async function sendProposalToMember(args: {
   pdf?: Buffer;
 }) {
   const name = esc(args.proposalName);
-  const { subject, html } = await renderEmail("proposal_to_member", {
+  const dep = deposit(args.total);
+  const { subject, html, enabled } = await renderEmail("proposal_to_member", {
     proposalName: name,
     total: money(args.total),
     monthly: money(args.monthly),
     proposalUrl: args.proposalUrl,
+    deposit: money(dep),
+    balance: money(args.total - dep),
+    code: esc(args.code),
+    memberEmail: esc(args.memberEmail),
+    companyName: COMPANY_NAME,
   });
+  if (!enabled) return;
   await send({
     to: args.memberEmail,
     subject,
@@ -90,22 +101,29 @@ export async function notifyAdmins(args: {
 
   const name = esc(args.proposalName);
   const who = esc(args.memberEmail);
-  const { subject, html } = args.isCustom
+  const total = args.total ?? 0;
+  const dep = deposit(total);
+  const { subject, html, enabled } = args.isCustom
     ? await renderEmail("admin_custom_requested", {
         memberEmail: who,
         proposalName: name,
         reasons: esc((args.reasons ?? []).join("; ") || "complex functionality"),
         manageUrl: args.manageUrl,
         code: esc(args.code),
+        companyName: COMPANY_NAME,
       })
     : await renderEmail("admin_proposal_generated", {
         memberEmail: who,
         proposalName: name,
-        total: money(args.total ?? 0),
+        total: money(total),
         manageUrl: args.manageUrl,
         code: esc(args.code),
+        deposit: money(dep),
+        balance: money(total - dep),
+        companyName: COMPANY_NAME,
       });
 
+  if (!enabled) return;
   // A custom-quote request needs an admin to act, so flag it high priority.
   await send({ to, subject, html, priority: args.isCustom });
 }
@@ -119,6 +137,8 @@ export async function notifyClientSigned(args: {
   requestedByName: string;
   clientEmail: string;
   manageUrl: string;
+  proposalUrl?: string;
+  code?: string;
 }) {
   const to = adminEmails();
   if (to.length === 0) return;
@@ -127,12 +147,16 @@ export async function notifyClientSigned(args: {
   const who = esc(args.requestedByName);
   const signerEmail = esc(args.clientEmail);
 
-  const { subject, html } = await renderEmail("client_signed", {
+  const { subject, html, enabled } = await renderEmail("client_signed", {
     signerEmail,
     proposalName: name,
-    requestedByName: who,
+    memberName: who,
     manageUrl: args.manageUrl,
+    proposalUrl: args.proposalUrl ?? "",
+    code: esc(args.code ?? ""),
+    companyName: COMPANY_NAME,
   });
+  if (!enabled) return;
   // Luna Creative needs to add its signature, so flag it high priority.
   await send({ to, subject, html, priority: true });
 }
@@ -145,17 +169,22 @@ export async function notifyFullySigned(args: {
   memberName: string;
   memberEmail: string;
   proposalUrl: string;
+  code?: string;
   pdf?: Buffer;
 }) {
   const to = Array.from(new Set([args.memberEmail, ...adminEmails()].filter(Boolean)));
   if (to.length === 0) return;
 
   const name = esc(args.proposalName);
-  const { subject, html } = await renderEmail("proposal_fully_signed", {
+  const { subject, html, enabled } = await renderEmail("proposal_fully_signed", {
     proposalName: name,
     memberName: esc(args.memberName),
+    memberEmail: esc(args.memberEmail),
     proposalUrl: args.proposalUrl,
+    code: esc(args.code ?? ""),
+    companyName: COMPANY_NAME,
   });
+  if (!enabled) return;
   await send({
     to,
     subject,
@@ -179,14 +208,20 @@ export async function sendApprovedQuoteToRequester(args: {
   pdf?: Buffer;
 }) {
   const name = esc(args.proposalName);
-  const { subject, html } = await renderEmail("approved_quote_to_requester", {
+  const dep = deposit(args.total);
+  const { subject, html, enabled } = await renderEmail("approved_quote_to_requester", {
     proposalName: name,
     total: money(args.total),
     monthly: money(args.monthly),
     proposalUrl: args.proposalUrl,
     code: esc(args.code),
     dashboardUrl: args.dashboardUrl,
+    deposit: money(dep),
+    balance: money(args.total - dep),
+    memberEmail: esc(args.requesterEmail),
+    companyName: COMPANY_NAME,
   });
+  if (!enabled) return;
   await send({
     to: args.requesterEmail,
     subject,

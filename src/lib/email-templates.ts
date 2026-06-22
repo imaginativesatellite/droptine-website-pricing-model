@@ -42,6 +42,11 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
       { name: "total", description: "One-time build price, formatted (e.g. $8,500)" },
       { name: "monthly", description: "Monthly cost, formatted" },
       { name: "proposalUrl", description: "Link to the private proposal page" },
+      { name: "deposit", description: "50% deposit to begin, formatted" },
+      { name: "balance", description: "Remaining 50% on completion, formatted" },
+      { name: "code", description: "The proposal's reference code" },
+      { name: "memberEmail", description: "Email of the member the proposal is for" },
+      { name: "companyName", description: "The sending company (Luna Creative)" },
     ],
     subject: "Your proposal is ready: {{proposalName}}",
     body:
@@ -59,6 +64,11 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
       { name: "proposalName", description: "The proposal / project name" },
       { name: "total", description: "One-time build price, formatted" },
       { name: "manageUrl", description: "Link to view the quote in the app" },
+      { name: "monthly", description: "Monthly cost, formatted" },
+      { name: "deposit", description: "50% deposit to begin, formatted" },
+      { name: "balance", description: "Remaining 50% on completion, formatted" },
+      { name: "code", description: "The proposal's reference code" },
+      { name: "companyName", description: "The sending company (Luna Creative)" },
     ],
     subject: "New proposal: {{proposalName}}",
     body:
@@ -74,6 +84,8 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
       { name: "proposalName", description: "The proposal / project name" },
       { name: "reasons", description: "Why it routed to custom (semicolon-separated)" },
       { name: "manageUrl", description: "Link to review & approve in the app" },
+      { name: "code", description: "The proposal's reference code" },
+      { name: "companyName", description: "The sending company (Luna Creative)" },
     ],
     subject: "Custom quote requested: {{proposalName}}",
     body:
@@ -86,9 +98,13 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
     name: "Signature needed (to admins)",
     description: "Sent to admins after the member signs, so Luna Creative can add its signature. Sent high priority (action needed).",
     variables: [
-      { name: "signerEmail", description: "Email of whoever signed the proposal" },
+      { name: "signerEmail", description: "Email of the member who signed the proposal" },
       { name: "proposalName", description: "The proposal / project name" },
       { name: "manageUrl", description: "Link to add Luna Creative's signature" },
+      { name: "memberName", description: "Name of the member who signed" },
+      { name: "proposalUrl", description: "Link to the private proposal page" },
+      { name: "code", description: "The proposal's reference code" },
+      { name: "companyName", description: "The sending company (Luna Creative)" },
     ],
     subject: "Signature needed: {{proposalName}}",
     body:
@@ -102,6 +118,10 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
     variables: [
       { name: "proposalName", description: "The proposal / project name" },
       { name: "proposalUrl", description: "Link to the proposal page" },
+      { name: "memberName", description: "Name of the member the proposal is for" },
+      { name: "memberEmail", description: "Email of the member the proposal is for" },
+      { name: "code", description: "The proposal's reference code" },
+      { name: "companyName", description: "The sending company (Luna Creative)" },
     ],
     subject: "Signed & complete: {{proposalName}}",
     body:
@@ -118,6 +138,12 @@ export const EMAIL_TEMPLATES: TemplateDef[] = [
       { name: "total", description: "One-time build price, formatted" },
       { name: "monthly", description: "Monthly cost, formatted" },
       { name: "proposalUrl", description: "Link to the private proposal page" },
+      { name: "deposit", description: "50% deposit to begin, formatted" },
+      { name: "balance", description: "Remaining 50% on completion, formatted" },
+      { name: "code", description: "The proposal's reference code" },
+      { name: "dashboardUrl", description: "Link to the member's quotes dashboard" },
+      { name: "memberEmail", description: "Email of the member the quote is for" },
+      { name: "companyName", description: "The sending company (Luna Creative)" },
     ],
     subject: "Your quote is ready: {{proposalName}}",
     body:
@@ -137,27 +163,37 @@ export function fillTemplate(tpl: string, vars: Record<string, string>): string 
   return tpl.replace(/\{\{\s*(\w+)\s*\}\}/g, (_, k: string) => (k in vars ? vars[k] : ""));
 }
 
-/** Effective subject/body for a key: admin override if present, else the default. */
-export async function resolveTemplate(key: TemplateKey): Promise<{ subject: string; body: string }> {
+/** Effective subject/body/enabled for a key: admin override if present, else
+ *  the default (which is always enabled). */
+export async function resolveTemplate(key: TemplateKey): Promise<{ subject: string; body: string; enabled: boolean }> {
   const def = TEMPLATE_MAP[key];
-  let override: { subject: string; body: string } | null = null;
+  let override: { subject: string; body: string; enabled: boolean } | null = null;
   try {
-    override = await prisma.emailTemplate.findUnique({ where: { key }, select: { subject: true, body: true } });
+    override = await prisma.emailTemplate.findUnique({ where: { key }, select: { subject: true, body: true, enabled: true } });
   } catch {
     // table may not exist yet (pre-migration) - fall back to defaults
   }
-  return { subject: override?.subject ?? def.subject, body: override?.body ?? def.body };
+  return {
+    subject: override?.subject ?? def.subject,
+    body: override?.body ?? def.body,
+    enabled: override?.enabled ?? true,
+  };
 }
 
-/** Render a template by key with the given variables into { subject, html }. */
-export async function renderEmail(key: TemplateKey, vars: Record<string, string>): Promise<{ subject: string; html: string }> {
-  const { subject, body } = await resolveTemplate(key);
-  return { subject: fillTemplate(subject, vars), html: fillTemplate(body, vars) };
+/** Render a template by key with the given variables into { subject, html,
+ *  enabled }. Callers must skip the actual send when `enabled` is false. */
+export async function renderEmail(
+  key: TemplateKey,
+  vars: Record<string, string>,
+): Promise<{ subject: string; html: string; enabled: boolean }> {
+  const { subject, body, enabled } = await resolveTemplate(key);
+  return { subject: fillTemplate(subject, vars), html: fillTemplate(body, vars), enabled };
 }
 
-/** For the admin UI: every template with its current effective copy + whether it's been customized. */
-export async function getEffectiveTemplates(): Promise<(TemplateDef & { customized: boolean })[]> {
-  let overrides: { key: string; subject: string; body: string }[] = [];
+/** For the admin UI: every template with its current effective copy, whether
+ *  its copy has been customized, and whether it's switched on. */
+export async function getEffectiveTemplates(): Promise<(TemplateDef & { customized: boolean; enabled: boolean })[]> {
+  let overrides: { key: string; subject: string; body: string; enabled: boolean }[] = [];
   try {
     overrides = await prisma.emailTemplate.findMany();
   } catch {
@@ -166,6 +202,9 @@ export async function getEffectiveTemplates(): Promise<(TemplateDef & { customiz
   const map = new Map(overrides.map((o) => [o.key, o]));
   return EMAIL_TEMPLATES.map((def) => {
     const o = map.get(def.key);
-    return { ...def, subject: o?.subject ?? def.subject, body: o?.body ?? def.body, customized: !!o };
+    // "Customized" tracks the copy only, so toggling a template off without
+    // editing its wording doesn't misleadingly flag it as customized.
+    const customized = !!o && (o.subject !== def.subject || o.body !== def.body);
+    return { ...def, subject: o?.subject ?? def.subject, body: o?.body ?? def.body, customized, enabled: o?.enabled ?? true };
   });
 }

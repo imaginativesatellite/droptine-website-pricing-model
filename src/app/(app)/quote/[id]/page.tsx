@@ -71,7 +71,7 @@ function signatureStage(q: SignatureState): string | null {
 function signatureLog(q: SignatureState): { label: string; date: Date | null }[] {
   const log: { label: string; date: Date | null }[] = [];
   if (q.signatureSentAt) log.push({ label: "Sent for signature", date: q.signatureSentAt });
-  if (q.clientSignedAt) log.push({ label: "Client signed", date: q.clientSignedAt });
+  if (q.clientSignedAt) log.push({ label: "Member signed", date: q.clientSignedAt });
   if (q.companySignedAt) {
     log.push({ label: `${q.companySignedByName ?? "An admin"} signed as Luna Creative`, date: q.companySignedAt });
   } else if (q.companySignedById) {
@@ -321,7 +321,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                   {quote!.signatureStatus !== "SIGNED" && (
                     <form action={sendForSignature.bind(null, quote!.id)} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
                       <div style={{ ...field, marginBottom: 0, flex: 1, minWidth: 220 }}>
-                        <label className="qlabel" htmlFor="clientEmail">Client email</label>
+                        <label className="qlabel" htmlFor="clientEmail">Member email</label>
                         <input id="clientEmail" name="clientEmail" type="email" defaultValue={quote!.client.email ?? ""} required />
                       </div>
                       <button type="submit" className="btn-gold">

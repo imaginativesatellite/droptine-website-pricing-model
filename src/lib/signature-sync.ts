@@ -72,6 +72,8 @@ export async function syncSignatureFromRecipients(
         requestedByName: quote.createdBy.name ?? quote.createdBy.email,
         clientEmail: member?.email ?? quote.createdBy.email,
         manageUrl: `${appUrl()}/quote/${quote.id}`,
+        proposalUrl: `${appUrl()}/proposal/${quote.publicCode}`,
+        code: quote.publicCode,
       });
     } catch {
       // The signature state is already saved - don't let a notification failure affect the caller.
@@ -87,6 +89,7 @@ export async function syncSignatureFromRecipients(
         memberName: quote.createdBy.name ?? quote.createdBy.email,
         memberEmail: quote.createdBy.email,
         proposalUrl: `${appUrl()}/quote/${quote.id}`,
+        code: quote.publicCode,
         pdf: signedPdf ?? undefined,
       });
     } catch {

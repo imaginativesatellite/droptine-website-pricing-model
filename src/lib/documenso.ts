@@ -103,23 +103,36 @@ export async function downloadSignedPdf(envelopeId: string): Promise<Buffer | nu
   try {
     const envelope = await getEnvelopeStatus(envelopeId);
     const itemId = envelope.envelopeItems?.[0]?.id;
-    if (!itemId) return null;
+    if (!itemId) {
+      console.warn(`[documenso download] envelope ${envelopeId} has no envelopeItems - cannot fetch signed PDF`);
+      return null;
+    }
 
     const res = await fetch(`${API_URL}/api/v2/envelope/item/${encodeURIComponent(itemId)}/download?version=signed`, {
       headers: { Authorization: API_KEY ?? "" },
     });
-    if (!res.ok) return null;
+    if (!res.ok) {
+      console.warn(`[documenso download] item ${itemId} download failed (${res.status}): ${await res.text().catch(() => "")}`);
+      return null;
+    }
 
     if ((res.headers.get("content-type") ?? "").includes("application/json")) {
       const body = (await res.json()) as { url?: string; downloadUrl?: string };
       const url = body.url ?? body.downloadUrl;
-      if (!url) return null;
+      if (!url) {
+        console.warn(`[documenso download] item ${itemId} returned JSON with no url/downloadUrl: ${JSON.stringify(body)}`);
+        return null;
+      }
       const fileRes = await fetch(url);
-      if (!fileRes.ok) return null;
+      if (!fileRes.ok) {
+        console.warn(`[documenso download] presigned url for item ${itemId} failed (${fileRes.status})`);
+        return null;
+      }
       return Buffer.from(await fileRes.arrayBuffer());
     }
     return Buffer.from(await res.arrayBuffer());
-  } catch {
+  } catch (e) {
+    console.warn(`[documenso download] error fetching signed PDF for envelope ${envelopeId}:`, e);
     return null;
   }
 }

@@ -10,12 +10,17 @@ import { appUrl } from "@/lib/quote";
  * (https://<your-app>/api/webhooks/documenso) in your Documenso instance's
  * webhook settings.
  *
- * Payload shape is best-effort (docs.documenso.com returns 403 to automated
- * fetches, so this wasn't verified against a live instance): deliveries carry
- * an `event` name plus a `payload` envelope with a `recipients[]` array. We
- * re-sync state by scanning recipients (matched by email) rather than
- * branching on the exact event name/casing, since that wasn't fully
- * confirmed - adjust here if your instance's real payload differs.
+ * Payload shape confirmed from live deliveries: `event` (e.g.
+ * "DOCUMENT_SIGNED") plus a `payload` object whose `id` is a numeric
+ * "document" id and whose `recipients[]` carry signingStatus/signedAt/token.
+ *
+ * We deliberately don't look up the Quote by `payload.id`: the v2
+ * envelope-create/distribute response we store as signatureEnvelopeId returns
+ * a string envelope id (e.g. "envelope_xxx"), but webhook deliveries carry a
+ * different, legacy numeric document id - the two never match. Instead we
+ * match by recipient `token`, which is the same value on both the
+ * create/distribute response (stored as clientSigningToken/
+ * companySigningToken) and every webhook delivery.
  */
 
 const WEBHOOK_SECRET = process.env.DOCUMENSO_WEBHOOK_SECRET;
@@ -24,6 +29,7 @@ type DocumensoWebhookRecipient = {
   email?: string;
   signingStatus?: string;
   signedAt?: string;
+  token?: string;
 };
 
 type DocumensoWebhookPayload = {
@@ -45,22 +51,25 @@ export async function POST(req: Request) {
 
   const body = (await req.json()) as DocumensoWebhookPayload;
   const envelope = body.payload;
-  console.log("[documenso webhook] event=", body.event, "envelope.id=", envelope?.id, "recipients=", envelope?.recipients);
+  const recipients = envelope?.recipients ?? [];
+  console.log("[documenso webhook] event=", body.event, "envelope.id=", envelope?.id, "recipients=", recipients);
   if (!envelope?.id) {
     console.log("[documenso webhook] no payload.id on this delivery - ignoring");
     return new Response("OK", { status: 200 });
   }
 
-  const quote = await prisma.quote.findFirst({
-    where: { signatureEnvelopeId: String(envelope.id) },
-    include: { client: true, createdBy: true },
-  });
+  const tokens = recipients.map((r) => r.token).filter((t): t is string => Boolean(t));
+  const quote = tokens.length
+    ? await prisma.quote.findFirst({
+        where: { OR: [{ clientSigningToken: { in: tokens } }, { companySigningToken: { in: tokens } }] },
+        include: { client: true, createdBy: true },
+      })
+    : null;
   if (!quote) {
-    console.log("[documenso webhook] no Quote with signatureEnvelopeId =", String(envelope.id));
+    console.log("[documenso webhook] no Quote matching recipient tokens =", tokens);
     return new Response("OK", { status: 200 });
   }
 
-  const recipients = envelope.recipients ?? [];
   // The first party who signs is the member the proposal was prepared for
   // (Droptine), not their downstream client. We identify them as the recipient
   // that ISN'T the shared company identity, so this works regardless of which
@@ -68,8 +77,8 @@ export async function POST(req: Request) {
   const company = recipients.find((r) => r.email?.toLowerCase() === companyEmail().toLowerCase());
   const member = recipients.find((r) => r.email && r.email.toLowerCase() !== companyEmail().toLowerCase());
 
-  // Compare signing status case-insensitively - the exact casing Documenso
-  // sends wasn't confirmed against a live instance, so don't depend on it.
+  // Documenso sends signingStatus already uppercase ("SIGNED", "NOT_SIGNED",
+  // "REJECTED"); .toUpperCase() here is just a defensive normalize.
   const status = (r?: DocumensoWebhookRecipient) => (r?.signingStatus ?? "").toUpperCase();
   const clientSignedAt = status(member) === "SIGNED" ? new Date(member!.signedAt ?? Date.now()) : quote.clientSignedAt;
   const companySignedAt = status(company) === "SIGNED" ? new Date(company!.signedAt ?? Date.now()) : quote.companySignedAt;

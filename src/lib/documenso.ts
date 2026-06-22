@@ -101,6 +101,18 @@ export async function downloadSignedPdf(envelopeId: string): Promise<Buffer | nu
   }
 }
 
+type EnvelopeStatusRecipient = { email?: string; signingStatus?: string; signedAt?: string | null; token?: string };
+type EnvelopeStatusResponse = { id: number | string; status?: string; recipients?: EnvelopeStatusRecipient[] };
+
+/** Pulls an envelope's current recipient signing status straight from
+ *  Documenso (GET /api/v2/envelope/{id}, confirmed via Documenso's published
+ *  TypeScript SDK source - the docs site itself 403s automated fetches). This
+ *  is the manual fallback for a missed webhook delivery: see
+ *  syncSignatureStatus in quote/[id]/actions.ts. */
+export async function getEnvelopeStatus(envelopeId: string): Promise<EnvelopeStatusResponse> {
+  return call<EnvelopeStatusResponse>(`/api/v2/envelope/${encodeURIComponent(envelopeId)}`, { method: "GET" });
+}
+
 /** Creates a two-recipient envelope (client, then the shared company
  *  identity) from a rendered proposal PDF and immediately sends it, returning
  *  each party's signing token for building their embedded signing iframe. */

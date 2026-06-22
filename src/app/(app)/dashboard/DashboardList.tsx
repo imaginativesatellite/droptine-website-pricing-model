@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Lock, Sparkles, type LucideIcon } from "lucide-react";
-import BrandSelect from "@/components/BrandSelect";
 
 export type QuoteItem = {
   id: string;
@@ -110,12 +109,11 @@ function Group({ items, view, isAdmin, attention }: { items: QuoteItem[]; view: 
   return <>{items.map((q) => <Row key={q.id} q={q} attention={attention} locked={locked(q)} isAdmin={isAdmin} />)}</>;
 }
 
-const PAGE_SIZES = [10, 25, 50, 100];
+const PAGE_SIZE = 25;
 
 export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; isAdmin: boolean }) {
   const [query, setQuery] = useState("");
-  const [pageSize, setPageSize] = useState(10);
-  const [page, setPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [view, setView] = useState<"list" | "tiles">("list");
   const [isMobile, setIsMobile] = useState(false);
 
@@ -152,10 +150,7 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
   const needsLuna = (i: QuoteItem) => i.status === "CUSTOM_PENDING" || i.awaitingCountersign;
   const pending = filtered.filter(needsLuna);
   const rest = filtered.filter((i) => !needsLuna(i));
-
-  const totalPages = Math.max(1, Math.ceil(rest.length / pageSize));
-  const current = Math.min(page, totalPages);
-  const slice = rest.slice((current - 1) * pageSize, current * pageSize);
+  const slice = rest.slice(0, visibleCount);
 
   return (
     <>
@@ -167,7 +162,7 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
               <path d="M11 11l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
           </span>
-          <input type="search" placeholder="Search by client…" value={query} onChange={(e) => { setQuery(e.target.value); setPage(1); }} />
+          <input type="search" placeholder="Search by client…" value={query} onChange={(e) => { setQuery(e.target.value); setVisibleCount(PAGE_SIZE); }} />
         </div>
 
         {!isMobile && (
@@ -200,26 +195,14 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
           <div className="section-label">All quotes</div>
           <Group items={slice} view={effectiveView} isAdmin={isAdmin} />
 
-          <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
-            <div className="help" style={{ display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
-              Show
-              <div style={{ width: 84 }}>
-                <BrandSelect
-                  value={String(pageSize)}
-                  onChange={(v) => { setPageSize(Number(v)); setPage(1); }}
-                  options={PAGE_SIZES.map((n) => ({ value: String(n), label: String(n) }))}
-                />
-              </div>
+          {rest.length > slice.length && (
+            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
+              <button className="btn-secondary" onClick={() => setVisibleCount((n) => n + PAGE_SIZE)} style={{ padding: "8px 14px" }}>
+                Load more
+              </button>
+              <span className="help">Showing {slice.length} of {rest.length}</span>
             </div>
-
-            {rest.length > pageSize && (
-              <div style={{ display: "flex", alignItems: "center", gap: 12, marginLeft: "auto" }}>
-                <button className="btn-secondary" disabled={current <= 1} onClick={() => setPage(current - 1)} style={{ padding: "8px 14px" }}>← Prev</button>
-                <span className="help">Page {current} of {totalPages} · {rest.length} quotes</span>
-                <button className="btn-secondary" disabled={current >= totalPages} onClick={() => setPage(current + 1)} style={{ padding: "8px 14px" }}>Next →</button>
-              </div>
-            )}
-          </div>
+          )}
         </section>
       )}
     </>

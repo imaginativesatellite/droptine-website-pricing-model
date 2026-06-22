@@ -12,7 +12,8 @@ import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToMember } from "@/lib/email";
 import { appUrl, proposalUrl, finalPrice, isExpired, asDisclaimers, MAX_DISCLAIMERS, type Disclaimer } from "@/lib/quote";
-import { documensoEnabled, sendEnvelopeForSignature } from "@/lib/documenso";
+import { documensoEnabled, sendEnvelopeForSignature, getEnvelopeStatus } from "@/lib/documenso";
+import { syncSignatureFromRecipients } from "@/lib/signature-sync";
 
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
 
@@ -395,6 +396,23 @@ export async function confirmCompanySignature(quoteId: string): Promise<void> {
     data: { companySignedById: admin.id, companySignedByName: admin.name },
   });
   await logEdit(quoteId, admin.id, "signature", null, `${admin.name} signed as Luna Creative`);
+
+  revalidatePath(`/quote/${quoteId}`);
+}
+
+/** Admin: manual fallback for a missed Documenso webhook delivery (instance
+ *  restart, network blip, webhook misconfigured) - pulls the envelope's live
+ *  recipient status directly from Documenso and re-syncs the quote through
+ *  the same logic the webhook uses (see syncSignatureFromRecipients), so the
+ *  two paths can never disagree. */
+export async function syncSignatureStatus(quoteId: string): Promise<void> {
+  await requireAdmin();
+  const quote = await prisma.quote.findUnique({ where: { id: quoteId }, include: { createdBy: true } });
+  if (!quote) throw new Error("Quote not found.");
+  if (!quote.signatureEnvelopeId) throw new Error("This quote hasn't been sent for signature yet.");
+
+  const envelope = await getEnvelopeStatus(quote.signatureEnvelopeId);
+  await syncSignatureFromRecipients(quote, envelope.recipients ?? [], envelope);
 
   revalidatePath(`/quote/${quoteId}`);
 }

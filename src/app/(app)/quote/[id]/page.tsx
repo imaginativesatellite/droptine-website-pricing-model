@@ -6,7 +6,7 @@ import { buildProposalData } from "@/lib/proposal-data";
 import { money, finalPrice, isExpired, asDisclaimers } from "@/lib/quote";
 import { leadTimeDays, computeQuote, type PricingAnswers } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
-import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, requestSignature, confirmCompanySignature } from "./actions";
+import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, requestSignature, confirmCompanySignature, syncSignatureStatus } from "./actions";
 import { documensoEnabled, documensoSignUrl } from "@/lib/documenso";
 import DeleteQuoteButton from "./DeleteQuoteButton";
 import VisibilityToggle from "./VisibilityToggle";
@@ -253,11 +253,25 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
               ) : (
                 <>
                   {quote!.signatureStatus && (
-                    <p style={{ margin: "0 0 4px" }}>
-                      <strong>{signatureStatusLabel[quote!.signatureStatus] ?? quote!.signatureStatus}</strong>
-                      {quote!.signatureSentAt && ` · sent ${new Date(quote!.signatureSentAt).toLocaleString()}`}
-                      {quote!.signedDocumentUrl && (
-                        <> · <a href={quote!.signedDocumentUrl} target="_blank" rel="noreferrer">View signed document</a></>
+                    <p style={{ margin: "0 0 4px", display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                      <span>
+                        <strong>{signatureStatusLabel[quote!.signatureStatus] ?? quote!.signatureStatus}</strong>
+                        {quote!.signatureSentAt && ` · sent ${new Date(quote!.signatureSentAt).toLocaleString()}`}
+                        {quote!.signedDocumentUrl && (
+                          <> · <a href={quote!.signedDocumentUrl} target="_blank" rel="noreferrer">View signed document</a></>
+                        )}
+                      </span>
+                      {quote!.signatureEnvelopeId && (
+                        <form action={syncSignatureStatus.bind(null, quote!.id)}>
+                          <button
+                            type="submit"
+                            className="btn-secondary"
+                            style={{ padding: "4px 10px", fontSize: "0.82rem" }}
+                            title="Pulls the latest signing status directly from Documenso - use this if a webhook delivery was missed and the status above looks stale."
+                          >
+                            Sync from Documenso
+                          </button>
+                        </form>
                       )}
                     </p>
                   )}

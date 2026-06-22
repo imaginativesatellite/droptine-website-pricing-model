@@ -109,11 +109,8 @@ function Group({ items, view, isAdmin, attention }: { items: QuoteItem[]; view: 
   return <>{items.map((q) => <Row key={q.id} q={q} attention={attention} locked={locked(q)} isAdmin={isAdmin} />)}</>;
 }
 
-const PAGE_SIZE = 25;
-
 export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; isAdmin: boolean }) {
   const [query, setQuery] = useState("");
-  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const [view, setView] = useState<"list" | "tiles">("list");
   const [isMobile, setIsMobile] = useState(false);
 
@@ -150,7 +147,6 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
   const needsLuna = (i: QuoteItem) => i.status === "CUSTOM_PENDING" || i.awaitingCountersign;
   const pending = filtered.filter(needsLuna);
   const rest = filtered.filter((i) => !needsLuna(i));
-  const slice = rest.slice(0, visibleCount);
 
   return (
     <>
@@ -162,7 +158,7 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
               <path d="M11 11l4 4" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
           </span>
-          <input type="search" placeholder="Search by client…" value={query} onChange={(e) => { setQuery(e.target.value); setVisibleCount(PAGE_SIZE); }} />
+          <input type="search" placeholder="Search by client…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
 
         {!isMobile && (
@@ -193,16 +189,7 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
       {rest.length > 0 && (
         <section>
           <div className="section-label">All quotes</div>
-          <Group items={slice} view={effectiveView} isAdmin={isAdmin} />
-
-          {rest.length > slice.length && (
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginTop: 16 }}>
-              <button className="btn-secondary" onClick={() => setVisibleCount((n) => n + PAGE_SIZE)} style={{ padding: "8px 14px" }}>
-                Load more
-              </button>
-              <span className="help">Showing {slice.length} of {rest.length}</span>
-            </div>
-          )}
+          <Group items={rest} view={effectiveView} isAdmin={isAdmin} />
         </section>
       )}
     </>

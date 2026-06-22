@@ -46,6 +46,41 @@ const signatureStatusLabel: Record<string, string> = {
   DECLINED: "Declined",
 };
 
+type SignatureState = {
+  signatureStatus: string | null;
+  signatureSentAt: Date | null;
+  clientSignedAt: Date | null;
+  companySignedAt: Date | null;
+  companySignedById: string | null;
+  companySignedByName: string | null;
+};
+
+/** Member view: one sentence for wherever things stand right now - no "sent"
+ *  wording once that's no longer the current stage (e.g. fully signed). */
+function signatureStage(q: SignatureState): string | null {
+  if (!q.signatureStatus) return null;
+  const fmt = (d: Date) => new Date(d).toLocaleString();
+  if (q.signatureStatus === "DECLINED") return "Signing was declined.";
+  if (q.clientSignedAt && q.companySignedAt) return `Fully signed on ${fmt(q.companySignedAt)}.`;
+  if (q.clientSignedAt) return `You signed on ${fmt(q.clientSignedAt)} - awaiting Luna Creative's countersignature.`;
+  if (q.signatureSentAt) return `Sent for your signature on ${fmt(q.signatureSentAt)}.`;
+  return signatureStatusLabel[q.signatureStatus] ?? q.signatureStatus;
+}
+
+/** Admin view: every step so far, in order, each with its own date. */
+function signatureLog(q: SignatureState): { label: string; date: Date | null }[] {
+  const log: { label: string; date: Date | null }[] = [];
+  if (q.signatureSentAt) log.push({ label: "Sent for signature", date: q.signatureSentAt });
+  if (q.clientSignedAt) log.push({ label: "Client signed", date: q.clientSignedAt });
+  if (q.companySignedAt) {
+    log.push({ label: `${q.companySignedByName ?? "An admin"} signed as Luna Creative`, date: q.companySignedAt });
+  } else if (q.companySignedById) {
+    log.push({ label: `${q.companySignedByName} started the Luna Creative signature - awaiting Documenso confirmation`, date: null });
+  }
+  if (q.signatureStatus === "DECLINED") log.push({ label: "Declined", date: null });
+  return log;
+}
+
 function describeActivity(e: { field: string; oldValue: string | null; newValue: string | null }): string {
   if (e.field === "email") return e.newValue ?? "Email sent";
   if (e.field === "answers") return `Edited answers - ${e.newValue ?? ""}`;
@@ -151,20 +186,19 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             <p className="help">E-signature isn&apos;t set up yet - ask an admin to enable it.</p>
           ) : (
             <>
-              {quote!.signatureStatus && (
-                <p style={{ margin: "0 0 10px" }}>
-                  <strong>{signatureStatusLabel[quote!.signatureStatus] ?? quote!.signatureStatus}</strong>
-                  {quote!.signatureSentAt && ` · sent ${new Date(quote!.signatureSentAt).toLocaleString()}`}
-                </p>
+              {signatureStage(quote!) && <p style={{ margin: "0 0 10px" }}>{signatureStage(quote!)}</p>}
+              {quote!.signatureStatus !== "SIGNED" && (
+                <>
+                  <form action={requestSignature.bind(null, quote!.id)}>
+                    <button type="submit" className="btn-gold">
+                      {quote!.signatureStatus ? "Resend for signature" : "Accept & sign"}
+                    </button>
+                  </form>
+                  <p className="help" style={{ marginTop: 10 }}>
+                    Sends the proposal to your account email ({quote!.createdBy.email}) to review and sign.
+                  </p>
+                </>
               )}
-              <form action={requestSignature.bind(null, quote!.id)}>
-                <button type="submit" className="btn-gold">
-                  {quote!.signatureStatus ? "Resend for signature" : "Accept & sign"}
-                </button>
-              </form>
-              <p className="help" style={{ marginTop: 10 }}>
-                Sends the proposal to your account email ({quote!.createdBy.email}) to review and sign.
-              </p>
             </>
           )}
         </div>
@@ -253,12 +287,11 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
               ) : (
                 <>
                   {quote!.signatureStatus && (
-                    <p style={{ margin: "0 0 4px", display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
+                    <p style={{ margin: "0 0 10px", display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
                       <span>
                         <strong>{signatureStatusLabel[quote!.signatureStatus] ?? quote!.signatureStatus}</strong>
-                        {quote!.signatureSentAt && ` · sent ${new Date(quote!.signatureSentAt).toLocaleString()}`}
-                        {quote!.signedDocumentUrl && (
-                          <> · <a href={quote!.signedDocumentUrl} target="_blank" rel="noreferrer">View signed document</a></>
+                        {quote!.signatureStatus === "SIGNED" && (
+                          <> · <a href={`/api/proposal/${quote!.publicCode}/pdf`} target="_blank" rel="noreferrer">Download signed PDF</a></>
                         )}
                       </span>
                       {quote!.signatureEnvelopeId && (
@@ -275,32 +308,27 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                       )}
                     </p>
                   )}
-                  {quote!.clientSignedAt && (
-                    <p className="help" style={{ margin: "0 0 2px" }}>
-                      Client signed {new Date(quote!.clientSignedAt).toLocaleString()}
-                    </p>
-                  )}
-                  {quote!.companySignedAt ? (
-                    <p className="help" style={{ margin: "0 0 10px" }}>
-                      {quote!.companySignedByName ?? "An admin"} signed as Luna Creative {new Date(quote!.companySignedAt).toLocaleString()}
-                    </p>
-                  ) : quote!.companySignedById ? (
-                    <p className="help" style={{ margin: "0 0 10px" }}>
-                      {quote!.companySignedByName} started the company signature below - waiting on Documenso to confirm completion.
-                    </p>
-                  ) : (
-                    <div style={{ marginBottom: 10 }} />
+                  {signatureLog(quote!).length > 0 && (
+                    <div style={{ marginBottom: 10 }}>
+                      {signatureLog(quote!).map((step, i) => (
+                        <p key={i} className="help" style={{ margin: "0 0 2px" }}>
+                          {step.label}{step.date && ` · ${new Date(step.date).toLocaleString()}`}
+                        </p>
+                      ))}
+                    </div>
                   )}
 
-                  <form action={sendForSignature.bind(null, quote!.id)} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
-                    <div style={{ ...field, marginBottom: 0, flex: 1, minWidth: 220 }}>
-                      <label className="qlabel" htmlFor="clientEmail">Client email</label>
-                      <input id="clientEmail" name="clientEmail" type="email" defaultValue={quote!.client.email ?? ""} required />
-                    </div>
-                    <button type="submit" className="btn-gold">
-                      {quote!.signatureStatus ? "Resend for signature" : "Send for signature"}
-                    </button>
-                  </form>
+                  {quote!.signatureStatus !== "SIGNED" && (
+                    <form action={sendForSignature.bind(null, quote!.id)} style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "flex-end" }}>
+                      <div style={{ ...field, marginBottom: 0, flex: 1, minWidth: 220 }}>
+                        <label className="qlabel" htmlFor="clientEmail">Client email</label>
+                        <input id="clientEmail" name="clientEmail" type="email" defaultValue={quote!.client.email ?? ""} required />
+                      </div>
+                      <button type="submit" className="btn-gold">
+                        {quote!.signatureStatus ? "Resend for signature" : "Send for signature"}
+                      </button>
+                    </form>
+                  )}
 
                   {quote!.clientSignedAt && quote!.companySigningToken && !quote!.companySignedAt && (
                     <div style={{ marginTop: 16 }}>

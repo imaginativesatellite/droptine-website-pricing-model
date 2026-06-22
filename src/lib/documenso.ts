@@ -78,31 +78,51 @@ function tokenFor(recipients: DocumensoRecipient[] | undefined, email: string): 
   return recipients?.find((r) => r.email.toLowerCase() === email.toLowerCase())?.token ?? null;
 }
 
+type EnvelopeStatusRecipient = { email?: string; signingStatus?: string; signedAt?: string | null; token?: string };
+type EnvelopeItem = { id: string };
+type EnvelopeStatusResponse = {
+  id: number | string;
+  status?: string;
+  recipients?: EnvelopeStatusRecipient[];
+  envelopeItems?: EnvelopeItem[];
+};
+
 /** Best-effort fetch of the completed (signed) document for an envelope, so a
  *  download after both parties sign returns the signed copy rather than a fresh
- *  render. Returns null if it can't be retrieved (endpoint shape is best-effort,
- *  like the rest of this integration - the caller falls back to the rendered
- *  PDF). */
+ *  render. There's no single "download this envelope" endpoint - per
+ *  Documenso's public TypeScript SDK source (the docs site 403s automated
+ *  fetches), a document's actual file lives on its envelope item(s), fetched
+ *  via GET /api/v2/envelope/item/{envelopeItemId}/download?version=signed,
+ *  where the item id comes from GET /api/v2/envelope/{id}'s envelopeItems.
+ *  That endpoint's response shape isn't documented beyond "JSON", so this
+ *  handles both a JSON wrapper carrying a (usually presigned) URL and a direct
+ *  binary response. Returns null if anything doesn't line up - the caller
+ *  falls back to the freshly rendered PDF. */
 export async function downloadSignedPdf(envelopeId: string): Promise<Buffer | null> {
   if (!documensoEnabled()) return null;
   try {
-    // v2 returns a (usually presigned) download URL for the envelope's document.
-    const res = await call<{ downloadUrl?: string; url?: string }>(
-      `/api/v2/envelope/download?envelopeId=${encodeURIComponent(envelopeId)}`,
-      { method: "GET" },
-    );
-    const url = res?.downloadUrl ?? res?.url;
-    if (!url) return null;
-    const fileRes = await fetch(url);
-    if (!fileRes.ok) return null;
-    return Buffer.from(await fileRes.arrayBuffer());
+    const envelope = await getEnvelopeStatus(envelopeId);
+    const itemId = envelope.envelopeItems?.[0]?.id;
+    if (!itemId) return null;
+
+    const res = await fetch(`${API_URL}/api/v2/envelope/item/${encodeURIComponent(itemId)}/download?version=signed`, {
+      headers: { Authorization: API_KEY ?? "" },
+    });
+    if (!res.ok) return null;
+
+    if ((res.headers.get("content-type") ?? "").includes("application/json")) {
+      const body = (await res.json()) as { url?: string; downloadUrl?: string };
+      const url = body.url ?? body.downloadUrl;
+      if (!url) return null;
+      const fileRes = await fetch(url);
+      if (!fileRes.ok) return null;
+      return Buffer.from(await fileRes.arrayBuffer());
+    }
+    return Buffer.from(await res.arrayBuffer());
   } catch {
     return null;
   }
 }
-
-type EnvelopeStatusRecipient = { email?: string; signingStatus?: string; signedAt?: string | null; token?: string };
-type EnvelopeStatusResponse = { id: number | string; status?: string; recipients?: EnvelopeStatusRecipient[] };
 
 /** Pulls an envelope's current recipient signing status straight from
  *  Documenso (GET /api/v2/envelope/{id}, confirmed via Documenso's published

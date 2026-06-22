@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { prisma } from "@/lib/db";
+import { fmtDate } from "@/lib/quote";
 
 /**
  * Pinned list of custom quotes awaiting admin approval. Rendered above the admin
@@ -27,7 +28,7 @@ export default async function AdminApprovalBanner() {
           <div className="main">
             <div className="name">{q.proposalName}</div>
             <div className="meta">
-              {q.createdAt.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+              {fmtDate(q.createdAt, { month: "short", day: "numeric", year: "numeric" })}
               {" · "}{q.createdBy.email} · {q.customReasons[0] ?? "custom"}
             </div>
           </div>

@@ -60,3 +60,28 @@ export function expiresAt(q: { validFrom: Date }): Date {
 export function isExpired(q: { validFrom: Date }): boolean {
   return expiresAt(q).getTime() < Date.now();
 }
+
+// Railway runs this app's containers in UTC, and a viewer's own device can be
+// set to any zone - neither gives a consistent reading. Every timestamp shown
+// anywhere in the app (member or client-facing) renders in Central Time via
+// these two helpers, never the bare `Date#toLocaleString`. The IANA zone name
+// (rather than a fixed "CST"/"CDT" offset) auto-handles the DST transition.
+export const TIME_ZONE = "America/Chicago";
+
+/** e.g. "Jun 22, 2026" */
+export function fmtDate(d: Date | string, opts: Intl.DateTimeFormatOptions = {}): string {
+  return new Date(d).toLocaleDateString("en-US", { timeZone: TIME_ZONE, ...opts });
+}
+
+/** e.g. "Jun 22, 2026, 3:45 PM CDT" */
+export function fmtDateTime(d: Date | string): string {
+  return new Date(d).toLocaleString("en-US", {
+    timeZone: TIME_ZONE,
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
+}

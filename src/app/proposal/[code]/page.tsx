@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { buildProposalData } from "@/lib/proposal-data";
-import { isExpired } from "@/lib/quote";
+import { isExpired, fmtDateTime } from "@/lib/quote";
 import ProposalView from "@/components/ProposalView";
 import { documensoSignUrl } from "@/lib/documenso";
 
@@ -23,7 +23,7 @@ export default async function ProposalPage({ params }: { params: Promise<{ code:
         <div className="card" style={{ marginTop: 18 }}>
           <h3 style={{ marginBottom: 10 }}>Signature</h3>
           {quote!.clientSignedAt ? (
-            <p className="help">You signed this proposal on {new Date(quote!.clientSignedAt).toLocaleString()}.</p>
+            <p className="help">You signed this proposal on {fmtDateTime(quote!.clientSignedAt)}.</p>
           ) : (
             <iframe
               src={documensoSignUrl(quote!.clientSigningToken)}

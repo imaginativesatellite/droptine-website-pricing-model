@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Lock, Sparkles, type LucideIcon } from "lucide-react";
+import { fmtDate } from "@/lib/quote";
 
 export type QuoteItem = {
   id: string;
@@ -21,7 +22,7 @@ export type QuoteItem = {
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
-const fmtDate = (s: string) => new Date(s).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+const fmtShortDate = (s: string) => fmtDate(s, { month: "short", day: "numeric" });
 
 // Compact, muted icon that sits inline with the status tags and explains itself
 // on hover (native tooltip via title). Used for at-a-glance properties of a
@@ -70,7 +71,7 @@ function Row({ q, attention, locked, isAdmin }: { q: QuoteItem; attention?: bool
     <>
       <div className="main">
         <div className="name">{q.name}</div>
-        <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
+        <div className="meta">{fmtShortDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
       </div>
       <div className="right">
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{badges(q, isAdmin)}</div>
@@ -89,7 +90,7 @@ function Tile({ q, attention, locked, isAdmin }: { q: QuoteItem; attention?: boo
       <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{badges(q, isAdmin)}</div>
       <div className="name">{q.name}</div>
       <div className="price">{q.price == null ? "-" : money(q.price)}</div>
-      <div className="meta">{fmtDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
+      <div className="meta">{fmtShortDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
     </>
   );
   if (locked) return <div className="qtile" style={{ opacity: 0.65, cursor: "default" }}>{inner}</div>;

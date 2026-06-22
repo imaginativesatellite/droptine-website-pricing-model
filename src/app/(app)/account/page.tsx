@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
+import { fmtDate } from "@/lib/quote";
 import ProfileForm from "./ProfileForm";
 import PasswordForm from "./PasswordForm";
 
@@ -21,7 +22,7 @@ export default async function AccountPage() {
         <div className="account-terms">
           <h3>Platform terms</h3>
           <p className="help" style={{ marginBottom: 10 }}>
-            Accepted {user.termsAcceptedAt.toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+            Accepted {fmtDate(user.termsAcceptedAt, { year: "numeric", month: "long", day: "numeric" })}
           </p>
           <p style={{ whiteSpace: "pre-wrap", margin: 0 }}>{user.termsAcceptedText}</p>
         </div>

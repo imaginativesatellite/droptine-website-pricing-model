@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
-import { money, finalPrice, isExpired, asDisclaimers } from "@/lib/quote";
+import { money, finalPrice, isExpired, asDisclaimers, fmtDateTime } from "@/lib/quote";
 import { leadTimeDays, computeQuote, type PricingAnswers } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
 import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, requestSignature, confirmCompanySignature, syncSignatureStatus } from "./actions";
@@ -59,11 +59,10 @@ type SignatureState = {
  *  wording once that's no longer the current stage (e.g. fully signed). */
 function signatureStage(q: SignatureState): string | null {
   if (!q.signatureStatus) return null;
-  const fmt = (d: Date) => new Date(d).toLocaleString();
   if (q.signatureStatus === "DECLINED") return "Signing was declined.";
-  if (q.clientSignedAt && q.companySignedAt) return `Fully signed on ${fmt(q.companySignedAt)}.`;
-  if (q.clientSignedAt) return `You signed on ${fmt(q.clientSignedAt)} - awaiting Luna Creative's countersignature.`;
-  if (q.signatureSentAt) return `Sent for your signature on ${fmt(q.signatureSentAt)}.`;
+  if (q.clientSignedAt && q.companySignedAt) return `Fully signed on ${fmtDateTime(q.companySignedAt)}.`;
+  if (q.clientSignedAt) return `You signed on ${fmtDateTime(q.clientSignedAt)} - awaiting Luna Creative's countersignature.`;
+  if (q.signatureSentAt) return `Sent for your signature on ${fmtDateTime(q.signatureSentAt)}.`;
   return signatureStatusLabel[q.signatureStatus] ?? q.signatureStatus;
 }
 
@@ -312,7 +311,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
                     <div style={{ marginBottom: 10 }}>
                       {signatureLog(quote!).map((step, i) => (
                         <p key={i} className="help" style={{ margin: "0 0 2px" }}>
-                          {step.label}{step.date && ` · ${new Date(step.date).toLocaleString()}`}
+                          {step.label}{step.date && ` · ${fmtDateTime(step.date)}`}
                         </p>
                       ))}
                     </div>
@@ -466,11 +465,11 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
             </summary>
             <div style={{ marginTop: 10 }}>
               <div className="help" style={{ padding: "3px 0" }}>
-                {new Date(quote!.createdAt).toLocaleString()} · Requested by {quote!.createdBy.email}
+                {fmtDateTime(quote!.createdAt)} · Requested by {quote!.createdBy.email}
               </div>
               {[...quote!.edits].reverse().map((e) => (
                 <div key={e.id} className="help" style={{ padding: "3px 0" }}>
-                  {new Date(e.createdAt).toLocaleString()} · {e.editedBy.email} · {describeActivity(e)}
+                  {fmtDateTime(e.createdAt)} · {e.editedBy.email} · {describeActivity(e)}
                 </div>
               ))}
             </div>

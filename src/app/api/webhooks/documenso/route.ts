@@ -45,13 +45,20 @@ export async function POST(req: Request) {
 
   const body = (await req.json()) as DocumensoWebhookPayload;
   const envelope = body.payload;
-  if (!envelope?.id) return new Response("OK", { status: 200 });
+  console.log("[documenso webhook] event=", body.event, "envelope.id=", envelope?.id, "recipients=", envelope?.recipients);
+  if (!envelope?.id) {
+    console.log("[documenso webhook] no payload.id on this delivery - ignoring");
+    return new Response("OK", { status: 200 });
+  }
 
   const quote = await prisma.quote.findFirst({
     where: { signatureEnvelopeId: String(envelope.id) },
     include: { client: true, createdBy: true },
   });
-  if (!quote) return new Response("OK", { status: 200 });
+  if (!quote) {
+    console.log("[documenso webhook] no Quote with signatureEnvelopeId =", String(envelope.id));
+    return new Response("OK", { status: 200 });
+  }
 
   const recipients = envelope.recipients ?? [];
   // The first party who signs is the member the proposal was prepared for
@@ -81,6 +88,13 @@ export async function POST(req: Request) {
   const wasFullySigned = Boolean(quote.clientSignedAt && quote.companySignedAt);
   const nowFullySigned = Boolean(clientSignedAt && companySignedAt);
   const justFullySigned = !wasFullySigned && nowFullySigned;
+
+  console.log(
+    "[documenso webhook] quote=", quote.id,
+    "signatureStatus=", signatureStatus,
+    "clientSignedAt=", clientSignedAt,
+    "companySignedAt=", companySignedAt,
+  );
 
   await prisma.quote.update({
     where: { id: quote.id },

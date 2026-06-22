@@ -150,12 +150,14 @@ export async function sendEnvelopeForSignature(args: {
   form.append("files", new Blob([new Uint8Array(args.pdf)], { type: "application/pdf" }), `${args.title}.pdf`);
 
   const created = await call<EnvelopeResponse>("/api/v2/envelope/create", { method: "POST", body: form });
+  console.log("[documenso create] raw response:", JSON.stringify(created));
 
   const distributed = await call<EnvelopeResponse>("/api/v2/envelope/distribute", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ envelopeId: created.id }),
   });
+  console.log("[documenso distribute] raw response:", JSON.stringify(distributed));
 
   const recipients = distributed.recipients ?? created.recipients;
 

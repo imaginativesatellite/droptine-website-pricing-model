@@ -84,6 +84,10 @@ model Quote {
   monthly       Int      @default(169)
   // manual turnaround override (business days); falls back to price-based
   leadDaysOverride Int?
+  // accelerated turnaround (business days) the client requested via the rush
+  // option; set only when a rush fee was applied. Drives the proposal's
+  // turnaround number and the strike-through of the original estimate.
+  rushDays      Int?
   // up to 3 single-line admin disclaimers: [{ text, placement }], placement
   // is "development" | "monthly"
   disclaimers   Json?

@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
-import { computeQuote, applyDemandAdjustment, type PricingAnswers } from "@/lib/pricing";
+import { priceQuote, type PricingAnswers } from "@/lib/pricing";
 import { generateScopeSummary } from "@/lib/anthropic";
 import { generateAccessCode, generatePublicCode } from "@/lib/code";
 import { renderProposalPdf } from "@/lib/pdf";
@@ -43,7 +43,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
 
   const pricing = answers as PricingAnswers;
   const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
-  const result = applyDemandAdjustment(computeQuote(pricing), settings?.adjustmentPct ?? 0);
+  const result = priceQuote(pricing, settings?.adjustmentPct ?? 0);
 
   // 1) Persist the quote first - it's the source of truth. If this fails we
   //    return an inline error so the user can retry without losing their answers.
@@ -72,6 +72,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
         status: result.requiresCustomQuote ? "CUSTOM_PENDING" : "PROPOSAL",
         computedTotal: result.total,
         monthly: result.monthly,
+        rushDays: result.rushDays ?? null,
         customReasons: result.reasons,
         scopeSummary,
         shared: shared === true,

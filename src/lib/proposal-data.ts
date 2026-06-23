@@ -1,5 +1,5 @@
 import type { Quote, Client, User } from "@prisma/client";
-import { computeQuote, leadTimeDays, type PricingAnswers } from "./pricing";
+import { computeQuote, leadTimeDays, PRICING_RULES, type PricingAnswers } from "./pricing";
 import { subtotal, finalPrice, asDisclaimers } from "./quote";
 import type { ProposalPdfData } from "./pdf";
 
@@ -31,6 +31,31 @@ export function buildProposalData(
     lineItems = result.lineItems.length ? result.lineItems : [{ label: "Website build", amount: subtotal(quote) }];
   }
 
+  // The rush fee (when present) lives in the line items as its own "Rush Fee -"
+  // entry. We surface it separately so the proposal/PDF can show it as a distinct
+  // charge and strike through the original estimate. An admin override collapses
+  // the breakdown to a single "Website build" line, so a rush is folded into that
+  // override price and no separate rush line is shown.
+  const rushFee = lineItems
+    .filter((li) => li.label.startsWith("Rush Fee"))
+    .reduce((sum, li) => sum + li.amount, 0);
+
+  // Turnaround precedence: an admin's manual override wins (no strike-through);
+  // otherwise a rush shows the requested days with the original estimate struck
+  // through; otherwise the plain price-based estimate. The struck estimate is
+  // reconstructed from the charged fee so it always reconciles with the dollars.
+  let leadDays: number;
+  let originalLeadDays: number | null = null;
+  if (quote.leadDaysOverride != null) {
+    leadDays = quote.leadDaysOverride;
+  } else if (rushFee > 0 && quote.rushDays != null) {
+    leadDays = quote.rushDays;
+    const daysOff = (rushFee / PRICING_RULES.rushFeePerIncrement) * PRICING_RULES.rushIncrementDays;
+    originalLeadDays = quote.rushDays + daysOff;
+  } else {
+    leadDays = leadTimeDays(finalPrice(quote) - rushFee);
+  }
+
   return {
     proposalName: quote.proposalName,
     preparedByName: quote.createdBy?.name ?? null,
@@ -38,7 +63,9 @@ export function buildProposalData(
     preparedByPhone: quote.createdBy?.phone ?? null,
     code: quote.code,
     publicCode: quote.publicCode,
-    leadDays: quote.leadDaysOverride ?? leadTimeDays(finalPrice(quote)),
+    leadDays,
+    originalLeadDays,
+    rushFee,
     scopeSummary: quote.scopeSummary,
     lineItems,
     subtotal: subtotal(quote),

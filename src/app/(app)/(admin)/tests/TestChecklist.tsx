@@ -63,6 +63,16 @@ const SECTIONS: Section[] = [
         ],
       },
       {
+        id: "new-rush-fee",
+        title: "Rush fee for a faster turnaround",
+        steps: [
+          "Create a quote and, under Turnaround Time, pick a turnaround faster than the estimated lead time (e.g. 20 business days).",
+          "Confirm a 'Rush Fee - X business day turnaround' line appears and the total increases by $500 per 5 business days saved.",
+          "Confirm the proposal/PDF show the requested turnaround with the original estimate struck through.",
+          "Pick 'No preference' and confirm there's no rush fee and the standard lead time shows.",
+        ],
+      },
+      {
         id: "new-draft-autosave",
         title: "Draft auto-saves and Clear works",
         steps: [
@@ -99,6 +109,15 @@ const SECTIONS: Section[] = [
           "Create a quote where you describe complex/additional functionality.",
           "Confirm it's created as 'Custom · pending approval' rather than getting an instant price.",
           "Confirm admins receive a 'Custom quote requested' email.",
+        ],
+      },
+      {
+        id: "custom-rush-under-min",
+        title: "Turnaround under 20 days routes to a custom quote",
+        steps: [
+          "Create a quote and choose 'Less than 20 business days' for the turnaround.",
+          "Confirm the exact-days field appears (numbers only) and is required.",
+          "Confirm the quote is created as 'Custom · pending approval' with no instant price.",
         ],
       },
       {

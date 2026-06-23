@@ -4,7 +4,7 @@ import { prisma } from "@/lib/db";
 import { requireUser } from "@/lib/session";
 import { buildProposalData } from "@/lib/proposal-data";
 import { money, finalPrice, isExpired, asDisclaimers, fmtDateTime } from "@/lib/quote";
-import { leadTimeDays, computeQuote, type PricingAnswers } from "@/lib/pricing";
+import { leadTimeDays, priceQuote, type PricingAnswers } from "@/lib/pricing";
 import ProposalView from "@/components/ProposalView";
 import { updateQuote, approveQuote, resendProposalEmail, reactivateQuote, sendForSignature, requestSignature, confirmCompanySignature, syncSignatureStatus } from "./actions";
 import { documensoEnabled, documensoSignUrl } from "@/lib/documenso";
@@ -130,7 +130,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
   // member-facing view collapses to a single "Website build" line. This keeps
   // the standard breakdown visible and lets us show how much the custom price
   // added/removed over it.
-  const computedBreakdown = computeQuote(ans as unknown as PricingAnswers);
+  const computedBreakdown = priceQuote(ans as unknown as PricingAnswers);
   const isCustomPricing = isPending || quote!.overrideTotal != null;
   // How much the admin's custom price moved off the deterministic standard.
   const customDelta = (quote!.overrideTotal ?? quote!.computedTotal) - quote!.computedTotal;

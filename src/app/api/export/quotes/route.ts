@@ -1,7 +1,7 @@
 import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { finalPrice } from "@/lib/quote";
-import { computeQuote, type PricingAnswers } from "@/lib/pricing";
+import { priceQuote, type PricingAnswers } from "@/lib/pricing";
 
 function csvCell(v: string | number | null | undefined): string {
   const s = v == null ? "" : String(v);
@@ -10,7 +10,7 @@ function csvCell(v: string | number | null | undefined): string {
 
 /** A readable summary of what was selected + each item's price. */
 function breakdown(answers: PricingAnswers): string {
-  const r = computeQuote(answers);
+  const r = priceQuote(answers);
   if (r.requiresCustomQuote) return `CUSTOM: ${r.reasons.join("; ")}`;
   return r.lineItems.map((li) => `${li.label} $${li.amount}`).join(" | ");
 }

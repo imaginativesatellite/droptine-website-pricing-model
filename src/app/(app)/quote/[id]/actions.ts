@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { requireAdmin, requireUser } from "@/lib/session";
-import { computeQuote, applyDemandAdjustment, leadTimeDays, PRICING_RULES, type PricingAnswers } from "@/lib/pricing";
+import { computeQuote, priceQuote, leadTimeDays, PRICING_RULES, type PricingAnswers } from "@/lib/pricing";
 import { generatePublicCode } from "@/lib/code";
 import { recommendCustomPrice as aiRecommendCustomPrice, type CustomRecommendation } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
@@ -172,7 +172,7 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
   if (!isExpired(quote)) throw new Error("This quote hasn't expired - nothing to reactivate.");
 
   const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
-  const result = applyDemandAdjustment(computeQuote(quote.answers as unknown as PricingAnswers), settings?.adjustmentPct ?? 0);
+  const result = priceQuote(quote.answers as unknown as PricingAnswers, settings?.adjustmentPct ?? 0);
   // Issue a fresh public code so the expired URL can never be used again.
   let publicCode = generatePublicCode();
   for (let i = 0; i < 6; i++) {
@@ -187,6 +187,7 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
       publicCode,
       computedTotal: result.total,
       monthly: result.monthly,
+      rushDays: result.rushDays ?? null,
       lineItems: result.lineItems as unknown as Prisma.InputJsonValue,
       customReasons: result.reasons,
     },
@@ -261,7 +262,7 @@ export async function editAnswers(quoteId: string, answers: RawAnswers): Promise
 
   const pricing = answers as PricingAnswers;
   const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
-  const result = applyDemandAdjustment(computeQuote(pricing), settings?.adjustmentPct ?? 0);
+  const result = priceQuote(pricing, settings?.adjustmentPct ?? 0);
   const proposalName = String(answers.proposalName ?? quote.proposalName).trim() || quote.proposalName;
 
   const summary = summarizeAnswerChanges(quote.answers as Record<string, unknown>, answers);
@@ -276,6 +277,7 @@ export async function editAnswers(quoteId: string, answers: RawAnswers): Promise
       answers: JSON.parse(JSON.stringify(pricing)) as Prisma.InputJsonValue,
       computedTotal: result.total,
       monthly: result.monthly,
+      rushDays: result.rushDays ?? null,
       lineItems: result.lineItems as unknown as Prisma.InputJsonValue,
       customReasons: result.reasons,
     },

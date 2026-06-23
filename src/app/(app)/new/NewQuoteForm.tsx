@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState, useTransition } from "react";
-import { Globe, ShoppingCart, FileText, PawPrint, Newspaper, FolderOpen, PlusCircle, Sparkles, type LucideIcon } from "lucide-react";
+import { Globe, ShoppingCart, FileText, PawPrint, Newspaper, FolderOpen, PlusCircle, Sparkles, Clock, type LucideIcon } from "lucide-react";
 import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import ClientNameInput from "@/components/ClientNameInput";
 import BrandSelect from "@/components/BrandSelect";
@@ -19,8 +19,13 @@ const SECTION_ICONS: Record<string, LucideIcon> = {
   "Animals & pedigrees": PawPrint,
   "Content": Newspaper,
   "Add-ons": PlusCircle,
+  "Turnaround Time": Clock,
   "Custom": Sparkles,
 };
+
+// "No preference" is the default turnaround so the dropdown never blocks
+// submission and a member who skips it gets the standard (no-fee) lead time.
+const DEFAULT_ANSWERS: Answers = { rushTurnaround: "no-preference" };
 const FALLBACK_SECTION_ICON: LucideIcon = FolderOpen;
 
 type Answers = Record<string, string | boolean | string[] | undefined>;
@@ -34,7 +39,7 @@ function isAnswered(q: Question, answers: Answers): boolean {
 }
 
 export default function NewQuoteForm({ clientNames, defaultShared }: { clientNames: string[]; defaultShared: boolean }) {
-  const [answers, setAnswers] = useState<Answers>({});
+  const [answers, setAnswers] = useState<Answers>(DEFAULT_ANSWERS);
   const [shared, setShared] = useState(defaultShared);
   const [error, setError] = useState<string | null>(null);
   const [pending, startTransition] = useTransition();
@@ -44,7 +49,7 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
   useEffect(() => {
     try {
       const raw = localStorage.getItem(DRAFT_KEY);
-      if (raw) setAnswers(JSON.parse(raw));
+      if (raw) setAnswers({ ...DEFAULT_ANSWERS, ...JSON.parse(raw) });
     } catch {}
     loaded.current = true;
   }, []);
@@ -73,7 +78,7 @@ export default function NewQuoteForm({ clientNames, defaultShared }: { clientNam
   };
 
   const clearAll = () => {
-    setAnswers({});
+    setAnswers(DEFAULT_ANSWERS);
     setError(null);
     try { localStorage.removeItem(DRAFT_KEY); } catch {}
   };

@@ -93,6 +93,22 @@ export default async function PricingRulesPage() {
         />
       </Card>
 
+      <Card title="Rush fee (faster turnaround)">
+        <p className="help" style={{ marginBottom: 10 }}>
+          On the New Quote form, &ldquo;Turnaround Time&rdquo; lets a member request a delivery
+          window. {money(R.rushFeePerIncrement)} is added for every {R.rushIncrementDays} business
+          days shaved off the estimated lead time. A request the same as or slower than the estimate
+          adds nothing.
+        </p>
+        <Rows
+          rows={[
+            [`Every ${R.rushIncrementDays} business days faster than the estimate`, `+ ${money(R.rushFeePerIncrement)}`],
+            ["No preference (default)", "Standard turnaround, no fee"],
+            [`Less than ${R.rushMinDays} business days`, "Custom quote"],
+          ]}
+        />
+      </Card>
+
       <Card title="Monthly hosting, security & maintenance">
         <Rows
           rows={[
@@ -107,6 +123,7 @@ export default async function PricingRulesPage() {
           <li>30+ pages</li>
           <li>150+ store items</li>
           <li>60+ animals or pedigrees with individual pages</li>
+          <li>A requested turnaround under {R.rushMinDays} business days</li>
           <li>MLS/IDX adds {money(R.mlsBuildAdd)} + the IDX disclaimer (not a custom quote)</li>
           <li>Any free-text in &ldquo;other / complex functionality&rdquo;</li>
         </ul>

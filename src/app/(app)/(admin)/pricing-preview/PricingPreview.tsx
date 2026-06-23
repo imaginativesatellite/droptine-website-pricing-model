@@ -2,7 +2,7 @@
 
 import { Fragment, useMemo, useState } from "react";
 import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
-import { computeQuote, type PricingAnswers } from "@/lib/pricing";
+import { priceQuote, type PricingAnswers } from "@/lib/pricing";
 import BrandSelect from "@/components/BrandSelect";
 
 type Answers = Record<string, string | boolean | undefined>;
@@ -16,7 +16,7 @@ export default function PricingPreview() {
   const set = (id: string, value: string | boolean | undefined) =>
     setAnswers((a) => ({ ...a, [id]: value }));
 
-  const result = useMemo(() => computeQuote(answers as PricingAnswers), [answers]);
+  const result = useMemo(() => priceQuote(answers as PricingAnswers), [answers]);
 
   const scopeQuestions = QUESTIONNAIRE.filter((q) => q.group === "scope" && isVisible(q, answers));
 

@@ -214,6 +214,44 @@ export const QUESTIONNAIRE: Question[] = [
   },
   { id: "socialFeed", type: "boolean", label: "Will the website have social media feed integration?", emphasize: "social media feed", group: "scope", section: "Add-ons" },
 
+  // --- Turnaround ---
+  // Default "no preference" charges nothing. Any 20-60 selection faster than the
+  // estimated lead time adds a rush fee (see applyRushFee in pricing.ts). "Less
+  // than 20" reveals an exact-days field and routes to a custom quote.
+  {
+    id: "rushTurnaround",
+    type: "single",
+    label: "Desired turnaround",
+    emphasize: "turnaround",
+    help: "Standard turnaround is based on project size. A faster turnaround adds a rush fee.",
+    group: "scope",
+    section: "Turnaround Time",
+    options: [
+      { value: "no-preference", label: "No preference (standard turnaround)" },
+      { value: "20", label: "20 business days" },
+      { value: "25", label: "25 business days" },
+      { value: "30", label: "30 business days" },
+      { value: "35", label: "35 business days" },
+      { value: "40", label: "40 business days" },
+      { value: "45", label: "45 business days" },
+      { value: "50", label: "50 business days" },
+      { value: "55", label: "55 business days" },
+      { value: "60", label: "60 business days" },
+      { value: "under-20", label: "Less than 20 business days (custom quote)" },
+    ],
+  },
+  {
+    id: "rushDaysExact",
+    type: "text",
+    numeric: true,
+    label: "How many business days does the client need?",
+    emphasize: "How many",
+    placeholder: "e.g. 15",
+    group: "scope",
+    section: "Turnaround Time",
+    showIf: { field: "rushTurnaround", equals: "under-20" },
+  },
+
   // --- Custom ---
   {
     id: "additionalFunctionality",

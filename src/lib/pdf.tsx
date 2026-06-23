@@ -95,6 +95,10 @@ export type ProposalPdfData = {
   code: string;
   publicCode: string;
   leadDays: number;
+  // original price-based estimate, struck through when a rush fee accelerated it
+  originalLeadDays?: number | null;
+  // rush surcharge for a faster turnaround (0 when none)
+  rushFee: number;
   scopeSummary?: string | null;
   lineItems: { label: string; amount: number }[];
   subtotal: number;
@@ -167,15 +171,30 @@ function ProposalDoc({ d }: { d: ProposalPdfData }) {
           <Text style={s.bulletDot}>•</Text>
           <Text style={{ flex: 1 }}>
             <Text style={{ fontFamily: "Helvetica-Bold" }}>Estimated Lead Time: </Text>
+            {d.originalLeadDays != null && (
+              <Text style={{ fontFamily: "Helvetica-Bold", textDecoration: "line-through", color: "#9a9a9a" }}>
+                {d.originalLeadDays} Business Days{" "}
+              </Text>
+            )}
             <Text style={{ fontFamily: "Helvetica-Bold" }}>{d.leadDays} Business Days </Text>
             {LEAD_TIME_SUFFIX}
           </Text>
         </View>
 
-        {d.discount > 0 && (
+        {(d.rushFee > 0 || d.discount > 0) && (
           <View style={{ marginTop: 14 }}>
-            <View style={s.rowLine}><Text>Subtotal</Text><Text>{usd(d.subtotal)}</Text></View>
-            <View style={s.rowLine}><Text style={s.discount}>Discount</Text><Text style={s.discount}>-{usd(d.discount)}</Text></View>
+            {d.rushFee > 0 && (
+              <>
+                <View style={s.rowLine}><Text>Website build</Text><Text>{usd(d.subtotal - d.rushFee)}</Text></View>
+                <View style={s.rowLine}><Text>Rush Fee - {d.leadDays} business day turnaround</Text><Text>{usd(d.rushFee)}</Text></View>
+              </>
+            )}
+            {d.discount > 0 && (
+              <>
+                {d.rushFee > 0 && <View style={s.rowLine}><Text>Subtotal</Text><Text>{usd(d.subtotal)}</Text></View>}
+                <View style={s.rowLine}><Text style={s.discount}>Discount</Text><Text style={s.discount}>-{usd(d.discount)}</Text></View>
+              </>
+            )}
           </View>
         )}
 

@@ -85,6 +85,14 @@ export const PRICING_RULES = {
   } as Record<string, number>,
   // MLS/IDX integration: one-time build add (3rd-party IDX fees billed to client).
   mlsBuildAdd: 930,
+
+  // Rush fee: a faster-than-estimated turnaround. $500 for every 5 business days
+  // shaved off the estimated lead time (see leadTimeDays). The questionnaire
+  // offers 20-60 business days in steps of 5; "no preference" charges nothing and
+  // anything under the minimum routes to a custom quote instead of auto-pricing.
+  rushFeePerIncrement: 500,
+  rushIncrementDays: 5,
+  rushMinDays: 20,
 } as const;
 
 export type PricingAnswers = {
@@ -116,6 +124,12 @@ export type PricingAnswers = {
 
   mlsIdx?: boolean; // MLS/IDX real-estate syncing (+$930 build, +$50/mo)
   additionalFunctionality?: string; // free-text custom request (complex → custom)
+
+  // Requested turnaround. "no-preference" (default) → standard lead time, no fee.
+  // "20".."60" (steps of 5) → rush fee if faster than the estimated lead time.
+  // "under-20" → custom quote (rushDaysExact carries the exact number requested).
+  rushTurnaround?: string;
+  rushDaysExact?: string; // exact business days, only asked when rushTurnaround === "under-20"
 };
 
 export type PricingResult = {
@@ -124,6 +138,10 @@ export type PricingResult = {
   total: number;
   monthly: number;
   lineItems: { label: string; amount: number }[];
+  // The accelerated turnaround (business days) when a rush fee was applied;
+  // undefined when there's no rush. Persisted on the quote so the proposal can
+  // show the requested turnaround with the original estimate struck through.
+  rushDays?: number;
 };
 
 function roundUp(value: number, step: number): number {
@@ -147,6 +165,8 @@ export function computeQuote(answers: PricingAnswers): PricingResult {
     reasons.push("60+ animals with individual pages needs a custom quote.");
   if (answers.pedigreePages && answers.pedigreeIndividualPages && answers.pedigreeCount === "60+")
     reasons.push("60+ pedigrees with individual pages needs a custom quote.");
+  if (answers.rushTurnaround === "under-20")
+    reasons.push(`A turnaround under ${PRICING_RULES.rushMinDays} business days needs a custom quote.`);
 
   const lineItems: { label: string; amount: number }[] = [];
 
@@ -255,4 +275,36 @@ export function leadTimeDays(total: number): number {
   if (total <= 10000) return 55;
   if (total <= 12500) return 60;
   return 65;
+}
+
+/** Rush fee for a faster-than-estimated turnaround. Applied AFTER the build
+ *  price is finalized (clamp + demand adjustment), so the surcharge is never
+ *  swallowed by the $15k cap or scaled by the demand nudge, and the estimated
+ *  lead time it's measured against is the real, final one. Charges
+ *  rushFeePerIncrement per rushIncrementDays shaved off the estimate. "No
+ *  preference" and "under 20" (a custom quote) add nothing here. A turnaround
+ *  the same as or slower than the estimate is free (no acceleration). */
+export function applyRushFee(result: PricingResult, answers: PricingAnswers): PricingResult {
+  const sel = answers.rushTurnaround;
+  if (!sel || sel === "no-preference" || sel === "under-20") return result;
+  const requested = parseInt(sel, 10);
+  if (!Number.isFinite(requested)) return result;
+  const estimate = leadTimeDays(result.total);
+  if (requested >= estimate) return result;
+  const daysOff = estimate - requested;
+  const fee =
+    Math.ceil(daysOff / PRICING_RULES.rushIncrementDays) * PRICING_RULES.rushFeePerIncrement;
+  return {
+    ...result,
+    total: result.total + fee,
+    rushDays: requested,
+    lineItems: [...result.lineItems, { label: `Rush Fee - ${requested} business day turnaround`, amount: fee }],
+  };
+}
+
+/** Full deterministic price from saved answers: base build → demand nudge →
+ *  rush fee. The single composition every server action should use so the order
+ *  (and the guardrails it protects) can't drift between call sites. */
+export function priceQuote(answers: PricingAnswers, demandPct = 0): PricingResult {
+  return applyRushFee(applyDemandAdjustment(computeQuote(answers), demandPct), answers);
 }

@@ -92,19 +92,40 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
             <li><span style={{ fontWeight: 600 }}>Standard Features:</span> {features}</li>
             <li>
               <span style={{ fontWeight: 600 }}>Estimated Lead Time:</span>{" "}
+              {d.originalLeadDays != null && (
+                <span style={{ fontWeight: 600, textDecoration: "line-through", color: "var(--muted)" }}>
+                  {d.originalLeadDays} Business Days{" "}
+                </span>
+              )}
               <span style={{ fontWeight: 600 }}>{d.leadDays} Business Days</span> {LEAD_TIME_SUFFIX}
             </li>
           </ul>
 
-          {d.discount > 0 && (
-            <>
-              <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between", marginTop: 12 }}>
-                <span>Subtotal</span><span>{money(d.subtotal)}</span>
-              </div>
-              <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between", color: "#c62828", fontWeight: 700 }}>
-                <span>Discount</span><span>−{money(d.discount)}</span>
-              </div>
-            </>
+          {(d.rushFee > 0 || d.discount > 0) && (
+            <div style={{ marginTop: 12 }}>
+              {d.rushFee > 0 && (
+                <>
+                  <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between" }}>
+                    <span>Website build</span><span>{money(d.subtotal - d.rushFee)}</span>
+                  </div>
+                  <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between" }}>
+                    <span>Rush Fee - {d.leadDays} business day turnaround</span><span>{money(d.rushFee)}</span>
+                  </div>
+                </>
+              )}
+              {d.discount > 0 && (
+                <>
+                  {d.rushFee > 0 && (
+                    <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between" }}>
+                      <span>Subtotal</span><span>{money(d.subtotal)}</span>
+                    </div>
+                  )}
+                  <div style={{ ...bodyStyle, display: "flex", justifyContent: "space-between", color: "#c62828", fontWeight: 700 }}>
+                    <span>Discount</span><span>−{money(d.discount)}</span>
+                  </div>
+                </>
+              )}
+            </div>
           )}
 
           <div className="total"><span>Total</span><span className="big">{money(d.total)}</span></div>

@@ -94,15 +94,16 @@ export const PRICING_RULES = {
   rushIncrementDays: 5,
   rushMinDays: 20,
 
-  // Estimated lead time (business days) by final build price. The top tier
-  // (`upTo: null`) is open-ended. leadTimeDays() reads this table, and the Logic
-  // page renders it, so the two can never drift.
+  // Estimated lead time (business days) by final build price, as strict "under
+  // `below`" bands (so a price exactly on a boundary lands in the higher band).
+  // The top band (`below: null`) is open-ended. leadTimeDays() reads this table,
+  // and the Logic page renders it, so the two can never drift.
   leadTimeTiers: [
-    { upTo: 5000, days: 45 },
-    { upTo: 7500, days: 50 },
-    { upTo: 10000, days: 55 },
-    { upTo: 12500, days: 60 },
-    { upTo: null, days: 65 },
+    { below: 7500, days: 45 },
+    { below: 10000, days: 50 },
+    { below: 12500, days: 55 },
+    { below: 15000, days: 60 },
+    { below: null, days: 65 },
   ],
 } as const;
 
@@ -283,7 +284,7 @@ export function applyDemandAdjustment(result: PricingResult, pct: number): Prici
 export function leadTimeDays(total: number): number {
   const tiers = PRICING_RULES.leadTimeTiers;
   for (const t of tiers) {
-    if (t.upTo == null || total <= t.upTo) return t.days;
+    if (t.below == null || total < t.below) return t.days;
   }
   return tiers[tiers.length - 1].days;
 }

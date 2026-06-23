@@ -57,11 +57,11 @@ export default async function LogicPage() {
 
   // Estimated lead-time bands, rendered straight from the pricing table.
   const leadRows: [string, string][] = R.leadTimeTiers.map((t, i) => {
-    const prev = i === 0 ? null : R.leadTimeTiers[i - 1].upTo;
+    const prev = i === 0 ? null : R.leadTimeTiers[i - 1].below;
     let label: string;
-    if (prev == null) label = `Up to ${money(t.upTo as number)}`;
-    else if (t.upTo == null) label = `Over ${money(prev)}`;
-    else label = `${money(prev + 1)} – ${money(t.upTo)}`;
+    if (prev == null) label = `Under ${money(t.below as number)}`;
+    else if (t.below == null) label = `${money(prev)} and over`;
+    else label = `${money(prev)} – ${money(t.below - 1)}`;
     return [label, `${t.days} business days`];
   });
 

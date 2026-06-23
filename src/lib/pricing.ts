@@ -31,11 +31,11 @@ export const PRICING_RULES = {
   // Do NOT count individual animal/pedigree pages here. "30+" → custom.
   pageBase: {
     "1-4": 4000,
-    "5-9": 5000,
-    "10-14": 7000,
-    "15-19": 8000,
-    "20-24": 9000,
-    "25-29": 10000,
+    "5-9": 4500,
+    "10-14": 6500,
+    "15-19": 7500,
+    "20-24": 8500,
+    "25-29": 9500,
   } as Record<string, number>,
 
   // E-commerce: $1,000 flat for being a store, plus an item-count fee on top.
@@ -93,6 +93,17 @@ export const PRICING_RULES = {
   rushFeePerIncrement: 500,
   rushIncrementDays: 5,
   rushMinDays: 20,
+
+  // Estimated lead time (business days) by final build price. The top tier
+  // (`upTo: null`) is open-ended. leadTimeDays() reads this table, and the Logic
+  // page renders it, so the two can never drift.
+  leadTimeTiers: [
+    { upTo: 5000, days: 45 },
+    { upTo: 7500, days: 50 },
+    { upTo: 10000, days: 55 },
+    { upTo: 12500, days: 60 },
+    { upTo: null, days: 65 },
+  ],
 } as const;
 
 export type PricingAnswers = {
@@ -270,11 +281,11 @@ export function applyDemandAdjustment(result: PricingResult, pct: number): Prici
 
 /** Estimated lead time (business days) based on the final price. */
 export function leadTimeDays(total: number): number {
-  if (total <= 5000) return 45;
-  if (total <= 7500) return 50;
-  if (total <= 10000) return 55;
-  if (total <= 12500) return 60;
-  return 65;
+  const tiers = PRICING_RULES.leadTimeTiers;
+  for (const t of tiers) {
+    if (t.upTo == null || total <= t.upTo) return t.days;
+  }
+  return tiers[tiers.length - 1].days;
 }
 
 /** Rush fee for a faster-than-estimated turnaround. Applied AFTER the build

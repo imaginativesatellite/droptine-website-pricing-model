@@ -26,9 +26,9 @@ Every question that affects price needs matching changes in:
 1. **`src/lib/pricing.ts`** - add the field to `PricingAnswers`, and add the
    actual pricing logic in `computeQuote` (line item amount, and a
    custom-quote trigger if the option should route to a custom quote).
-2. **`src/app/(app)/pricing-rules/page.tsx`** - the admin-facing page that
-   documents what the calculator charges and why. It must stay accurate, or
-   admins will be looking at stale rules.
+2. **`src/app/(app)/(admin)/pricing-rules/page.tsx`** - the admin-facing "Logic"
+   tab that documents what the calculator charges, the turnaround it estimates,
+   and why. It must stay accurate, or admins will be looking at stale rules.
 3. **`src/lib/anthropic.ts` (`describeScope`)** - only if the new option
    should be mentioned in the AI-drafted scope prose. Skip if it's purely
    pricing with no prose impact.
@@ -46,8 +46,9 @@ will be reading stale docs:
   these means editing the UI page too. It deliberately imports the live
   `TagIcon` and reuses the real `.pill`/`.qrow` classes so styling can't drift,
   but the *set* of indicators and their meanings is hand-maintained.
-- **Pricing tab** (`src/app/(app)/pricing-rules/page.tsx`) - what the calculator
-  charges (see the questionnaire hard rule above).
+- **Logic tab** (`src/app/(app)/(admin)/pricing-rules/page.tsx`) - what the
+  calculator charges and the turnaround it estimates (see the questionnaire hard
+  rule above). Organized as Pricing / Turnaround / Proposal content / Adjustments.
 - **Emails tab** - the default templates live in `src/lib/email-templates.ts`;
   keep their copy and the listed template variables accurate.
 

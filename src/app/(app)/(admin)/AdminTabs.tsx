@@ -3,13 +3,13 @@
 import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Users, Tag, Mail, CheckCircle, LineChart, Download, Palette, type LucideIcon } from "lucide-react";
+import { Users, SlidersHorizontal, Mail, CheckCircle, LineChart, Download, Palette, type LucideIcon } from "lucide-react";
 
 // Secondary navigation for the admin area. Rendered by the admin layout so it
 // persists across every admin page and highlights the active section.
 const TABS: { href: string; label: string; Icon: LucideIcon }[] = [
   { href: "/users", label: "Users", Icon: Users },
-  { href: "/pricing-rules", label: "Pricing", Icon: Tag },
+  { href: "/pricing-rules", label: "Logic", Icon: SlidersHorizontal },
   { href: "/emails", label: "Emails", Icon: Mail },
   { href: "/tests", label: "Tests", Icon: CheckCircle },
   { href: "/pricing-preview", label: "Pricing Preview", Icon: LineChart },

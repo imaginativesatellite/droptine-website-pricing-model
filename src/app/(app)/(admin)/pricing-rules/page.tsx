@@ -33,10 +33,12 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
   );
 }
 
-// The page's two top-level sections carry equal weight.
+// Each top-level section (Pricing, Turnaround, Proposal content, Adjustments)
+// carries equal weight.
 const sectionTitle = { fontSize: "1.2rem", color: "var(--charcoal)", margin: "8px 0 14px" } as const;
+const laterSection = { ...sectionTitle, marginTop: 36 } as const;
 
-export default async function PricingRulesPage() {
+export default async function LogicPage() {
   await requireAdmin();
 
   const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
@@ -53,12 +55,22 @@ export default async function PricingRulesPage() {
   Object.entries(R.individualPageTiers).forEach(([k, v]) => animalRows.push([`Individual pages, ${k}`, `+ ${money(v)}`]));
   animalRows.push(["60+ animals/pedigrees", "Custom quote"]);
 
+  // Estimated lead-time bands, rendered straight from the pricing table.
+  const leadRows: [string, string][] = R.leadTimeTiers.map((t, i) => {
+    const prev = i === 0 ? null : R.leadTimeTiers[i - 1].upTo;
+    let label: string;
+    if (prev == null) label = `Up to ${money(t.upTo as number)}`;
+    else if (t.upTo == null) label = `Over ${money(prev)}`;
+    else label = `${money(prev + 1)} – ${money(t.upTo)}`;
+    return [label, `${t.days} business days`];
+  });
+
   return (
     <div>
-      <h1>Pricing</h1>
-      <p className="lede">Every rule the calculator applies, the disclaimers added to proposals, and the demand adjustment.</p>
+      <h1>Logic</h1>
+      <p className="lede">How the calculator prices a build, the turnaround it estimates, the proposal copy it generates, and the demand adjustment.</p>
 
-      <h2 style={sectionTitle}>Pricing rules</h2>
+      <h2 style={sectionTitle}>Pricing</h2>
 
       <Card title="Base build (by page count)">
         <p className="help" style={{ marginBottom: 10 }}>
@@ -93,22 +105,6 @@ export default async function PricingRulesPage() {
         />
       </Card>
 
-      <Card title="Rush fee (faster turnaround)">
-        <p className="help" style={{ marginBottom: 10 }}>
-          On the New Quote form, &ldquo;Turnaround Time&rdquo; lets a member request a delivery
-          window. {money(R.rushFeePerIncrement)} is added for every {R.rushIncrementDays} business
-          days shaved off the estimated lead time. A request the same as or slower than the estimate
-          adds nothing.
-        </p>
-        <Rows
-          rows={[
-            [`Every ${R.rushIncrementDays} business days faster than the estimate`, `+ ${money(R.rushFeePerIncrement)}`],
-            ["No preference (default)", "Standard turnaround, no fee"],
-            [`Less than ${R.rushMinDays} business days`, "Custom quote"],
-          ]}
-        />
-      </Card>
-
       <Card title="Monthly hosting, security & maintenance">
         <Rows
           rows={[
@@ -124,10 +120,36 @@ export default async function PricingRulesPage() {
           <li>150+ store items</li>
           <li>60+ animals or pedigrees with individual pages</li>
           <li>A requested turnaround under {R.rushMinDays} business days</li>
-          <li>MLS/IDX adds {money(R.mlsBuildAdd)} + the IDX disclaimer (not a custom quote)</li>
           <li>Any free-text in &ldquo;other / complex functionality&rdquo;</li>
         </ul>
       </Card>
+
+      <h2 style={laterSection}>Turnaround</h2>
+
+      <Card title="Estimated lead time (by build price)">
+        <p className="help" style={{ marginBottom: 10 }}>
+          Every proposal shows an estimated lead time, stepped by the final build price.
+        </p>
+        <Rows rows={leadRows} />
+      </Card>
+
+      <Card title="Rush fee (faster turnaround)">
+        <p className="help" style={{ marginBottom: 10 }}>
+          On the New Quote form, &ldquo;Turnaround Time&rdquo; lets a member request a delivery
+          window. {money(R.rushFeePerIncrement)} is added for every {R.rushIncrementDays} business
+          days shaved off the estimated lead time above. A request the same as or slower than the
+          estimate adds nothing.
+        </p>
+        <Rows
+          rows={[
+            [`Every ${R.rushIncrementDays} business days faster than the estimate`, `+ ${money(R.rushFeePerIncrement)}`],
+            ["No preference (default)", "Standard turnaround, no fee"],
+            [`Less than ${R.rushMinDays} business days`, "Custom quote"],
+          ]}
+        />
+      </Card>
+
+      <h2 style={laterSection}>Proposal content</h2>
 
       <Card title="Scope summary paragraph">
         <p className="help" style={{ marginBottom: 10 }}>
@@ -196,7 +218,7 @@ export default async function PricingRulesPage() {
         </div>
       </Card>
 
-      <h2 style={{ ...sectionTitle, marginTop: 36 }}>Adjustments</h2>
+      <h2 style={laterSection}>Adjustments</h2>
 
       <Card title="Demand adjustment">
         <DemandAdjustmentForm initialPct={settings?.adjustmentPct ?? 0} />

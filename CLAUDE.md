@@ -48,7 +48,10 @@ will be reading stale docs:
   but the *set* of indicators and their meanings is hand-maintained.
 - **Logic tab** (`src/app/(app)/(admin)/pricing-rules/page.tsx`) - what the
   calculator charges and the turnaround it estimates (see the questionnaire hard
-  rule above). Organized as Pricing / Turnaround / Proposal content / Adjustments.
+  rule above). Organized as Pricing / Turnaround / Proposal content / Client
+  portal (Presentation Mode) / Adjustments. The Client-portal section documents
+  the markup + increment + discount layer; its defaults come from
+  `DEFAULT_MARKUP`/`MAX_INCREMENTS` in `src/lib/portal.ts` so they can't drift.
 - **Emails tab** - the default templates live in `src/lib/email-templates.ts`;
   keep their copy and the listed template variables accurate.
 
@@ -61,6 +64,33 @@ will be reading stale docs:
   - `ENABLE_AI_PRICING` - the admin "AI price recommendation" button shown
     only on pending custom quotes.
   Both default off and both require `ANTHROPIC_API_KEY`.
+
+## Client-facing Presentation Mode (pilot)
+A client-facing mode of the same app, currently gated to one pilot member
+(`gallardodesigngroup@gmail.com`) plus all admins via the per-user
+`User.clientPortalEnabled` flag (`canUseClientPortal` in `src/lib/portal.ts`,
+seeded on in `prisma/seed.ts`). Eventually opened to all members.
+- **Entering/leaving**: the account menu's "Enter Presentation Mode" sets an
+  httpOnly cookie (`src/lib/presentation.ts`) and opens `/portal`. While that
+  cookie is set, the whole internal `(app)` area redirects to `/portal` (route
+  lockdown in `(app)/layout.tsx`), so a client can't reach the dashboard/admin.
+  Leaving requires the exit PIN = the last 4 digits of the member's phone
+  (shown only as "PIN"). In this mode the header is orange (`.portalnav`).
+- **The portal** (`/portal`) is the questionnaire reworded for the client
+  (`clientLabel`/`clientHelp` on questions in `questionnaire.ts`), with no
+  visibility toggle and "(custom quote)" stripped from the option labels. A
+  faint far-left rail adds price increments. "See your price" shows a big
+  number, an optional discreet dollar discount, then "Save and Close".
+- **Client pricing is a layer on top of `pricing.ts`, never inside it**: the
+  client price = Luna price (the deterministic engine) + the member's markup +
+  increments − discount. The markup (per member, set on `/markup`) and
+  `computeClientPrice` live in `src/lib/portal.ts`. `pricing.ts` stays the lone
+  source of truth for the *Luna* price.
+- **Client quotes** save with `Quote.origin = CLIENT` and show on the
+  dashboard's "Quotes given to clients" tab. "Request Quote from Luna Creative"
+  promotes one (re-prices at Luna's rate, notifies admins, stamps
+  `convertedToLunaAt`, which renders the handshake icon). Custom-quote answers
+  save as `CUSTOM_PENDING`. No PDF/email - these are instant, in-person.
 
 ## Git workflow (read this - it ends the recurring "Unverified" nag)
 - Commit and push directly to `main` - no PR workflow on this repo unless
@@ -94,4 +124,7 @@ will be reading stale docs:
   changed since it was created.
 - Visibility: member-created quotes default to shared (visible to all members +
   admins); admin-created quotes default to private. Either role can toggle
-  `shared` on a quote they can see.
+  `shared` on a quote they can see. Exception: members with the client portal
+  enabled (the pilot) default to **private**, so their quotes aren't visible to
+  other managers while testing - see `defaultShared` in `(app)/new/page.tsx`.
+  Client-portal quotes (`origin = CLIENT`) are always saved private.

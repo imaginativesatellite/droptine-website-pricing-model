@@ -1,6 +1,7 @@
 import { requireAdmin } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { PRICING_RULES as R } from "@/lib/pricing";
+import { DEFAULT_MARKUP, MAX_INCREMENTS } from "@/lib/portal";
 import {
   ECOMMERCE_MONTHLY_DISCLAIMER,
   IDX_MONTHLY_DISCLAIMER,
@@ -216,6 +217,32 @@ export default async function LogicPage() {
             <div className="help" style={{ marginTop: 2, fontStyle: "italic" }}>Trigger: an admin adds one or more to the quote.</div>
           </div>
         </div>
+      </Card>
+
+      <h2 style={laterSection}>Client portal (Presentation Mode)</h2>
+
+      <Card title="Markup on the client-facing price">
+        <p className="help" style={{ marginBottom: 10 }}>
+          In Presentation Mode the price a client sees is everything above (Luna Creative&rsquo;s
+          deterministic build price) plus the operating member&rsquo;s markup, set per member on the
+          Markup page. The markup never changes the Luna price &mdash; it&rsquo;s a layer added on top,
+          only for client quotes. The values below are the defaults; each member can change their own.
+        </p>
+        <Rows
+          rows={[
+            ["Website markup (added to the build price)", `+ ${money(DEFAULT_MARKUP.website)} (flat $ or %)`],
+            ["Monthly markup (added to the monthly)", `+ ${money(DEFAULT_MARKUP.monthly)}/mo`],
+            [`Price-arrow increment (each tap, up to ${MAX_INCREMENTS}×)`, `+ ${money(DEFAULT_MARKUP.increment)}`],
+          ]}
+        />
+      </Card>
+
+      <Card title="On-screen adjustments (client result screen)">
+        <ul style={{ marginLeft: 18, fontSize: "0.92rem" }}>
+          <li>The faint up/down rail adds or removes increments (up to {MAX_INCREMENTS}); it never lowers the price below the base build.</li>
+          <li>A discreet discount (dollar amount only) can be applied; the original price is struck through and &ldquo;You save $X&rdquo; is shown. It never goes below $0.</li>
+          <li>Custom-quote answers (same triggers as above) show a &ldquo;we&rsquo;ll follow up&rdquo; message instead of a price; saving one stores a pending client quote that can later be &ldquo;Requested from Luna Creative.&rdquo;</li>
+        </ul>
       </Card>
 
       <h2 style={laterSection}>Adjustments</h2>

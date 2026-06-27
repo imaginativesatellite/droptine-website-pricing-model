@@ -829,6 +829,99 @@ select:focus {
   background: rgba(255, 255, 255, 0.18);
 }
 
+/* Presentation Mode: increment rail - far-left, fixed, vertically centered, so
+   the operator can nudge the price unobtrusively while it stays mid-screen on
+   scroll. The dashes are deliberately faint. */
+.increment-rail {
+  position: fixed;
+  left: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.ir-arrow {
+  background: none;
+  border: none;
+  color: #cdc9c1;
+  cursor: pointer;
+  padding: 2px;
+  line-height: 0;
+  transition: color 0.15s ease;
+}
+.ir-arrow:hover:not(:disabled) {
+  color: var(--muted);
+}
+.ir-arrow:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+.ir-dashes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.ir-dash {
+  display: block;
+  width: 14px;
+  height: 2px;
+  border-radius: 1px;
+  background: #d9d5ce;
+}
+
+/* Presentation Mode: client-facing result screen - big and uncluttered, since
+   the number is essentially the only thing on the page. */
+.portal-result {
+  text-align: center;
+  padding-top: 12vh;
+  max-width: 680px;
+}
+.portal-result .pr-name {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.portal-result .pr-caption {
+  color: var(--muted);
+  margin-bottom: 18px;
+}
+.portal-result .pr-price {
+  font-size: clamp(3rem, 12vw, 5.5rem);
+  font-weight: 800;
+  line-height: 1.05;
+  color: var(--charcoal);
+  letter-spacing: -1px;
+}
+.portal-result .pr-monthly {
+  margin-top: 10px;
+  font-size: 1.1rem;
+  color: var(--muted);
+}
+.portal-result .pr-followup {
+  font-size: 1.5rem;
+  color: var(--ink);
+  margin: 18px auto 0;
+  max-width: 30ch;
+}
+.portal-result .pr-restart {
+  margin-top: 40px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.portal-result .pr-restart:hover {
+  color: var(--charcoal);
+}
+
 @media (max-width: 640px) {
   .appnav {
     padding: 0 16px;

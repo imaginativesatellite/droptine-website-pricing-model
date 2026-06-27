@@ -13,7 +13,13 @@ export type ShowIf = { field: string; equals: string | boolean };
 type Base = {
   id: string;
   label: string;
+  // Client-facing overrides used only in Presentation Mode (the portal). When a
+  // question is worded from Droptine's perspective ("Does the client have…"),
+  // clientLabel rephrases it for the end client ("Do you have…"). Falls back to
+  // `label` when unset, so most questions need no override.
+  clientLabel?: string;
   help?: string;
+  clientHelp?: string;
   group: "client" | "scope";
   // Visual section header this question sits under (rendered once per section).
   section?: string;
@@ -81,14 +87,15 @@ const COUNT_OPTIONS = [
 
 export const QUESTIONNAIRE: Question[] = [
   // The client the proposal will eventually go to (Droptine's end client).
-  { id: "proposalName", type: "text", label: "Client Name", placeholder: "e.g. Hidden Valley Ranch", required: true, group: "client" },
+  { id: "proposalName", type: "text", label: "Client Name", clientLabel: "Business name", placeholder: "e.g. Hidden Valley Ranch", required: true, group: "client" },
 
   // --- Existing site ---
-  { id: "existingWebsite", type: "boolean", label: "Does the client have an existing website?", emphasize: "existing website", group: "scope", section: "Existing site" },
+  { id: "existingWebsite", type: "boolean", label: "Does the client have an existing website?", clientLabel: "Do you have an existing website?", emphasize: "existing website", group: "scope", section: "Existing site" },
   {
     id: "existingWebsiteUrl",
     type: "url",
     label: "Existing website URL",
+    clientLabel: "Your existing website URL",
     emphasize: "URL",
     placeholder: "https://…",
     group: "scope",
@@ -196,7 +203,7 @@ export const QUESTIONNAIRE: Question[] = [
     showIf: { field: "realEstate", equals: true },
   },
 
-  { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", emphasize: "provide the page structure", group: "scope", section: "Content" },
+  { id: "contentProvided", type: "boolean", label: "Will Droptine organize and provide the page structure and content?", clientLabel: "Would you like us to organize and write your page content?", emphasize: "provide the page structure", group: "scope", section: "Content" },
 
   // --- Add-ons ---
   {
@@ -257,8 +264,10 @@ export const QUESTIONNAIRE: Question[] = [
     id: "additionalFunctionality",
     type: "longtext",
     label: "What custom or advanced functionality will the website have?",
+    clientLabel: "Any custom or advanced features you'd like?",
     emphasize: "custom",
     placeholder: "Describe any features beyond the options above. Leave blank if none. Anything here routes the request to a custom quote.",
+    clientHelp: "Describe anything special you have in mind. Leave blank if none.",
     group: "scope",
     section: "Custom",
   },

@@ -21,7 +21,14 @@ export type PromoteResult = { error: string } | void;
  * and notifies admins / emails the member exactly like a freshly requested
  * quote. convertedToLunaAt is stamped so the row keeps a "from client" marker.
  */
-export async function requestQuoteFromLuna(quoteId: string): Promise<PromoteResult> {
+export async function requestQuoteFromLuna(
+  quoteId: string,
+  // When the client requested content help, the member must say whether Droptine
+  // will actually supply that content to Luna - "false" drops the $500 content
+  // discount the portal optimistically applied. Required in that case (enforced
+  // below); ignored otherwise.
+  contentProvidedByDroptine?: boolean,
+): Promise<PromoteResult> {
   const user = await requireUser();
 
   const quote = await prisma.quote.findUnique({
@@ -36,18 +43,30 @@ export async function requestQuoteFromLuna(quoteId: string): Promise<PromoteResu
   if (!canUseClientPortal(user)) return { error: "This isn't available for your account." };
   if (quote.origin !== "CLIENT") return { error: "This quote is already a Luna Creative request." };
 
-  const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
   const answers = quote.answers as unknown as PricingAnswers;
-  const result = priceQuote(answers, settings?.adjustmentPct ?? 0);
+  // The portal applies the -$500 when the client asks for content help; at the
+  // Luna hand-off the member confirms who actually provides it. "No" removes it.
+  const clientWantedContent = answers.contentProvided === true;
+  if (clientWantedContent && typeof contentProvidedByDroptine !== "boolean") {
+    return { error: "Please answer whether Droptine will provide the content." };
+  }
+  const finalAnswers: PricingAnswers = clientWantedContent
+    ? { ...answers, contentProvided: contentProvidedByDroptine }
+    : answers;
+
+  const settings = await prisma.pricingSettings.findUnique({ where: { id: "singleton" } });
+  const result = priceQuote(finalAnswers, settings?.adjustmentPct ?? 0);
 
   // Re-draft the scope prose so the promoted quote reads like a normal request.
-  const scopeSummary = await generateScopeSummary({ proposalName: quote.proposalName, answers });
+  const scopeSummary = await generateScopeSummary({ proposalName: quote.proposalName, answers: finalAnswers });
 
   await prisma.quote.update({
     where: { id: quote.id },
     data: {
       origin: "LUNA_REQUEST",
       convertedToLunaAt: new Date(),
+      // Persist the reconciled answer so the Luna quote reflects the content decision.
+      answers: finalAnswers as unknown as Prisma.InputJsonValue,
       status: result.requiresCustomQuote ? "CUSTOM_PENDING" : "PROPOSAL",
       computedTotal: result.total,
       overrideTotal: null,

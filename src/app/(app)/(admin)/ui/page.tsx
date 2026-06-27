@@ -41,7 +41,7 @@ const TAGS: { pill: React.ReactNode; when: string }[] = [
   },
   {
     pill: <span className="pill expired">Expired</span>,
-    when: "Past its 60-day validity. Members can't open it or see its price; the public link 404s until an admin reactivates it.",
+    when: "Past its 60-day validity. Members can't open it or see its price; the proposal PDF 404s until an admin reactivates it.",
   },
   {
     pill: <span className="pill gold">Pending approval</span>,

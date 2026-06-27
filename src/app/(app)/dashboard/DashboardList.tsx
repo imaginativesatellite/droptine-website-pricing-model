@@ -24,6 +24,8 @@ export type QuoteItem = {
   origin: "LUNA_REQUEST" | "CLIENT";
   // A Luna request that began life as a client-portal quote (handshake marker).
   convertedFromClient: boolean;
+  // Client requested content help, so promoting must ask the content question.
+  contentHelp: boolean;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -138,7 +140,7 @@ function ClientRow({ q, locked, isAdmin }: { q: QuoteItem; locked: boolean; isAd
       <div className="right">
         <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{badges(q, isAdmin)}</div>
         <div className="price">{q.price == null ? "-" : money(q.price)}</div>
-        {!locked && <PromoteButton quoteId={q.id} />}
+        {!locked && <PromoteButton quoteId={q.id} contentHelp={q.contentHelp} />}
       </div>
     </div>
   );
@@ -157,7 +159,7 @@ function ClientTile({ q, locked, isAdmin }: { q: QuoteItem; locked: boolean; isA
       )}
       <div className="price">{q.price == null ? "-" : money(q.price)}</div>
       <div className="meta">{fmtShortDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
-      {!locked && <div style={{ marginTop: 10 }}><PromoteButton quoteId={q.id} /></div>}
+      {!locked && <div style={{ marginTop: 10 }}><PromoteButton quoteId={q.id} contentHelp={q.contentHelp} /></div>}
     </div>
   );
 }

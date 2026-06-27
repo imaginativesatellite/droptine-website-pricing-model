@@ -90,11 +90,12 @@ const SECTIONS: Section[] = [
         ],
       },
       {
-        id: "new-public-link",
-        title: "Public proposal link + access code",
+        id: "pdf-login-gated",
+        title: "Proposal PDF requires login",
         steps: [
-          "Open the proposal's public link in a private/incognito window.",
-          "Confirm it asks for the access code and shows the proposal once entered.",
+          "Copy a proposal's PDF link (Download PDF) and open it in a private/incognito window.",
+          "Confirm it redirects to the login page instead of serving the PDF.",
+          "Open the same link while logged in and confirm the PDF downloads.",
         ],
       },
     ],
@@ -270,7 +271,7 @@ const SECTIONS: Section[] = [
         title: "Admin reactivates an expired quote",
         steps: [
           "As an admin, open an expired quote and click Reactivate.",
-          "Confirm a new public link is issued, pricing refreshes, the 60-day window resets, and the requester is emailed.",
+          "Confirm pricing refreshes, the 60-day window resets, and the requester is emailed.",
         ],
       },
     ],

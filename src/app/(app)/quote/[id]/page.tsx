@@ -175,7 +175,7 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
           {!isAdmin && <p className="help" style={{ marginTop: 10 }}>We&apos;ll review this and follow up with pricing.</p>}
         </div>
       ) : (
-        <ProposalView d={d} publicLink={isAdmin} />
+        <ProposalView d={d} />
       )}
 
       {!isAdmin && isCreator && !isPending && (

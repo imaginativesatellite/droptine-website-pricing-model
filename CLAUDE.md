@@ -2,9 +2,10 @@
 
 ## What this is
 Internal tool that turns a short member questionnaire into a deterministic
-website-build price, a branded PDF, and a private code-protected proposal
-page. Complex/custom requests route to an admin-approved custom quote
-instead of an automatic price.
+website-build price and a branded, login-protected PDF. Complex/custom
+requests route to an admin-approved custom quote instead of an automatic
+price. (There is no longer a public proposal web page - the PDF, downloadable
+only from inside the app, is the deliverable.)
 
 ## The relationship
 - **Luna Creative** owns and operates this tool.
@@ -120,7 +121,7 @@ seeded on in `prisma/seed.ts`). Eventually opened to all members.
 
 ## Other conventions
 - Quotes expire 60 days after `validFrom`. Admins can reactivate an expired
-  quote, which mints a fresh public link and refreshes pricing if the model
+  quote, which mints a fresh access code and refreshes pricing if the model
   changed since it was created.
 - Visibility: member-created quotes default to shared (visible to all members +
   admins); admin-created quotes default to private. Either role can toggle

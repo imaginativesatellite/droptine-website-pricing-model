@@ -21,9 +21,9 @@ const labelStyle = {
 const bodyStyle = { fontSize: "1rem", color: "var(--ink)", lineHeight: 1.5, margin: 0 };
 const bodyBold = { ...bodyStyle, fontWeight: 600 };
 
-/** The client-facing proposal (single total). Used on the public code page and
- *  on the internal quote page. `publicLink` adds a button to open the public link. */
-export default function ProposalView({ d, publicLink = false }: { d: ProposalPdfData; publicLink?: boolean }) {
+/** The client-facing proposal (single total). Rendered on the internal quote
+ *  page; the "Download PDF" button hits the login-protected PDF route. */
+export default function ProposalView({ d }: { d: ProposalPdfData }) {
   const half = Math.round(d.total / 2);
   const preparedBy = [d.preparedByName, d.preparedByEmail, d.preparedByPhone].filter(Boolean).join("  ·  ");
   const monthlyNote = [d.ecommerce ? ECOMMERCE_MONTHLY_DISCLAIMER : "", d.mlsIdx ? IDX_MONTHLY_DISCLAIMER : ""]
@@ -46,20 +46,6 @@ export default function ProposalView({ d, publicLink = false }: { d: ProposalPdf
       >
         <div style={{ fontWeight: 800, fontSize: "1.45rem", letterSpacing: 1, color: "var(--gold)" }}>LUNA CREATIVE</div>
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          {publicLink && (
-            <a
-              href={`/proposal/${d.publicCode}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-secondary"
-              style={{ padding: "13px 22px", fontSize: "0.98rem", display: "inline-flex", alignItems: "center", gap: 7 }}
-            >
-              View public link
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden>
-                <path d="M5 3h6v6M11 3L4 10" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </a>
-          )}
           <a href={`/api/proposal/${d.publicCode}/pdf`} className="btn-gold" style={{ padding: "13px 26px", fontSize: "0.98rem" }}>
             Download PDF
           </a>

@@ -1,10 +1,16 @@
+import { auth } from "@/auth";
 import { prisma } from "@/lib/db";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { downloadSignedPdf } from "@/lib/documenso";
 import { isExpired } from "@/lib/quote";
 
-export async function GET(_req: Request, { params }: { params: Promise<{ code: string }> }) {
+export async function GET(req: Request, { params }: { params: Promise<{ code: string }> }) {
+  // The proposal PDF is no longer public - it's only downloadable from inside
+  // the app, so an unauthenticated request is bounced to the login page.
+  const session = await auth();
+  if (!session?.user?.id) return Response.redirect(new URL("/login", req.url), 302);
+
   const { code } = await params;
   const quote = await prisma.quote.findUnique({ where: { publicCode: code }, include: { client: true, createdBy: true } });
 

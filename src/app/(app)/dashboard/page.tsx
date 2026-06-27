@@ -29,6 +29,7 @@ export default async function Dashboard() {
       customReasons: true,
       origin: true,
       convertedToLunaAt: true,
+      answers: true,
       signatureStatus: true,
       signatureSentAt: true,
       clientSignedAt: true,
@@ -59,6 +60,9 @@ export default async function Dashboard() {
       expired,
       origin: q.origin,
       convertedFromClient: q.convertedToLunaAt != null,
+      // Client asked for content help, so promoting must ask whether Droptine
+      // will provide it (decides the $500 content discount). Client quotes only.
+      contentHelp: q.origin === "CLIENT" && (q.answers as { contentProvided?: boolean } | null)?.contentProvided === true,
       signed: Boolean(q.clientSignedAt && q.companySignedAt),
       // Member has accepted/signed, but Luna Creative's counter-signature is
       // still outstanding - shown distinctly so it's clearly mid-flow.

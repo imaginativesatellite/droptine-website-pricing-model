@@ -765,6 +765,70 @@ select:focus {
   display: none;
 }
 
+/* Presentation Mode header: the charcoal bar flips to orange, and everything
+   that's normally gold (the logo + wordmark) flips to white - an unmistakable
+   cue to the operator that the client-facing view is showing. */
+.portalnav {
+  background: var(--gold);
+  color: #fff;
+  padding: 0 28px;
+  box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.12), 0 2px 8px rgba(0, 0, 0, 0.18);
+}
+.portalnav .wrap {
+  max-width: none;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 64px;
+  flex-wrap: nowrap;
+}
+.portalnav .brandlink {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  font-size: clamp(0.8rem, 3.9vw, 1.05rem);
+  min-width: 0;
+}
+.portalnav .brandword {
+  white-space: nowrap;
+}
+.portalnav .brandword strong {
+  font-weight: 800;
+}
+.portalnav .brandlight {
+  font-weight: 400;
+}
+.portalnav .brandmark {
+  width: 26px;
+  height: 26px;
+  flex: none;
+}
+.portalnav .spacer {
+  flex: 1;
+}
+.portalnav .exit {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #fff;
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 8px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: 8px;
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.portalnav .exit:hover {
+  background: rgba(255, 255, 255, 0.18);
+}
+
 @media (max-width: 640px) {
   .appnav {
     padding: 0 16px;

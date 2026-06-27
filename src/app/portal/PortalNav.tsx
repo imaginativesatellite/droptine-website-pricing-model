@@ -16,8 +16,8 @@ export default function PortalNav() {
           <span className="brandword"><strong>Droptine</strong></span>
         </span>
         <span className="spacer" />
-        <Link href="/portal/exit" className="exit">
-          <LogOut size={16} aria-hidden /> Exit Presentation Mode
+        <Link href="/portal/exit" className="exit" aria-label="Exit Presentation Mode" title="Exit Presentation Mode">
+          <LogOut size={20} aria-hidden />
         </Link>
       </div>
     </nav>

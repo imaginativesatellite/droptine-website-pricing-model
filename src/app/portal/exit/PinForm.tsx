@@ -17,12 +17,13 @@ export default function PinForm({ hasPin }: { hasPin: boolean }) {
       {hasPin ? (
         <input
           name="pin"
+          type="text"
           inputMode="numeric"
           autoComplete="off"
           autoFocus
           maxLength={4}
           placeholder="••••"
-          style={{ textAlign: "center", letterSpacing: "0.5em", fontSize: "1.5rem", padding: "12px" }}
+          style={{ width: 160, maxWidth: "100%", margin: "0 auto", display: "block", textAlign: "center", letterSpacing: "0.4em", fontSize: "1.5rem", padding: "12px" }}
         />
       ) : (
         <input name="phone" type="tel" autoComplete="off" autoFocus placeholder="e.g. 432.853.6300" />

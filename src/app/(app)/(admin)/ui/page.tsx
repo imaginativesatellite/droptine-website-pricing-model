@@ -1,5 +1,5 @@
 import { requireAdmin } from "@/lib/session";
-import { PrivateIcon, CustomIcon } from "../../dashboard/DashboardList";
+import { PrivateIcon, CustomIcon, ClientOriginIcon } from "../../dashboard/DashboardList";
 
 // Visual reference for the row icons, status tags, and dashboard card colors
 // used across the app. Pure documentation - it reuses the real row icons /
@@ -15,6 +15,10 @@ const ICONS: { icon: React.ReactNode; when: string }[] = [
   {
     icon: <CustomIcon />,
     when: "Custom proposal (admins only) - routed to a custom quote and/or given an admin override price, rather than auto-priced by the engine.",
+  },
+  {
+    icon: <ClientOriginIcon />,
+    when: "Started as a client quote (generated in Presentation Mode) and was later promoted via “Request Quote from Luna Creative.” Shows on the Luna Creative tab.",
   },
 ];
 

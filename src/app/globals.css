@@ -1039,6 +1039,34 @@ select:focus {
   color: var(--charcoal);
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
 }
+/* Same segmented control rendered with buttons (e.g. the dashboard's
+   Luna-requests / client-quotes tabs, which switch state rather than route). */
+.admin-tabs button {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 16px;
+  border: none;
+  background: none;
+  border-radius: 7px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.92rem;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+}
+.admin-tabs button:hover {
+  color: var(--charcoal);
+}
+.admin-tabs button.active,
+.admin-tabs button.active:hover {
+  background: #fff;
+  color: var(--charcoal);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.18);
+}
 
 /* Dashboard quote rows with hierarchy */
 .qrow {

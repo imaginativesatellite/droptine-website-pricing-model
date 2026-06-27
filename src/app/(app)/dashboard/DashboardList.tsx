@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { Lock, Sparkles, type LucideIcon } from "lucide-react";
+import { Lock, Sparkles, Handshake, type LucideIcon } from "lucide-react";
 import { fmtDate } from "@/lib/quote";
+import PromoteButton from "./PromoteButton";
 
 export type QuoteItem = {
   id: string;
@@ -19,6 +20,10 @@ export type QuoteItem = {
   signed: boolean;
   awaitingCountersign: boolean;
   sentForSignature: boolean;
+  // Which dashboard tab the quote belongs to.
+  origin: "LUNA_REQUEST" | "CLIENT";
+  // A Luna request that began life as a client-portal quote (handshake marker).
+  convertedFromClient: boolean;
 };
 
 const money = (n: number) => `$${n.toLocaleString("en-US")}`;
@@ -44,6 +49,9 @@ export function PrivateIcon() {
 export function CustomIcon() {
   return <TagIcon Icon={Sparkles} label="Custom proposal — individually priced by Luna Creative" />;
 }
+export function ClientOriginIcon() {
+  return <TagIcon Icon={Handshake} label="Started as a client quote — later requested from Luna Creative" />;
+}
 
 // Icons render first so they sit to the LEFT of the status tags within the
 // right-aligned cluster. All quotes are proposals, so there's no
@@ -53,6 +61,7 @@ export function CustomIcon() {
 function badges(q: QuoteItem, isAdmin: boolean) {
   return (
     <>
+      {q.convertedFromClient && <ClientOriginIcon />}
       {!q.shared && <PrivateIcon />}
       {q.custom && isAdmin && <CustomIcon />}
       {q.status === "CUSTOM_PENDING" && <span className="pill pending">Pending approval</span>}
@@ -110,10 +119,66 @@ function Group({ items, view, isAdmin, attention }: { items: QuoteItem[]; view: 
   return <>{items.map((q) => <Row key={q.id} q={q} attention={attention} locked={locked(q)} isAdmin={isAdmin} />)}</>;
 }
 
-export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; isAdmin: boolean }) {
+// Client-tab rows look like the others but aren't whole-row links: the name
+// links to the quote and a "Request Quote from Luna Creative" button sits in the
+// right cluster (a button can't be nested inside a row-wide <a>).
+function ClientRow({ q, locked, isAdmin }: { q: QuoteItem; locked: boolean; isAdmin: boolean }) {
+  return (
+    <div className="qrow" style={{ cursor: "default", opacity: locked ? 0.65 : 1 }}>
+      <div className="main">
+        {locked ? (
+          <div className="name">{q.name}</div>
+        ) : (
+          <Link href={`/quote/${q.id}`} className="name" style={{ color: "inherit", textDecoration: "none" }}>
+            {q.name}
+          </Link>
+        )}
+        <div className="meta">{fmtShortDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
+      </div>
+      <div className="right">
+        <div style={{ display: "flex", gap: 6, alignItems: "center" }}>{badges(q, isAdmin)}</div>
+        <div className="price">{q.price == null ? "-" : money(q.price)}</div>
+        {!locked && <PromoteButton quoteId={q.id} />}
+      </div>
+    </div>
+  );
+}
+
+function ClientTile({ q, locked, isAdmin }: { q: QuoteItem; locked: boolean; isAdmin: boolean }) {
+  return (
+    <div className="qtile" style={{ cursor: "default", opacity: locked ? 0.65 : 1 }}>
+      <div style={{ display: "flex", gap: 6, alignItems: "center", flexWrap: "wrap" }}>{badges(q, isAdmin)}</div>
+      {locked ? (
+        <div className="name">{q.name}</div>
+      ) : (
+        <Link href={`/quote/${q.id}`} className="name" style={{ color: "inherit", textDecoration: "none" }}>
+          {q.name}
+        </Link>
+      )}
+      <div className="price">{q.price == null ? "-" : money(q.price)}</div>
+      <div className="meta">{fmtShortDate(q.createdAt)} · {q.requestedBy} · {q.code}</div>
+      {!locked && <div style={{ marginTop: 10 }}><PromoteButton quoteId={q.id} /></div>}
+    </div>
+  );
+}
+
+function ClientGroup({ items, view, isAdmin }: { items: QuoteItem[]; view: "list" | "tiles"; isAdmin: boolean }) {
+  const locked = (q: QuoteItem) => q.expired && !isAdmin;
+  if (view === "tiles") {
+    return (
+      <div className="qtiles">
+        {items.map((q) => <ClientTile key={q.id} q={q} locked={locked(q)} isAdmin={isAdmin} />)}
+      </div>
+    );
+  }
+  return <>{items.map((q) => <ClientRow key={q.id} q={q} locked={locked(q)} isAdmin={isAdmin} />)}</>;
+}
+
+export default function DashboardList({ items, isAdmin, showTabs = false }: { items: QuoteItem[]; isAdmin: boolean; showTabs?: boolean }) {
   const [query, setQuery] = useState("");
   const [view, setView] = useState<"list" | "tiles">("list");
   const [isMobile, setIsMobile] = useState(false);
+  const [tab, setTab] = useState<"luna" | "client">("luna");
 
   // Remember the member's list/tile choice across visits so they don't have to
   // re-pick it every time. Read once on mount; write whenever it changes.
@@ -136,10 +201,16 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
   }, []);
   const effectiveView = isMobile ? "list" : view;
 
+  // Split by origin so the two tabs each show their own quotes. When tabs are
+  // off (non-portal members), everything is a Luna request anyway.
+  const lunaItems = useMemo(() => items.filter((i) => i.origin !== "CLIENT"), [items]);
+  const clientItems = useMemo(() => items.filter((i) => i.origin === "CLIENT"), [items]);
+  const base = !showTabs ? items : tab === "client" ? clientItems : lunaItems;
+
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    return q ? items.filter((i) => i.name.toLowerCase().includes(q)) : items;
-  }, [items, query]);
+    return q ? base.filter((i) => i.name.toLowerCase().includes(q)) : base;
+  }, [base, query]);
 
   // Top section = anything where the next move is Luna Creative's: a custom
   // quote awaiting pricing/approval, or a proposal the member signed that still
@@ -149,8 +220,21 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
   const pending = filtered.filter(needsLuna);
   const rest = filtered.filter((i) => !needsLuna(i));
 
+  const onClientTab = showTabs && tab === "client";
+
   return (
     <>
+      {showTabs && (
+        <div className="admin-tabs" role="tablist" aria-label="Quote source">
+          <button type="button" role="tab" aria-selected={tab === "luna"} className={tab === "luna" ? "active" : ""} onClick={() => setTab("luna")}>
+            Quotes requested from Luna Creative · {lunaItems.length}
+          </button>
+          <button type="button" role="tab" aria-selected={tab === "client"} className={tab === "client" ? "active" : ""} onClick={() => setTab("client")}>
+            Quotes given to clients · {clientItems.length}
+          </button>
+        </div>
+      )}
+
       <div className="searchbar">
         <div className="search-field">
           <span className="icon" aria-hidden>
@@ -177,21 +261,40 @@ export default function DashboardList({ items, isAdmin }: { items: QuoteItem[]; 
       </div>
 
       {filtered.length === 0 && (
-        <div className="card"><p className="help">No quotes match.</p></div>
+        <div className="card">
+          <p className="help">
+            {query
+              ? "No quotes match."
+              : onClientTab
+                ? "No client quotes yet. Generate one in Presentation Mode."
+                : "No quotes yet."}
+          </p>
+        </div>
       )}
 
-      {pending.length > 0 && (
-        <section style={{ marginBottom: 24 }}>
-          <div className="section-label attention">{isAdmin ? "Needs attention" : "Awaiting Luna Creative"} · {pending.length}</div>
-          <Group items={pending} view={effectiveView} isAdmin={isAdmin} attention />
-        </section>
-      )}
+      {onClientTab ? (
+        filtered.length > 0 && (
+          <section>
+            <div className="section-label">All client quotes</div>
+            <ClientGroup items={filtered} view={effectiveView} isAdmin={isAdmin} />
+          </section>
+        )
+      ) : (
+        <>
+          {pending.length > 0 && (
+            <section style={{ marginBottom: 24 }}>
+              <div className="section-label attention">{isAdmin ? "Needs attention" : "Awaiting Luna Creative"} · {pending.length}</div>
+              <Group items={pending} view={effectiveView} isAdmin={isAdmin} attention />
+            </section>
+          )}
 
-      {rest.length > 0 && (
-        <section>
-          <div className="section-label">All quotes</div>
-          <Group items={rest} view={effectiveView} isAdmin={isAdmin} />
-        </section>
+          {rest.length > 0 && (
+            <section>
+              <div className="section-label">All quotes</div>
+              <Group items={rest} view={effectiveView} isAdmin={isAdmin} />
+            </section>
+          )}
+        </>
       )}
     </>
   );

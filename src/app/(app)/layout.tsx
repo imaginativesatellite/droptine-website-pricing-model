@@ -16,7 +16,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <>
-      <AppNav user={{ email: user.email ?? "", name: user.name ?? "", role: user.role }} />
+      <AppNav user={{ email: user.email ?? "", name: user.name ?? "", role: user.role, clientPortalEnabled: user.clientPortalEnabled }} />
       {children}
     </>
   );

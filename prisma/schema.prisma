@@ -21,6 +21,14 @@ enum QuoteStatus {
   APPROVED        // admin set a price and approved a custom quote
 }
 
+// Where a quote came from. LUNA_REQUEST = the normal flow (Droptine requesting a
+// quote from Luna Creative). CLIENT = generated in the client-facing Presentation
+// Mode portal and shown straight to an end client (Luna price + Droptine markup).
+enum QuoteOrigin {
+  LUNA_REQUEST
+  CLIENT
+}
+
 model User {
   id           String   @id @default(cuid())
   email        String   @unique
@@ -29,6 +37,19 @@ model User {
   passwordHash String
   role         Role     @default(MEMBER)
   createdAt    DateTime @default(now())
+
+  // Client-facing Presentation Mode access. Off for everyone by default; turned
+  // on for the pilot member (and all admins are allowed regardless of this flag -
+  // see canUseClientPortal in src/lib/portal.ts). Eventually flipped on for all.
+  clientPortalEnabled Boolean @default(false)
+
+  // Per-member markup applied on top of Luna Creative's deterministic price when
+  // a quote is generated in the client portal. The Luna engine (src/lib/pricing.ts)
+  // never sees these - markup is a layer added afterward, and only for CLIENT quotes.
+  markupWebsite          Int     @default(5000) // website build markup
+  markupWebsiteIsPercent Boolean @default(false) // website markup is a % of the build price (else a flat $)
+  markupMonthly          Int     @default(50)   // added to the monthly price (flat $ only)
+  markupIncrement        Int     @default(500)  // $ added per tap of the price arrows (flat $ only)
 
   // platform terms acceptance (MEMBER accounts only) - snapshot of the exact
   // text agreed to, so the Account page stays accurate even if wording changes later
@@ -64,6 +85,16 @@ model Quote {
   // long, hard-to-guess code used in the public proposal URL
   publicCode String   @unique
   status QuoteStatus @default(PROPOSAL)
+
+  // Which dashboard tab this quote lives under. CLIENT quotes are generated in
+  // Presentation Mode; "Request Quote from Luna Creative" flips one to
+  // LUNA_REQUEST and stamps convertedToLunaAt (drives the "from client" marker).
+  origin            QuoteOrigin @default(LUNA_REQUEST)
+  convertedToLunaAt DateTime?
+  // Snapshot of how a CLIENT quote's price was composed, for transparency:
+  // { lunaBase, markup, markupIsPercent, increments, incrementAmount, monthlyMarkup }.
+  // The actual numbers live in computedTotal / monthly / discount as usual.
+  clientPricing     Json?
 
   // who generated it (proposal email always goes to this user)
   createdById String
@@ -144,6 +175,7 @@ model Quote {
   @@index([createdById])
   @@index([clientId])
   @@index([status])
+  @@index([origin])
   @@index([signatureEnvelopeId])
   @@index([companySignedById])
 }

@@ -26,6 +26,9 @@ export async function createUser(_prev: FormState, formData: FormData): Promise<
   if (!name || !email || !password) {
     return { ok: false, message: "Name, email, and a temporary password are required." };
   }
+  if (!phone) {
+    return { ok: false, message: "A phone number is required." };
+  }
   if (password.length < 8) {
     return { ok: false, message: "Temporary password must be at least 8 characters." };
   }
@@ -52,6 +55,7 @@ export async function updateUser(userId: string, formData: FormData): Promise<vo
   const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.MEMBER;
 
   if (!name || !email) flash("Name and email are required.");
+  if (!phone) flash("A phone number is required.");
 
   const target = await prisma.user.findUnique({ where: { id: userId } });
   if (!target) flash("User not found.");

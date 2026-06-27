@@ -30,7 +30,7 @@ export default function AddUserForm() {
         </div>
         <div>
           <label className="qlabel" htmlFor="phone">Phone</label>
-          <input id="phone" name="phone" type="tel" placeholder="e.g. 432.853.6300" />
+          <input id="phone" name="phone" type="tel" placeholder="e.g. 432.853.6300" required />
         </div>
         <div>
           <label className="qlabel" htmlFor="role">Role</label>

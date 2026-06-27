@@ -14,7 +14,7 @@ export async function requireUser() {
 
   const dbUser = await prisma.user.findUnique({
     where: { id: session.user.id },
-    select: { id: true, email: true, name: true, role: true },
+    select: { id: true, email: true, name: true, role: true, clientPortalEnabled: true },
   });
   if (!dbUser) redirect("/login");
 
@@ -24,6 +24,7 @@ export async function requireUser() {
     email: dbUser.email,
     name: dbUser.name,
     role: dbUser.role as "MEMBER" | "ADMIN",
+    clientPortalEnabled: dbUser.clientPortalEnabled,
   };
 }
 

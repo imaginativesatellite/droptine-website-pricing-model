@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { UserCircle, LogOut } from "lucide-react";
+import { canUseClientPortal } from "@/lib/portal";
 import { logout } from "./actions";
 
 function initialOf(name: string, email: string): string {
@@ -11,11 +12,12 @@ function initialOf(name: string, email: string): string {
   return (n ? n[0] : email[0] || "?").toUpperCase();
 }
 
-export default function AppNav({ user }: { user: { email: string; name: string; role: string } }) {
+export default function AppNav({ user }: { user: { email: string; name: string; role: string; clientPortalEnabled?: boolean } }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const [navOpen, setNavOpen] = useState(false);
   const pathname = usePathname();
   const isAdmin = user.role === "ADMIN";
+  const canPortal = canUseClientPortal(user);
   const initials = initialOf(user.name, user.email);
 
   // Close any open menu when navigating to another tab/page.
@@ -40,6 +42,8 @@ export default function AppNav({ user }: { user: { email: string; name: string; 
       <>
         {item("/dashboard", "Dashboard")}
         {item("/new", "New Quote")}
+        {/* Client-portal markup settings - pilot members + all admins only. */}
+        {canPortal && item("/markup", "Markup")}
         {/* Users / Pricing / Tests / Export now live as tabs under Admin. */}
         {isAdmin && item("/users", "Admin", inAdminSection)}
       </>

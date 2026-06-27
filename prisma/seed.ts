@@ -53,9 +53,29 @@ async function seedDisabledEmailDefaults() {
   }
 }
 
+// Pilot accounts that get the client-facing Presentation Mode while it's being
+// tested. Enable-if-off (so a redeploy doesn't clobber a deliberate toggle once
+// portal access is managed from the admin UI). Remove this once that UI exists.
+const PILOT_PORTAL_EMAILS = ["gallardodesigngroup@gmail.com"];
+
+async function seedClientPortalAccess() {
+  for (const raw of PILOT_PORTAL_EMAILS) {
+    const email = raw.trim().toLowerCase();
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      console.log(`Client portal: ${email} not found yet - skipping.`);
+      continue;
+    }
+    if (user.clientPortalEnabled) continue;
+    await prisma.user.update({ where: { email }, data: { clientPortalEnabled: true } });
+    console.log(`Enabled client portal for ${email}`);
+  }
+}
+
 async function main() {
   await seedAdmin();
   await seedDisabledEmailDefaults();
+  await seedClientPortalAccess();
 }
 
 main()

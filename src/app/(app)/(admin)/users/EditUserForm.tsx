@@ -26,7 +26,7 @@ export default function EditUserForm({
         </div>
         <div>
           <label className="qlabel">Phone</label>
-          <input name="phone" type="tel" defaultValue={user.phone ?? ""} placeholder="e.g. 432.853.6300" />
+          <input name="phone" type="tel" defaultValue={user.phone ?? ""} placeholder="e.g. 432.853.6300" required />
         </div>
         <div>
           <label className="qlabel">Role</label>

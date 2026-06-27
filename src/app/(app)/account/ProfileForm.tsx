@@ -24,7 +24,7 @@ export default function ProfileForm({
       </div>
       <div className="q" style={{ borderBottom: "none" }}>
         <label className="qlabel" htmlFor="phone">Phone</label>
-        <input id="phone" name="phone" type="tel" defaultValue={defaultPhone} placeholder="e.g. 432.853.6300" />
+        <input id="phone" name="phone" type="tel" defaultValue={defaultPhone} placeholder="e.g. 432.853.6300" required />
       </div>
 
       {state && (

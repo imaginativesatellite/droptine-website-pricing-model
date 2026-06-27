@@ -14,10 +14,11 @@ export async function updateProfile(_prev: FormState, formData: FormData): Promi
   const name = String(formData.get("name") ?? "").trim();
   const phone = String(formData.get("phone") ?? "").trim();
   if (!name) return { ok: false, message: "Name is required." };
+  if (!phone) return { ok: false, message: "A phone number is required." };
 
   await prisma.user.update({
     where: { id: sessionUser.id },
-    data: { name, phone: phone || null },
+    data: { name, phone },
   });
 
   revalidatePath("/account");

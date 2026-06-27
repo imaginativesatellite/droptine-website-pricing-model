@@ -61,7 +61,6 @@ export async function sendProposalToMember(args: {
   total: number;
   monthly: number;
   code: string;
-  proposalUrl: string;
   pdf?: Buffer;
 }) {
   const name = esc(args.proposalName);
@@ -69,9 +68,7 @@ export async function sendProposalToMember(args: {
   const { subject, html, enabled } = await renderEmail("proposal_to_member", {
     proposalName: name,
     total: money(args.total),
-    monthly: money(args.monthly),
-    proposalUrl: args.proposalUrl,
-    deposit: money(dep),
+    monthly: money(args.monthly),    deposit: money(dep),
     balance: money(args.total - dep),
     code: esc(args.code),
     memberEmail: esc(args.memberEmail),
@@ -137,7 +134,6 @@ export async function notifyClientSigned(args: {
   requestedByName: string;
   clientEmail: string;
   manageUrl: string;
-  proposalUrl?: string;
   code?: string;
 }) {
   const to = adminEmails();
@@ -151,9 +147,7 @@ export async function notifyClientSigned(args: {
     signerEmail,
     proposalName: name,
     memberName: who,
-    manageUrl: args.manageUrl,
-    proposalUrl: args.proposalUrl ?? "",
-    code: esc(args.code ?? ""),
+    manageUrl: args.manageUrl,    code: esc(args.code ?? ""),
     companyName: COMPANY_NAME,
   });
   if (!enabled) return;
@@ -168,7 +162,6 @@ export async function notifyFullySigned(args: {
   proposalName: string;
   memberName: string;
   memberEmail: string;
-  proposalUrl: string;
   code?: string;
   pdf?: Buffer;
 }) {
@@ -179,9 +172,7 @@ export async function notifyFullySigned(args: {
   const { subject, html, enabled } = await renderEmail("proposal_fully_signed", {
     proposalName: name,
     memberName: esc(args.memberName),
-    memberEmail: esc(args.memberEmail),
-    proposalUrl: args.proposalUrl,
-    code: esc(args.code ?? ""),
+    memberEmail: esc(args.memberEmail),    code: esc(args.code ?? ""),
     companyName: COMPANY_NAME,
   });
   if (!enabled) return;
@@ -203,7 +194,6 @@ export async function sendApprovedQuoteToRequester(args: {
   total: number;
   monthly: number;
   code: string;
-  proposalUrl: string;
   dashboardUrl: string;
   pdf?: Buffer;
 }) {
@@ -212,9 +202,7 @@ export async function sendApprovedQuoteToRequester(args: {
   const { subject, html, enabled } = await renderEmail("approved_quote_to_requester", {
     proposalName: name,
     total: money(args.total),
-    monthly: money(args.monthly),
-    proposalUrl: args.proposalUrl,
-    code: esc(args.code),
+    monthly: money(args.monthly),    code: esc(args.code),
     dashboardUrl: args.dashboardUrl,
     deposit: money(dep),
     balance: money(args.total - dep),

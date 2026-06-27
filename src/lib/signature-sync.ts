@@ -72,7 +72,6 @@ export async function syncSignatureFromRecipients(
         requestedByName: quote.createdBy.name ?? quote.createdBy.email,
         clientEmail: member?.email ?? quote.createdBy.email,
         manageUrl: `${appUrl()}/quote/${quote.id}`,
-        proposalUrl: `${appUrl()}/proposal/${quote.publicCode}`,
         code: quote.publicCode,
       });
     } catch {
@@ -88,7 +87,6 @@ export async function syncSignatureFromRecipients(
         proposalName: quote.proposalName,
         memberName: quote.createdBy.name ?? quote.createdBy.email,
         memberEmail: quote.createdBy.email,
-        proposalUrl: `${appUrl()}/quote/${quote.id}`,
         code: quote.publicCode,
         pdf: signedPdf ?? undefined,
       });

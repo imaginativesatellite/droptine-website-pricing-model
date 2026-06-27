@@ -10,7 +10,7 @@ import { generateAccessCode, generatePublicCode } from "@/lib/code";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { notifyAdmins, sendProposalToMember } from "@/lib/email";
-import { appUrl, proposalUrl } from "@/lib/quote";
+import { appUrl } from "@/lib/quote";
 
 type RawAnswers = Record<string, string | boolean | string[] | undefined>;
 
@@ -99,7 +99,7 @@ export async function createQuote(answers: RawAnswers, shared?: boolean): Promis
       const pdf = await renderProposalPdf(buildProposalData(full));
       await sendProposalToMember({
         memberEmail: creatorEmail, proposalName, total: result.total, monthly: result.monthly,
-        code: quote.publicCode, proposalUrl: proposalUrl(quote.publicCode), pdf,
+        code: quote.publicCode, pdf,
       });
       await notifyAdmins({
         proposalName, memberEmail: creatorEmail, isCustom: false, total: result.total,

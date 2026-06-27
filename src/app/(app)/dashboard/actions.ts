@@ -10,7 +10,7 @@ import { generateScopeSummary } from "@/lib/anthropic";
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { notifyAdmins, sendProposalToMember } from "@/lib/email";
-import { appUrl, proposalUrl } from "@/lib/quote";
+import { appUrl } from "@/lib/quote";
 
 export type PromoteResult = { error: string } | void;
 
@@ -101,7 +101,7 @@ export async function requestQuoteFromLuna(
       const pdf = await renderProposalPdf(buildProposalData(full));
       await sendProposalToMember({
         memberEmail, proposalName: quote.proposalName, total: result.total, monthly: result.monthly,
-        code: quote.publicCode, proposalUrl: proposalUrl(quote.publicCode), pdf,
+        code: quote.publicCode, pdf,
       });
       await notifyAdmins({
         proposalName: quote.proposalName, memberEmail, isCustom: false, total: result.total,

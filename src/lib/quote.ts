@@ -27,10 +27,6 @@ export function appUrl(): string {
   );
 }
 
-export function proposalUrl(code: string): string {
-  return `${appUrl()}/proposal/${code}`;
-}
-
 type PriceParts = Pick<Quote, "computedTotal" | "overrideTotal" | "discount">;
 
 /** The total before discount (admin override wins over the computed total). */

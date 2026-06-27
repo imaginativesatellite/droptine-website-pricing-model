@@ -6,8 +6,7 @@ import { requestQuoteFromLuna } from "./actions";
 
 const CONFIRM =
   "Request a quote from Luna Creative for this client? It moves to your Luna Creative quotes and notifies the team.";
-const CONTENT_QUESTION = "Will Droptine be providing the content to Luna Creative?";
-const CONTENT_NOTE = "The client asked for content help. Choosing “No” removes the $500 content discount.";
+const CONTENT_QUESTION = "The client asked for content help. Will Droptine be providing it to Luna Creative?";
 
 const smallBtn = { padding: "6px 14px", fontSize: "0.85rem" } as const;
 
@@ -39,7 +38,6 @@ export default function PromoteButton({ quoteId, contentHelp }: { quoteId: strin
       {asking ? (
         <div className="promote-ask">
           <p className="promote-ask-q">{CONTENT_QUESTION}</p>
-          <p className="promote-ask-note">{CONTENT_NOTE}</p>
           <div style={{ display: "flex", gap: 8, justifyContent: "flex-end", flexWrap: "wrap" }}>
             <button type="button" className="btn-secondary" onClick={() => setAsking(false)} disabled={pending} style={smallBtn}>Cancel</button>
             <button type="button" className="btn-secondary" onClick={() => promote(false)} disabled={pending} style={smallBtn}>No</button>

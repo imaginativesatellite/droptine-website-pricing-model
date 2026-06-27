@@ -1283,12 +1283,7 @@ select:focus {
 .promote-ask-q {
   font-weight: 600;
   font-size: 0.92rem;
-  margin-bottom: 4px;
-}
-.promote-ask-note {
-  color: var(--muted);
-  font-size: 0.82rem;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 
 /* Same segmented control rendered with buttons (e.g. the dashboard's

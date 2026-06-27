@@ -11,7 +11,7 @@ import { recommendCustomPrice as aiRecommendCustomPrice, type CustomRecommendati
 import { renderProposalPdf } from "@/lib/pdf";
 import { buildProposalData } from "@/lib/proposal-data";
 import { sendApprovedQuoteToRequester, sendProposalToMember } from "@/lib/email";
-import { appUrl, proposalUrl, finalPrice, isExpired, asDisclaimers, MAX_DISCLAIMERS, type Disclaimer } from "@/lib/quote";
+import { appUrl, finalPrice, isExpired, asDisclaimers, MAX_DISCLAIMERS, type Disclaimer } from "@/lib/quote";
 import { documensoEnabled, sendEnvelopeForSignature, getEnvelopeStatus } from "@/lib/documenso";
 import { syncSignatureFromRecipients } from "@/lib/signature-sync";
 
@@ -146,7 +146,6 @@ export async function approveQuote(quoteId: string, formData: FormData): Promise
       total: finalPrice(updated),
       monthly: updated.monthly,
       code: updated.publicCode,
-      proposalUrl: proposalUrl(updated.publicCode),
       dashboardUrl: `${appUrl()}/dashboard`,
       pdf,
     });
@@ -205,7 +204,6 @@ export async function reactivateQuote(quoteId: string): Promise<void> {
         total: finalPrice(updated),
         monthly: updated.monthly,
         code: updated.publicCode,
-        proposalUrl: proposalUrl(updated.publicCode),
         pdf,
       });
       await prisma.quote.update({ where: { id: quoteId }, data: { emailStatus: "SENT", emailError: null } });
@@ -449,7 +447,6 @@ export async function resendProposalEmail(quoteId: string): Promise<void> {
       total: finalPrice(quote),
       monthly: quote.monthly,
       code: quote.publicCode,
-      proposalUrl: proposalUrl(quote.publicCode),
       pdf,
     });
     await prisma.quote.update({ where: { id: quoteId }, data: { emailStatus: "SENT", emailError: null } });

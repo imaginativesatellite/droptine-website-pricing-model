@@ -1,12 +1,13 @@
 "use client";
 
-import { Fragment, useEffect, useState } from "react";
-import { Globe, ShoppingCart, FileText, PawPrint, Newspaper, FolderOpen, PlusCircle, Sparkles, Clock, ChevronUp, ChevronDown, type LucideIcon } from "lucide-react";
+import { Fragment, useEffect, useState, useTransition } from "react";
+import { Globe, ShoppingCart, FileText, PawPrint, Newspaper, FolderOpen, PlusCircle, Sparkles, Clock, ChevronUp, ChevronDown, Pencil, type LucideIcon } from "lucide-react";
 import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import BrandSelect from "@/components/BrandSelect";
 import AutoGrowTextarea from "@/components/AutoGrowTextarea";
 import { computeClientPrice, MAX_INCREMENTS, type ClientPrice, type Markup } from "@/lib/portal";
 import type { PricingAnswers } from "@/lib/pricing";
+import { saveClientQuote } from "./actions";
 
 // --- Approved client-facing copy (Phase 3 picks) ---
 const REVEAL_LABEL = "See your price";
@@ -46,6 +47,11 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
   const [answers, setAnswers] = useState<Answers>(DEFAULT_ANSWERS);
   const [increments, setIncrements] = useState(0);
   const [result, setResult] = useState<ClientPrice | null>(null);
+  const [discount, setDiscount] = useState(0);
+  const [editing, setEditing] = useState(false);
+  const [draftDiscount, setDraftDiscount] = useState("");
+  const [saving, startSaving] = useTransition();
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
   const questions = QUESTIONNAIRE.filter((q) => isVisible(q, answers));
@@ -75,11 +81,30 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
     setAnswers(DEFAULT_ANSWERS);
     setIncrements(0);
     setResult(null);
+    setDiscount(0);
+    setEditing(false);
+    setSaveError(null);
+  };
+
+  const openEdit = () => { setDraftDiscount(discount ? String(discount) : ""); setEditing(true); };
+  const applyDiscount = () => {
+    const d = Math.max(0, Math.round(Number(draftDiscount.replace(/[^0-9.]/g, "")) || 0));
+    setDiscount(result && !result.requiresFollowUp ? Math.min(result.build, d) : 0);
+    setEditing(false);
+  };
+  const save = () => {
+    setSaveError(null);
+    startSaving(async () => {
+      const res = await saveClientQuote({ answers, increments, discount });
+      if ("error" in res) setSaveError(res.error);
+      else startOver();
+    });
   };
 
   const businessName = String(answers.proposalName ?? "").trim();
 
   if (result) {
+    const finalPrice = Math.max(0, result.build - discount);
     return (
       <div className="container portal-result">
         <div className="pr-name">{businessName}</div>
@@ -88,11 +113,50 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
         ) : (
           <>
             <p className="pr-caption">{CAPTION}</p>
-            <div className="pr-price">{money(result.build)}</div>
+            {discount > 0 ? (
+              <>
+                <div className="pr-strike">{money(result.build)}</div>
+                <div className="pr-price">{money(finalPrice)}</div>
+                <div className="pr-discount">You save {money(discount)}</div>
+              </>
+            ) : (
+              <div className="pr-price">{money(result.build)}</div>
+            )}
             <div className="pr-monthly">+ {money(result.monthly)}/mo hosting &amp; maintenance</div>
+
+            {editing ? (
+              <div className="pr-editpanel">
+                <p className="pr-warn">Are you sure you want to change this price?</p>
+                <div className="pr-editrow">
+                  <span className="pr-dollar">$</span>
+                  <input
+                    inputMode="decimal"
+                    autoFocus
+                    value={draftDiscount}
+                    onChange={(e) => setDraftDiscount(e.target.value.replace(/[^0-9.]/g, ""))}
+                    placeholder="Discount"
+                  />
+                </div>
+                <div className="pr-editbtns">
+                  <button type="button" className="btn-secondary" onClick={() => setEditing(false)}>Cancel</button>
+                  <button type="button" className="btn-primary" onClick={applyDiscount}>Apply</button>
+                </div>
+              </div>
+            ) : (
+              <button type="button" className="pr-edit" onClick={openEdit} aria-label="Edit price">
+                <Pencil size={14} aria-hidden />
+              </button>
+            )}
           </>
         )}
-        <button type="button" className="pr-restart" onClick={startOver}>Start over</button>
+
+        <div className="pr-actions">
+          <button type="button" className="btn-good" onClick={save} disabled={saving}>
+            {saving ? "Saving…" : "Save and Close"}
+          </button>
+          <button type="button" className="pr-restart" onClick={startOver}>Start over</button>
+        </div>
+        {saveError && <p style={{ color: "#b3261e", fontSize: "0.9rem", marginTop: 10 }}>{saveError}</p>}
       </div>
     );
   }

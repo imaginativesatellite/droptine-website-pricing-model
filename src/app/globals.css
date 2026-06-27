@@ -499,6 +499,7 @@ select:focus {
 .btn-primary,
 .btn-secondary,
 .btn-gold,
+.btn-good,
 .btn-danger {
   display: inline-block;
   border: none;
@@ -532,6 +533,18 @@ select:focus {
 }
 .btn-gold:hover {
   background: var(--gold-dark);
+}
+/* Green - the client portal's "Save and Close". */
+.btn-good {
+  background: var(--good);
+  color: #fff;
+}
+.btn-good:hover {
+  background: #276b2b;
+}
+.btn-good:disabled {
+  opacity: 0.6;
+  cursor: default;
 }
 /* Solid red - used everywhere a control deletes something for good. */
 .btn-danger {
@@ -920,6 +933,71 @@ select:focus {
 }
 .portal-result .pr-restart:hover {
   color: var(--charcoal);
+}
+/* Original price struck through once a discount is applied. */
+.portal-result .pr-strike {
+  font-size: 1.6rem;
+  color: var(--muted);
+  text-decoration: line-through;
+  text-decoration-thickness: 2px;
+}
+.portal-result .pr-discount {
+  margin-top: 8px;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--good);
+}
+/* The discreet discount control: a faint pencil, center-bottom. */
+.portal-result .pr-edit {
+  margin: 26px auto 0;
+  display: block;
+  background: none;
+  border: none;
+  color: #cdc9c1;
+  cursor: pointer;
+  line-height: 0;
+  padding: 6px;
+  transition: color 0.15s ease;
+}
+.portal-result .pr-edit:hover {
+  color: var(--muted);
+}
+.portal-result .pr-editpanel {
+  margin: 20px auto 0;
+  max-width: 280px;
+}
+.portal-result .pr-warn {
+  color: #b3261e;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.portal-result .pr-editrow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  justify-content: center;
+}
+.portal-result .pr-dollar {
+  font-size: 1.2rem;
+  color: var(--muted);
+}
+.portal-result .pr-editrow input {
+  max-width: 150px;
+  text-align: center;
+  font-size: 1.1rem;
+}
+.portal-result .pr-editbtns {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 12px;
+}
+.portal-result .pr-actions {
+  margin-top: 36px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
 }
 
 @media (max-width: 640px) {

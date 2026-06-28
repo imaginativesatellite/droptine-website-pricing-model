@@ -203,8 +203,7 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
                 {q.id === "proposalName" && (
                   <>
                     <div className="help" style={{ margin: "4px 0 0", fontWeight: 600, color: "var(--ink)" }}>
-                      Where should we send your quote?{" "}
-                      <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
+                      Where should we send your quote?
                     </div>
                     <div className="q">
                       <label className="qlabel" htmlFor="contactName">Contact name</label>

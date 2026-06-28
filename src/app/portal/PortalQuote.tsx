@@ -1,7 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useState, useTransition } from "react";
-import { Globe, ShoppingCart, FileText, PawPrint, Newspaper, FolderOpen, PlusCircle, Sparkles, Clock, ChevronUp, ChevronDown, Pencil, type LucideIcon } from "lucide-react";
+import { Globe, ShoppingCart, FileText, PawPrint, Newspaper, FolderOpen, PlusCircle, Sparkles, Clock, ChevronUp, ChevronDown, Pencil, Contact, type LucideIcon } from "lucide-react";
 import { QUESTIONNAIRE, isFollowUp, isVisible, splitLabel, type Question } from "@/lib/questionnaire";
 import BrandSelect from "@/components/BrandSelect";
 import AutoGrowTextarea from "@/components/AutoGrowTextarea";
@@ -13,6 +13,8 @@ import { saveClientQuote } from "./actions";
 const REVEAL_LABEL = "See your price";
 const CAPTION = "Here's what it takes to bring your website to life.";
 const FOLLOWUP_MESSAGE = "Let's talk — we'll put together a custom quote for this.";
+// Section that groups the business name + contact fields at the top of the form.
+const CONTACT_SECTION = "Your Details";
 
 const SECTION_ICONS: Record<string, LucideIcon> = {
   "Existing site": Globe,
@@ -184,6 +186,11 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
             const help = q.clientHelp ?? q.help;
             return (
               <Fragment key={q.id}>
+                {q.id === "proposalName" && (
+                  <h3 className="section-head">
+                    <Contact size={15} aria-hidden /> {CONTACT_SECTION}
+                  </h3>
+                )}
                 {showHeader && (() => {
                   const SectionIcon = SECTION_ICONS[q.section!] ?? FALLBACK_SECTION_ICON;
                   return (
@@ -202,9 +209,6 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
                 </div>
                 {q.id === "proposalName" && (
                   <>
-                    <div className="help" style={{ margin: "4px 0 0", fontWeight: 600, color: "var(--ink)" }}>
-                      Where should we send your quote?
-                    </div>
                     <div className="q">
                       <label className="qlabel" htmlFor="contactName">Contact name</label>
                       <input id="contactName" type="text" value={contact.name} onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))} />

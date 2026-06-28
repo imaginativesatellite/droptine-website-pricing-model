@@ -68,6 +68,9 @@ model User {
 model Client {
   id        String   @id @default(cuid())
   name      String
+  // Contact person + details captured in the client portal (optional). The
+  // business goes in `name`; this is the individual to follow up with.
+  contactName String?
   email     String?
   phone     String?
   ownerId   String

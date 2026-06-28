@@ -166,6 +166,15 @@ export default async function QuoteDetail({ params }: { params: Promise<{ id: st
         {expired && <span className="pill expired">Expired</span>}
       </div>
 
+      {(quote!.client.contactName || quote!.client.email || quote!.client.phone) && (
+        <div className="card" style={{ marginBottom: 18 }}>
+          <div style={{ fontWeight: 600, marginBottom: 6 }}>Client contact</div>
+          <div className="help" style={{ margin: 0 }}>
+            {[quote!.client.contactName, quote!.client.email, quote!.client.phone].filter(Boolean).join("  ·  ")}
+          </div>
+        </div>
+      )}
+
       {isPending ? (
         <div className="card" style={reorderAdminReview ? { order: 2, marginTop: 18 } : undefined}>
           <h3 style={{ marginBottom: 8 }}>Custom quote - awaiting approval</h3>

@@ -52,6 +52,7 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
   const [draftDiscount, setDraftDiscount] = useState("");
   const [saving, startSaving] = useTransition();
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [contact, setContact] = useState({ name: "", email: "", phone: "" });
 
   const set = (id: string, value: Answers[string]) => setAnswers((a) => ({ ...a, [id]: value }));
   const questions = QUESTIONNAIRE.filter((q) => isVisible(q, answers));
@@ -84,6 +85,7 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
     setDiscount(0);
     setEditing(false);
     setSaveError(null);
+    setContact({ name: "", email: "", phone: "" });
   };
 
   const openEdit = () => { setDraftDiscount(discount ? String(discount) : ""); setEditing(true); };
@@ -95,7 +97,14 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
   const save = () => {
     setSaveError(null);
     startSaving(async () => {
-      const res = await saveClientQuote({ answers, increments, discount });
+      const res = await saveClientQuote({
+        answers,
+        increments,
+        discount,
+        contactName: contact.name,
+        contactEmail: contact.email,
+        contactPhone: contact.phone,
+      });
       if ("error" in res) setSaveError(res.error);
       else startOver();
     });
@@ -191,6 +200,26 @@ export default function PortalQuote({ markup, demandPct }: { markup: Markup; dem
                   {help && <div className="help">{help}</div>}
                   {renderInput(q, answers, set)}
                 </div>
+                {q.id === "proposalName" && (
+                  <>
+                    <div className="help" style={{ margin: "4px 0 0", fontWeight: 600, color: "var(--ink)" }}>
+                      Where should we send your quote?{" "}
+                      <span style={{ fontWeight: 400, color: "var(--muted)" }}>(optional)</span>
+                    </div>
+                    <div className="q">
+                      <label className="qlabel" htmlFor="contactName">Contact name</label>
+                      <input id="contactName" type="text" value={contact.name} onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))} />
+                    </div>
+                    <div className="q">
+                      <label className="qlabel" htmlFor="contactEmail">Email</label>
+                      <input id="contactEmail" type="email" value={contact.email} onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))} />
+                    </div>
+                    <div className="q">
+                      <label className="qlabel" htmlFor="contactPhone">Phone</label>
+                      <input id="contactPhone" type="tel" value={contact.phone} onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))} />
+                    </div>
+                  </>
+                )}
               </Fragment>
             );
           })}

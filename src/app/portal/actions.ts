@@ -6,6 +6,8 @@ import { requireUser } from "@/lib/session";
 import { canUseClientPortal, readMarkup, computeClientPrice } from "@/lib/portal";
 import { isPresentationMode } from "@/lib/presentation";
 import { generateAccessCode, generatePublicCode } from "@/lib/code";
+import { notifyAdmins } from "@/lib/email";
+import { appUrl } from "@/lib/quote";
 import type { PricingAnswers } from "@/lib/pricing";
 
 export type SaveResult = { ok: true } | { error: string };
@@ -36,6 +38,9 @@ export async function saveClientQuote(input: {
   answers: Record<string, unknown>;
   increments: number;
   discount: number;
+  contactName?: string;
+  contactEmail?: string;
+  contactPhone?: string;
 }): Promise<SaveResult> {
   const user = await requireUser();
   if (!canUseClientPortal(user)) return { error: "This isn't available for your account." };
@@ -43,6 +48,13 @@ export async function saveClientQuote(input: {
 
   const proposalName = String(input.answers.proposalName ?? "").trim();
   if (!proposalName) return { error: "A business name is required." };
+
+  // Optional contact captured in the portal; only set fields that were filled
+  // so re-saving without them doesn't wipe a client's existing contact.
+  const contact: { contactName?: string; email?: string; phone?: string } = {};
+  if (input.contactName?.trim()) contact.contactName = input.contactName.trim();
+  if (input.contactEmail?.trim()) contact.email = input.contactEmail.trim();
+  if (input.contactPhone?.trim()) contact.phone = input.contactPhone.trim();
 
   const dbUser = await prisma.user.findUnique({
     where: { id: user.id },
@@ -65,7 +77,11 @@ export async function saveClientQuote(input: {
 
   try {
     let client = await prisma.client.findFirst({ where: { ownerId: user.id, name: proposalName } });
-    if (!client) client = await prisma.client.create({ data: { name: proposalName, ownerId: user.id } });
+    if (!client) {
+      client = await prisma.client.create({ data: { name: proposalName, ownerId: user.id, ...contact } });
+    } else if (Object.keys(contact).length > 0) {
+      client = await prisma.client.update({ where: { id: client.id }, data: contact });
+    }
 
     const answersJson = JSON.parse(JSON.stringify(input.answers)) as Prisma.InputJsonValue;
     const clientPricingJson = {
@@ -79,7 +95,7 @@ export async function saveClientQuote(input: {
       discount,
     } as unknown as Prisma.InputJsonValue;
 
-    await prisma.quote.create({
+    const quote = await prisma.quote.create({
       data: {
         code: await uniqueCode(),
         publicCode: await uniquePublicCode(),
@@ -97,6 +113,24 @@ export async function saveClientQuote(input: {
         shared: false,
       },
     });
+
+    // A custom client request can't be priced on the spot - ping admins right
+    // away so Luna can turn it around fast (the captured contact is on the
+    // quote/client). Best-effort: a notify failure never fails the save.
+    if (price.requiresFollowUp) {
+      try {
+        await notifyAdmins({
+          proposalName,
+          memberEmail: user.email ?? "",
+          isCustom: true,
+          code: quote.code,
+          reasons: price.reasons,
+          manageUrl: `${appUrl()}/quote/${quote.id}`,
+        });
+      } catch (e) {
+        console.error("saveClientQuote: admin notify failed", e);
+      }
+    }
   } catch (e) {
     console.error("saveClientQuote failed", e);
     return { error: "Couldn't save - check your connection and try again." };

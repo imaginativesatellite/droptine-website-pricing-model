@@ -14,7 +14,7 @@ const REVEAL_LABEL = "See your price";
 const CAPTION = "Here's what it takes to bring your website to life.";
 const FOLLOWUP_MESSAGE = "Let's talk — we'll put together a custom quote for this.";
 // Section that groups the business name + contact fields at the top of the form.
-const CONTACT_SECTION = "Your Details";
+const CONTACT_SECTION = "Contact Details";
 
 const SECTION_ICONS: Record<string, LucideIcon> = {
   "Existing site": Globe,

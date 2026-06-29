@@ -53,6 +53,9 @@ export async function updateUser(userId: string, formData: FormData): Promise<vo
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const phone = String(formData.get("phone") ?? "").trim();
   const role = String(formData.get("role")) === "ADMIN" ? Role.ADMIN : Role.MEMBER;
+  // Whether this member can use the client-facing Presentation Mode (admins
+  // always can, regardless of this flag - see canUseClientPortal).
+  const clientPortalEnabled = formData.get("clientPortalEnabled") != null;
 
   if (!name || !email) flash("Name and email are required.");
   if (!phone) flash("A phone number is required.");
@@ -68,7 +71,7 @@ export async function updateUser(userId: string, formData: FormData): Promise<vo
 
   await prisma.user.update({
     where: { id: userId },
-    data: { name, email, phone: phone || null, role: finalRole },
+    data: { name, email, phone: phone || null, role: finalRole, clientPortalEnabled },
   });
   flash(`Saved ${email}.`);
 }

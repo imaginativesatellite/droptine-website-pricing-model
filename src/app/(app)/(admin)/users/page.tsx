@@ -38,7 +38,7 @@ export default async function UsersPage({
           </div>
 
           <EditUserForm
-            user={{ id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role }}
+            user={{ id: u.id, name: u.name, email: u.email, phone: u.phone, role: u.role, clientPortalEnabled: u.clientPortalEnabled }}
             isSelf={u.id === admin.id}
           />
 

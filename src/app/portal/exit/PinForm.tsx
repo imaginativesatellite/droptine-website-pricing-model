@@ -9,15 +9,15 @@ export default function PinForm({ hasPin }: { hasPin: boolean }) {
 
   return (
     <form action={action}>
-      <h2 style={{ marginBottom: 6 }}>{hasPin ? "Enter your PIN" : "Set your phone number"}</h2>
-      <p className="help" style={{ marginBottom: 16 }}>
-        {hasPin ? "Enter your PIN to continue." : "Add your phone number to continue."}
-      </p>
+      <h2 style={{ marginBottom: hasPin ? 16 : 6 }}>{hasPin ? "Enter your PIN" : "Set your phone number"}</h2>
+      {!hasPin && (
+        <p className="help" style={{ marginBottom: 16 }}>Add your phone number to continue.</p>
+      )}
 
       {hasPin ? (
         <input
           name="pin"
-          type="text"
+          type="password"
           inputMode="numeric"
           autoComplete="off"
           autoFocus

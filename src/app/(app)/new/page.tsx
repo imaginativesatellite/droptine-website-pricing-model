@@ -4,10 +4,10 @@ import NewQuoteForm from "./NewQuoteForm";
 
 export default async function NewQuotePage() {
   const user = await requireUser();
-  // Members default to sharing with everyone; admins default to private. Pilot
-  // members of the client portal also default to private (so this member's
-  // quotes aren't visible to the other managers while they test).
-  const defaultShared = user.role !== "ADMIN" && !user.clientPortalEnabled;
+  // Initial visibility comes from the per-member default an admin sets on the
+  // Users tab; the creator can still flip it per quote.
+  const me = await prisma.user.findUnique({ where: { id: user.id }, select: { quotesDefaultPrivate: true } });
+  const defaultShared = !(me?.quotesDefaultPrivate ?? false);
 
   // Suggest client names that still have at least one quote.
   const named = await prisma.quote.findMany({

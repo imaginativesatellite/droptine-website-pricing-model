@@ -43,6 +43,10 @@ model User {
   // see canUseClientPortal in src/lib/portal.ts). Eventually flipped on for all.
   clientPortalEnabled Boolean @default(false)
 
+  // Initial visibility for this user's new quotes (admins set it per member on
+  // the Users tab; the creator can still flip it per quote). true = start private.
+  quotesDefaultPrivate Boolean @default(false)
+
   // Per-member markup applied on top of Luna Creative's deterministic price when
   // a quote is generated in the client portal. The Luna engine (src/lib/pricing.ts)
   // never sees these - markup is a layer added afterward, and only for CLIENT quotes.

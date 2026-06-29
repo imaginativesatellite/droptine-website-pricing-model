@@ -56,6 +56,8 @@ export async function updateUser(userId: string, formData: FormData): Promise<vo
   // Whether this member can use the client-facing Presentation Mode (admins
   // always can, regardless of this flag - see canUseClientPortal).
   const clientPortalEnabled = formData.get("clientPortalEnabled") != null;
+  // Initial visibility for this member's new quotes (they can still override).
+  const quotesDefaultPrivate = formData.get("quotesDefaultPrivate") != null;
 
   if (!name || !email) flash("Name and email are required.");
   if (!phone) flash("A phone number is required.");
@@ -71,7 +73,7 @@ export async function updateUser(userId: string, formData: FormData): Promise<vo
 
   await prisma.user.update({
     where: { id: userId },
-    data: { name, email, phone: phone || null, role: finalRole, clientPortalEnabled },
+    data: { name, email, phone: phone || null, role: finalRole, clientPortalEnabled, quotesDefaultPrivate },
   });
   flash(`Saved ${email}.`);
 }

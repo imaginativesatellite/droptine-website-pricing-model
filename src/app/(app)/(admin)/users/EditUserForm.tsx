@@ -8,7 +8,7 @@ export default function EditUserForm({
   user,
   isSelf,
 }: {
-  user: { id: string; name: string; email: string; phone: string | null; role: string; clientPortalEnabled: boolean };
+  user: { id: string; name: string; email: string; phone: string | null; role: string; clientPortalEnabled: boolean; quotesDefaultPrivate: boolean };
   isSelf: boolean;
 }) {
   const [role, setRole] = useState(user.role);
@@ -54,7 +54,16 @@ export default function EditUserForm({
         </span>
         <span>Client portal access{role === "ADMIN" ? " (admins always have access)" : ""}</span>
       </label>
-      <button type="submit" className="btn-primary" style={{ marginTop: 12 }}>Save details</button>
+      <label className="switch-row" style={{ marginTop: 10 }}>
+        <span className="switch">
+          <input type="checkbox" name="quotesDefaultPrivate" defaultChecked={user.quotesDefaultPrivate} />
+          <span className="slider" />
+        </span>
+        <span>New quotes default to private</span>
+      </label>
+      <div style={{ marginTop: 16 }}>
+        <button type="submit" className="btn-primary">Save details</button>
+      </div>
     </form>
   );
 }

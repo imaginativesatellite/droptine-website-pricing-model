@@ -123,9 +123,11 @@ seeded on in `prisma/seed.ts`). Eventually opened to all members.
 - Quotes expire 60 days after `validFrom`. Admins can reactivate an expired
   quote, which mints a fresh access code and refreshes pricing if the model
   changed since it was created.
-- Visibility: member-created quotes default to shared (visible to all members +
-  admins); admin-created quotes default to private. Either role can toggle
-  `shared` on a quote they can see. Exception: members with the client portal
-  enabled (the pilot) default to **private**, so their quotes aren't visible to
-  other managers while testing - see `defaultShared` in `(app)/new/page.tsx`.
-  Client-portal quotes (`origin = CLIENT`) are always saved private.
+- Visibility: a new quote's initial shared/private state comes from the
+  creator's per-user `User.quotesDefaultPrivate` flag, which admins set on the
+  Users tab ("New quotes default to private"); the creator can still toggle
+  `shared` per quote. The migration that adds the flag backfills it `true` for
+  admins and portal (pilot) members and `false` for everyone else, preserving
+  the old "members shared / admins + pilot private" defaults. See `defaultShared`
+  in `(app)/new/page.tsx`. Client-portal quotes (`origin = CLIENT`) are always
+  saved private regardless.

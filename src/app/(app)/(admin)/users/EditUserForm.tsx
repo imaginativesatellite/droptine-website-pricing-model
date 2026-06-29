@@ -47,20 +47,24 @@ export default function EditUserForm({
           )}
         </div>
       </div>
-      <label className="switch-row" style={{ marginTop: 14 }}>
-        <span className="switch">
-          <input type="checkbox" name="clientPortalEnabled" defaultChecked={user.clientPortalEnabled} />
-          <span className="slider" />
-        </span>
-        <span>Client portal access{role === "ADMIN" ? " (admins always have access)" : ""}</span>
-      </label>
-      <label className="switch-row" style={{ marginTop: 10 }}>
-        <span className="switch">
-          <input type="checkbox" name="quotesDefaultPrivate" defaultChecked={user.quotesDefaultPrivate} />
-          <span className="slider" />
-        </span>
-        <span>New quotes default to private</span>
-      </label>
+      <div style={{ marginTop: 14 }}>
+        <label className="switch-row">
+          <span className="switch">
+            <input type="checkbox" name="clientPortalEnabled" defaultChecked={user.clientPortalEnabled} />
+            <span className="slider" />
+          </span>
+          <span>Client portal access{role === "ADMIN" ? " (admins always have access)" : ""}</span>
+        </label>
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <label className="switch-row">
+          <span className="switch">
+            <input type="checkbox" name="quotesDefaultPrivate" defaultChecked={user.quotesDefaultPrivate} />
+            <span className="slider" />
+          </span>
+          <span>New quotes default to private</span>
+        </label>
+      </div>
       <div style={{ marginTop: 16 }}>
         <button type="submit" className="btn-primary">Save details</button>
       </div>
